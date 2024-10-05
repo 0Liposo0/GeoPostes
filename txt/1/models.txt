@@ -1,0 +1,94 @@
+import flet as ft
+
+# Classe para representar um poste
+class Poste:
+    def __init__(self, ip, situacao, tipo, pontos, bairro, logradouro):
+        self.ip = ip
+        self.situacao = situacao
+        self.tipo = tipo
+        self.pontos = pontos
+        self.bairro = bairro
+        self.logradouro = logradouro
+
+
+# Componentes Visuais
+facens = ft.Image(
+    data=0,
+    src="images/facens.webp",
+    repeat=ft.ImageRepeat.NO_REPEAT,
+    height=170,
+)
+
+seta = ft.Image(
+    data=0,
+    src="images/seta.png",
+    repeat=ft.ImageRepeat.NO_REPEAT,
+    height=70,
+)
+
+theme1 = ft.Theme(
+    text_theme=ft.TextTheme(
+        title_large=ft.TextStyle(
+            size=15,
+            color=ft.colors.BLACK,
+            weight=ft.FontWeight.W_900,
+        ),
+        title_medium=ft.TextStyle(
+            size=15,
+            color=ft.colors.BLACK,
+            weight=ft.FontWeight.W_400,
+        ),
+    )
+)
+
+texto_chamada = ft.Container(
+    visible=True,
+    col=12,
+    padding=20,
+    content=ft.Text(
+        value="Aproxime-se e clique em um ponto",
+        text_align=ft.TextAlign.CENTER,
+        size=20,
+        color=ft.colors.BLACK,
+        weight=ft.FontWeight.W_900,
+    ),
+    theme=theme1,
+)
+
+poste1 = ft.Image(
+    data=0,
+    src="images/poste1.jpg",
+    repeat=ft.ImageRepeat.NO_REPEAT,
+    height=400,
+)
+
+foto = ft.Container(
+    col=12,
+    visible=False,
+    content=ft.Column(
+        alignment=ft.MainAxisAlignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=[
+            ft.Text(value="Foto", style=ft.TextThemeStyle.TITLE_LARGE),
+            poste1
+        ]
+    ),
+    theme=theme1,
+)
+
+texto_chamada = ft.Container(
+        visible=True,
+        col=12,
+        padding=20,
+        content=(
+            ft.Text(
+                value="Aproxime-se e clique em um ponto",
+                text_align= ft.TextAlign.CENTER,
+                size=20,
+                color = ft.colors.BLACK,
+                weight = ft.FontWeight.W_900,
+            )
+        ),
+        theme = theme1,
+
+)

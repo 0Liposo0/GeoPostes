@@ -1,0 +1,358 @@
+import flet as ft
+from models import *
+import threading
+
+# Função que cria o título da pagina inicial
+def create_titulo():
+    titulo = ft.Container(
+        visible=True,
+        col=12,
+        content=ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            spacing=0,
+            controls=[
+                geopostes,
+            ]
+        )
+    )
+    return titulo
+
+
+# Função que cria o icone da parte de baixo
+def create_icon():
+    icon = ft.Container(
+        visible=True,
+        col=12,
+        alignment=ft.alignment.center,
+        content=ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            spacing=0,
+            controls=[
+                facens  # Imagem importada do models.py
+            ]
+        )
+    )
+    return icon
+
+
+# Função que cria o título da ordem de serviço
+def create_titulo_2(poste):
+    titulo2 = ft.Container(
+        visible=True,
+        col=12,
+        padding=ft.padding.all(30),
+        content=ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            spacing=0,
+            controls=[
+                ft.Text(
+                    value=poste.ip,
+                    color=ft.colors.BLACK,
+                    size=50,
+                    weight=ft.FontWeight.W_600,
+                    font_family="Tahoma",
+                ),
+            ]
+        )
+    )
+    return titulo2
+
+
+# Função que cria o mapa com as ações dos botões passadas como parâmetro
+def create_mapa(page, btn1_action, btn2_action):
+    btn1 = ft.ElevatedButton(
+        on_click=btn1_action,
+        width=20,
+        height=20,
+        bgcolor=ft.colors.AMBER,
+        text=" ",
+        style=ft.ButtonStyle(
+            shape=ft.RoundedRectangleBorder(radius=10),
+        )
+    )
+
+    btn2 = ft.ElevatedButton(
+        on_click=btn2_action,
+        width=20,
+        height=20,
+        bgcolor=ft.colors.AMBER,
+        text=" ",
+        style=ft.ButtonStyle(
+            shape=ft.RoundedRectangleBorder(radius=10),
+        )
+    )
+
+    # Função de animação
+    def animate_button():
+        if btn1.width == 22 or btn2.width == 22:
+            btn1.width = 18
+            btn1.height = 18
+            btn1.style.shape=ft.RoundedRectangleBorder(radius=11)
+            btn2.width = 18
+            btn2.height = 18
+            btn2.style.shape=ft.RoundedRectangleBorder(radius=11)
+        else:
+            btn1.width = 22
+            btn1.height = 22
+            btn2.width = 22
+            btn2.height = 22
+        page.update()  # Atualiza a página para refletir as mudanças
+
+        # Chama a função novamente após 500ms
+        threading.Timer(0.5, animate_button).start()
+
+    # Inicia a animação
+    animate_button()
+
+
+    mapa = ft.Column(
+        visible=True,
+        col=12,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=[ft.Container(
+            width=400,
+            height=400,
+            alignment=ft.alignment.center,
+            image_src="images/maps.jpg",
+            bgcolor=ft.colors.GREY,
+            border=ft.Border(
+                left=ft.BorderSide(2, ft.colors.BLACK),  
+                top=ft.BorderSide(2, ft.colors.BLACK),    
+                right=ft.BorderSide(2, ft.colors.BLACK), 
+                bottom=ft.BorderSide(2, ft.colors.BLACK) 
+            ),
+            border_radius=ft.border_radius.all(250),
+            content=ft.Column(
+                spacing=20,
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        spacing=80,
+                        controls=[btn1, seta, btn2]  # seta importada do models.py
+                    ),
+                ],
+            )
+        )]
+    )
+    return mapa
+
+
+# Função que cria o formulário para exibir os dados do poste
+def create_forms(poste):
+    forms = ft.Container(
+        padding=0,
+        col=12,
+        content=ft.DataTable(
+            data_row_max_height=50,
+            columns=[
+                ft.DataColumn(ft.Text(value="")),
+                ft.DataColumn(ft.Text(value="")),
+            ],
+            rows=[
+                ft.DataRow(cells=[ft.DataCell(ft.Text(value="IP", style=ft.TextThemeStyle.TITLE_LARGE)),
+                                  ft.DataCell(ft.Text(value=poste.ip, style=ft.TextThemeStyle.TITLE_MEDIUM))]),
+                ft.DataRow(cells=[ft.DataCell(ft.Text(value="Situação", style=ft.TextThemeStyle.TITLE_LARGE)),
+                                  ft.DataCell(ft.Text(value=poste.situacao, style=ft.TextThemeStyle.TITLE_MEDIUM))]),
+                ft.DataRow(cells=[ft.DataCell(ft.Text(value="Tipo de Lâmpada", style=ft.TextThemeStyle.TITLE_LARGE)),
+                                  ft.DataCell(ft.Text(value=poste.tipo, style=ft.TextThemeStyle.TITLE_MEDIUM))]),
+                ft.DataRow(cells=[ft.DataCell(ft.Text(value="Pontos", style=ft.TextThemeStyle.TITLE_LARGE)),
+                                  ft.DataCell(ft.Text(value=poste.pontos, style=ft.TextThemeStyle.TITLE_MEDIUM))]),
+                ft.DataRow(cells=[ft.DataCell(ft.Text(value="Bairro", style=ft.TextThemeStyle.TITLE_LARGE)),
+                                  ft.DataCell(ft.Text(value=poste.bairro, style=ft.TextThemeStyle.TITLE_MEDIUM))]),
+                ft.DataRow(cells=[ft.DataCell(ft.Text(value="Logradouro", style=ft.TextThemeStyle.TITLE_LARGE)),
+                                  ft.DataCell(ft.Text(value=poste.logradouro, style=ft.TextThemeStyle.TITLE_MEDIUM))]),
+            ],
+        ),
+        theme=theme1,
+    )
+    return forms
+
+
+# Função que cria a visualização da foto
+def create_foto():
+    foto = ft.Container(
+        col=12,
+        padding=0,
+        content=ft.Column(
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                ft.Divider(height=10, thickness=0.1, color=ft.colors.BLACK),
+                ft.Text(value="Foto", style=ft.TextThemeStyle.TITLE_LARGE),
+                poste1, # importada do models.py
+            ]
+        ),
+        theme=theme1,
+    )
+    return foto
+
+
+# Função que cria o botão de ordem de serviço
+def btn_ordem(btn3_action):
+    ordem = ft.Container(
+        col=6,
+        padding=20,
+        content=ft.ElevatedButton(
+            text="Abrir chamado",
+            bgcolor=ft.colors.GREEN,
+            color=ft.colors.BLACK,
+            on_click=btn3_action,
+        )
+    )
+    return ordem
+
+
+# Função que cria o botão de envio
+def btn_send(btn4_action):
+    ordem = ft.Container(
+        col=6,
+        padding=20,
+        content=ft.ElevatedButton(
+            text="Enviar ordem",
+            bgcolor=ft.colors.GREEN,
+            color=ft.colors.BLACK,
+            on_click=btn4_action,
+        )
+    )
+    return ordem
+
+
+#Função que cria o texto de envio
+def send_text(e, page):
+    texto = ft.Text(
+    value="Ordem enviada com sucesso",
+    text_align=ft.TextAlign.CENTER,
+    size=30,
+    color=ft.colors.GREEN,
+    weight=ft.FontWeight.W_400,   
+    )
+  
+    page.add(texto)
+    page.update()  # Atualiza a página
+    
+
+
+
+
+
+
+
+
+
+# Função que carrega a página de formulario
+def page_forms(e, page, poste):
+    # Limpa a página atual
+    page.clean()
+
+    # Cria o novo layout com forms, foto e ordem
+    novo_layout = create_page_forms(poste, page)
+
+    # Adiciona o novo layout à página
+    page.add(novo_layout)
+
+    # Atualiza a página
+    page.update()
+
+    page.scroll_to(9999)
+
+
+# Função que carrega a página ordem de serviço
+def page_ordem(e, page, poste):
+    # Limpa a página atual
+    page.clean()
+
+    novo_layout = create__page_ordem(poste)
+
+    # Adiciona o novo layout à página
+    page.add(novo_layout)
+
+    page.go("/order")
+
+    # Atualiza a página
+    page.update()
+
+# Função que retorna a página inicial
+def restart(e, page, poste):
+
+    box_1.value=False
+    box_2.value=False
+    box_3.value=False
+    box_4.value=False
+    box_5.value=False
+    box_6.value=False
+
+    # Limpa a página atual
+    page.clean()
+
+    page.go("/")
+
+    # Cria o layout inicial novamente
+    titulo = create_titulo()
+    icon = create_icon()
+    
+    # Cria o mapa com animação
+    mapa = create_mapa(
+        page,  # Passe a referência da página para a função create_mapa
+        btn1_action=lambda e: page_forms(e, page, poste),
+        btn2_action=lambda e: page_forms(e, page, poste)
+    )
+    
+    # Cria o layout inicial
+    layout_inicial = ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            titulo,
+            mapa,
+            texto_chamada,
+            icon 
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
+    
+    # Adiciona o layout à página
+    page.add(layout_inicial)
+
+
+
+
+
+
+
+
+
+
+
+
+# Função para criar a página de formulario
+def create_page_forms(poste, page):
+    return ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            create_forms(poste),  # Carregar o formulário
+            create_foto(),  # Carregar a foto
+            btn_ordem(btn3_action=lambda e: page_ordem(e, page, poste))  
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
+
+# Função para criar a página de ordem de serviço
+def create__page_ordem(poste):
+    return ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            create_titulo_2(poste),  # Carregar o titulo
+            chamda_ordem,
+            box_1,
+            box_2,
+            box_3,
+            box_4,
+            box_5,
+            box_6,
+            btn_send(btn4_action=lambda e: send_text(e, e.page))
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
