@@ -157,7 +157,6 @@ box_6 = ft.Checkbox(
 )
 
 
-
 text_field_order = ft.Column(
                     controls=[
                         ft.Container(

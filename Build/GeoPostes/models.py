@@ -12,26 +12,8 @@ class Poste:
 
 
 # Componentes Visuais
-facens = ft.Image(
-    data=0,
-    src="images/facens2.jpg",
-    repeat=ft.ImageRepeat.NO_REPEAT,
-    height=70,
-)
 
-geopostes = ft.Image(
-    data=0,
-    src="images/icon2.png",
-    repeat=ft.ImageRepeat.NO_REPEAT,
-    height=170,
-)
 
-seta = ft.Image(
-    data=0,
-    src="images/seta.png",
-    repeat=ft.ImageRepeat.NO_REPEAT,
-    height=70,
-)
 
 theme1 = ft.Theme(
     text_theme=ft.TextTheme(
@@ -48,6 +30,7 @@ theme1 = ft.Theme(
     )
 )
 
+
 btn_null = ft.Column(
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[
@@ -63,7 +46,7 @@ btn_null = ft.Column(
 
 
 texto_chamada = ft.Column(
-        col=8,
+        col=10,
         spacing=10,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[ ft.Container(
@@ -105,55 +88,6 @@ texto_chamada = ft.Column(
                 )
 
 
-
-
-
-
-
-poste1 = ft.Image(
-    data=0,
-    src="images/poste1.jpg",
-    repeat=ft.ImageRepeat.NO_REPEAT,
-    height=400,
-)
-
-poste2 = ft.Image(
-    data=0,
-    src="images/poste2.jpg",
-    repeat=ft.ImageRepeat.NO_REPEAT,
-    height=400,
-)
-
-foto1= ft.Container(
-        col=12,
-        padding=0,
-        content=ft.Column(
-            alignment=ft.MainAxisAlignment.CENTER,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            controls=[
-                ft.Divider(height=10, thickness=0.1, color=ft.colors.BLACK),
-                ft.Text(value="Foto", style=ft.TextThemeStyle.TITLE_LARGE),
-                poste1, # importada do models.py
-            ]
-        ),
-        theme=theme1,)
-
-
-foto2= ft.Container(
-        col=12,
-        padding=0,
-        content=ft.Column(
-            alignment=ft.MainAxisAlignment.CENTER,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            controls=[
-                ft.Divider(height=10, thickness=0.1, color=ft.colors.BLACK),
-                ft.Text(value="Foto", style=ft.TextThemeStyle.TITLE_LARGE),
-                poste2, # importada do models.py
-            ]
-        ),
-        theme=theme1,)
-
-
 chamda_ordem = ft.Container(
     visible=True,
     col=12,
@@ -167,6 +101,7 @@ chamda_ordem = ft.Container(
     ),
     theme=theme1,
 )
+
 
 box_1 = ft.Checkbox(
     label="Ponto apagado",
@@ -185,6 +120,7 @@ box_2 = ft.Checkbox(
     )
 )
 
+
 box_3 = ft.Checkbox(
     label="Rachadura",
     label_style=ft.TextStyle(
@@ -192,6 +128,7 @@ box_3 = ft.Checkbox(
         size=30,    
     )
 )
+
 
 box_4 = ft.Checkbox(
     label="Queda",
@@ -201,6 +138,7 @@ box_4 = ft.Checkbox(
     )
 )
 
+
 box_5 = ft.Checkbox(
     label="Incêndio elétrico",
     label_style=ft.TextStyle(
@@ -208,6 +146,7 @@ box_5 = ft.Checkbox(
         size=30,    
     )
 )
+
 
 box_6 = ft.Checkbox(
     label="Adicionar ponto",
@@ -217,6 +156,24 @@ box_6 = ft.Checkbox(
     )
 )
 
+
+text_field_order = ft.Column(
+                    controls=[
+                        ft.Container(
+                            col=12,
+                            alignment=ft.alignment.center,
+                            content=ft.TextField(
+                                value="",
+                                label="Adicionar descrição",
+                                text_align=ft.TextAlign.CENTER,
+                                multiline=True,
+                                min_lines=3,
+                                label_style=ft.TextStyle(size=20),
+                                text_style=ft.TextStyle(color=ft.colors.BLACK),
+                            )
+                        )
+                    ]
+)
 
 
 

@@ -1,6 +1,6 @@
 import requests
 import flet as ft
-from GeoPostes import *
+from main import *
 from views import *
 
 username = ft.TextField(
@@ -12,6 +12,7 @@ username = ft.TextField(
 
 password = ft.TextField(
     label= "Senha",
+    password=True,
     label_style= ft.TextStyle(color=ft.colors.BLACK),
     text_style= ft.TextStyle(color=ft.colors.BLACK),
     col=8
@@ -23,7 +24,8 @@ def verificar(username, password, page):
     if username == "Carlos" and password == "63607120":
         page.snack_bar = ft.SnackBar(
             content=ft.Text("Administrador reconhecido"),
-            bgcolor=ft.colors.GREEN
+            bgcolor=ft.colors.GREEN,
+            duration= 1000,
         )
         page.snack_bar.open = True
         page.go("/")

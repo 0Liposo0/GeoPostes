@@ -191,8 +191,8 @@ def btn_ordem(btn3_action):
         col=6,
         padding=15,
         content=ft.ElevatedButton(
-            text="Abrir chamado",
-            bgcolor=ft.colors.GREEN,
+            text="Chamado",
+            bgcolor=ft.colors.RED,
             color=ft.colors.WHITE,
             on_click=btn3_action,
         )
@@ -206,7 +206,7 @@ def btn_send(btn4_action):
         col=6,
         padding=20,
         content=ft.ElevatedButton(
-            text="Enviar ordem",
+            text="Enviar",
             bgcolor=ft.colors.GREEN,
             color=ft.colors.WHITE,
             on_click=btn4_action,
@@ -238,7 +238,7 @@ def btn_back_home(btn6_action):
         col=6,
         expand=True,
         content=ft.ElevatedButton(
-            text="       Voltar       ",
+            text="   Voltar   ",
             bgcolor=ft.colors.AMBER,
             color=ft.colors.WHITE,
             on_click=btn6_action,
@@ -262,10 +262,43 @@ def send_text(e, page):
     page.scroll_to(9999)
 
     
-#Função que cria o menu lateral
-def create_menu(page):
+#Função que cria o menu lateral da home
+def create_menu1(page):
     def logout(e):
-        page.go("/login") 
+        page.go("/login")
+        username.value = ""
+        password.value = ""
+        username_register.value = "" 
+        email_register.value = ""
+        number_register.value = ""
+        password_register1.value = ""
+        password_register2.value = ""
+        box_1.value=False
+        box_2.value=False
+        box_3.value=False
+        box_4.value=False
+        box_5.value=False
+        box_6.value=False
+        text_field_order.controls[0].content.value = ""
+
+    def close(e):
+        page.window_close()
+        page.go("/login")
+        username.value = ""
+        password.value = ""
+        username_register.value = "" 
+        email_register.value = ""
+        number_register.value = ""
+        password_register1.value = ""
+        password_register2.value = ""
+        box_1.value=False
+        box_2.value=False
+        box_3.value=False
+        box_4.value=False
+        box_5.value=False
+        box_6.value=False
+        text_field_order.controls[0].content.value = ""
+
 
     return ft.Column(
                 controls=[
@@ -281,17 +314,76 @@ def create_menu(page):
                                 icon=ft.icons.MENU,
                                 icon_color=ft.colors.AMBER,
                                 bgcolor=ft.colors.BLUE_900,
-                                items=[ft.PopupMenuItem(
+                                items=[
+                                    ft.PopupMenuItem(
                                     on_click=logout,
                                     content=(
                                         ft.Text(value="Deslogar", color = ft.colors.AMBER)
-                                    )  
-                                )]
+                                    )),
+                                    ft.PopupMenuItem(
+                                    on_click=close,
+                                    content=(
+                                        ft.Text(value="Sair da aplicação", color = ft.colors.AMBER)
+                                    )),
+                                    ]
                             )
                         )
                     )
                 ]
             )
+
+
+#Função que cria o menu lateral de login
+def create_menu2(page, box_login):
+
+    def close(e):
+        page.window_close()
+        page.go("/login")
+        username.value = ""
+        password.value = ""
+        username_register.value = "" 
+        email_register.value = ""
+        number_register.value = ""
+        password_register1.value = ""
+        password_register2.value = ""
+        box_1.value=False
+        box_2.value=False
+        box_3.value=False
+        box_4.value=False
+        box_5.value=False
+        box_6.value=False
+        text_field_order.controls[0].content.value = ""
+        password.password = True
+        box_login.value = False
+
+
+    return ft.Column(
+                controls=[
+                    ft.Container(
+                        width=50,
+                        height=50,
+                        alignment=ft.alignment.center,
+                        bgcolor=ft.colors.BLUE_900,
+                        border_radius=ft.border_radius.all(25),
+                        padding=0,
+                        content=(
+                            ft.PopupMenuButton(
+                                icon=ft.icons.MENU,
+                                icon_color=ft.colors.AMBER,
+                                bgcolor=ft.colors.BLUE_900,
+                                items=[
+                                    ft.PopupMenuItem(
+                                    on_click=close,
+                                    content=(
+                                        ft.Text(value="Sair da aplicação", color = ft.colors.AMBER)
+                                    )),
+                                    ]
+                            )
+                        )
+                    )
+                ]
+            )
+
 
 
 def get_image_url(name):
@@ -386,12 +478,6 @@ def create_page_home(page):
     imagem1 = "titulo_geopostes"
     titulo = get_image_url(imagem1)
 
-    geopostes = ft.Image(
-    src=titulo,
-    repeat=ft.ImageRepeat.NO_REPEAT,
-    height=120,
-    )
-
     home_title = ft.Container(
         visible=True,
         col=12,
@@ -401,7 +487,11 @@ def create_page_home(page):
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=0,
             controls=[
-                geopostes,
+                ft.Image(
+                src=titulo,
+                repeat=ft.ImageRepeat.NO_REPEAT,
+                height=120,
+                ),
             ]
         )
     )
@@ -410,11 +500,6 @@ def create_page_home(page):
     imagem2 = "icone_facens"
     icone = get_image_url(imagem2)
 
-    facens = ft.Image(
-    src=icone,
-    repeat=ft.ImageRepeat.NO_REPEAT,
-    height=70,
-    )
 
     facens_icon = ft.Container(
         visible=True,
@@ -424,7 +509,11 @@ def create_page_home(page):
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=0,
             controls=[
-                facens 
+                ft.Image(
+                src=icone,
+                repeat=ft.ImageRepeat.NO_REPEAT,
+                height=70,
+                ) 
             ]
         )
     )
@@ -433,11 +522,6 @@ def create_page_home(page):
     imagem3 = "poste1"
     poste1_url = get_image_url(imagem3)
 
-    poste1_img = ft.Image(
-    src=poste1_url,
-    repeat=ft.ImageRepeat.NO_REPEAT,
-    height=400,
-    )
 
     foto1= ft.Container(
         col=12,
@@ -448,7 +532,11 @@ def create_page_home(page):
             controls=[
                 ft.Divider(height=10, thickness=0.1, color=ft.colors.BLACK),
                 ft.Text(value="Foto", theme_style=ft.TextThemeStyle.TITLE_LARGE),
-                poste1_img, 
+                ft.Image(
+                src=poste1_url,
+                repeat=ft.ImageRepeat.NO_REPEAT,
+                height=400,
+                ), 
             ]
         ),
         theme=theme1,)
@@ -457,11 +545,6 @@ def create_page_home(page):
     imagem4 = "poste2"
     poste2_url = get_image_url(imagem4)
 
-    poste2_img = ft.Image(
-    src=poste2_url,
-    repeat=ft.ImageRepeat.NO_REPEAT,
-    height=400,
-    )
 
     foto2= ft.Container(
         col=12,
@@ -472,13 +555,17 @@ def create_page_home(page):
             controls=[
                 ft.Divider(height=10, thickness=0.1, color=ft.colors.BLACK),
                 ft.Text(value="Foto", theme_style=ft.TextThemeStyle.TITLE_LARGE),
-                poste2_img, 
+                ft.Image(
+                src=poste2_url,
+                repeat=ft.ImageRepeat.NO_REPEAT,
+                height=400,
+                ), 
             ]
         ),
         theme=theme1,)
 
 
-    menu = create_menu(page)
+    menu = create_menu1(page)
     mapa = create_mapa(
         page,
         btn1_action=lambda e: page_forms(e, page, poste, foto1),
@@ -539,12 +626,6 @@ def create_page_login(page):
     imagem1 = "titulo_geopostes"
     titulo = get_image_url(imagem1)
 
-    geopostes = ft.Image(
-    src=titulo,
-    repeat=ft.ImageRepeat.NO_REPEAT,
-    height=120,
-    )
-
     home_title = ft.Container(
         visible=True,
         col=12,
@@ -554,7 +635,11 @@ def create_page_login(page):
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=0,
             controls=[
-                geopostes,
+                ft.Image(
+                src=titulo,
+                repeat=ft.ImageRepeat.NO_REPEAT,
+                height=120,
+                ),
             ]
         )
     )
@@ -562,11 +647,6 @@ def create_page_login(page):
     imagem2 = "icone_facens"
     icone = get_image_url(imagem2)
 
-    facens = ft.Image(
-    src=icone,
-    repeat=ft.ImageRepeat.NO_REPEAT,
-    height=70,
-    )
 
     facens_icon = ft.Container(
         visible=True,
@@ -576,10 +656,36 @@ def create_page_login(page):
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=0,
             controls=[
-                facens 
+                ft.Image(
+                src=icone,
+                repeat=ft.ImageRepeat.NO_REPEAT,
+                height=70,
+                ) 
             ]
         )
     )
+
+    password.password = True
+
+    def visible_password(e):
+        if password.password == True:
+            password.password = False
+        else:
+            password.password = True
+
+        page.update()
+
+
+    box_login = ft.Checkbox(
+                label="Mostrar senha",
+                on_change=visible_password,
+                col=9,
+                label_style=ft.TextStyle(
+                    color=ft.colors.BLACK,
+                    size=15,    
+                    )
+            )
+
 
 
     username_field = username
@@ -589,17 +695,20 @@ def create_page_login(page):
       padding=10
     )
     container2 = ft.Container(
-      padding=50
+      padding=10
     )
+
+    menu = create_menu2(page, box_login)
 
     return ft.ResponsiveRow(
         columns=12,
         controls=[
-            container1,
+            menu,
             home_title,
             container1,  
             username,  
             password,
+            box_login,
             container1,
             btn_login(username_field, password_field, page),
             btn_register(register_action=lambda e: page.go("/register")), 
@@ -618,12 +727,6 @@ def create_page_register(page):
     imagem1 = "titulo_geopostes"
     titulo = get_image_url(imagem1)
 
-    geopostes = ft.Image(
-    src=titulo,
-    repeat=ft.ImageRepeat.NO_REPEAT,
-    height=120,
-    )
-
     home_title = ft.Container(
         visible=True,
         col=12,
@@ -633,46 +736,26 @@ def create_page_register(page):
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=0,
             controls=[
-                geopostes,
+                ft.Image(
+                src=titulo,
+                repeat=ft.ImageRepeat.NO_REPEAT,
+                height=120,
+                ),
             ]
         )
     )
-
-    imagem2 = "icone_facens"
-    icone = get_image_url(imagem2)
-
-    facens = ft.Image(
-    src=icone,
-    repeat=ft.ImageRepeat.NO_REPEAT,
-    height=70,
-    )
-
-    facens_icon = ft.Container(
-        visible=True,
-        col=12,
-        alignment=ft.alignment.center,
-        content=ft.Row(
-            alignment=ft.MainAxisAlignment.CENTER,
-            spacing=0,
-            controls=[
-                facens 
-            ]
-        )
-    )
-
 
 
     username_field = username_register
     email_field = email_register
     number_field = number_register
-    password_field = password_register
+    password_field1 = password_register1
+    password_field2 = password_register2
 
     container1 = ft.Container(
-      padding=10
+      padding=5
     )
-    container2 = ft.Container(
-      padding=50
-    )
+
 
     return ft.ResponsiveRow(
         columns=12,
@@ -683,12 +766,13 @@ def create_page_register(page):
             username_register, 
             email_register,
             number_register, 
-            password_register,
+            password_register1,
+            password_register2,
             container1,
-            btn_register_2(username_field, email_field, number_field, password_field, page),
+            btn_register_2(username_field, email_field, number_field, password_field1, password_field2, page),
             btn_back(action_back=lambda e: page.go("/login")),
-            container2,
-            facens_icon,
+
+
 
 
              
