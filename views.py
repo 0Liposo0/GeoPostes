@@ -177,7 +177,7 @@ def create_page_login(page):
     box_login = checkboxes.create_checkbox(text="Mostrar senha", size=15, on_change=visible_password, col=8)
 
     textfields = TextField(page)
-    username_field = textfields.create_textfield(text="Usuário", password=False)
+    username_field = textfields.create_textfield(text="Usuário ou E-mail", password=False)
     password_field = textfields.create_textfield(text="Senha", password=True)
 
     menus = SettingsMenu(page)
@@ -323,7 +323,7 @@ def verificar(username, password, page):
 
         # Adicione os filtros de consulta nos parâmetros da URL
         params = {
-            "usuario": f"eq.{username}",
+            "or": f"(usuario.eq.{username},email.eq.{username})",
             "senha": f"eq.{password}",
             "select": "*"
         }
