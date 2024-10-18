@@ -2,15 +2,14 @@ import flet as ft
 from models import *
 import requests
 import threading
+import flet.map as map
+
 
 
 
 
 
 def create_page_home(page):
-
-    poste1 = Poste("IP SOR-0010", "Com iluminação", "Lâmpada LED", 1, "Centro", "Rua Raimundo Malta")
-    poste2 = Poste("IP SOR-0020", "Com iluminação", "Lâmpada Química", 1, "Centro", "Rua Raimundo Malta")
 
     web_images = Web_Image(page)
     url_imagem1 = web_images.get_image_url(name="titulo_geopostes")
@@ -33,9 +32,7 @@ def create_page_home(page):
     loading = LoadingPages(page)
 
     maps = Map(page)
-    mapa1 = maps.create_map(page=page,
-                            btn1_action=lambda e: loading.new_loading_page(page=page, layout=create_page_forms(page, poste1, foto="poste1")),
-                            btn2_action=lambda e: loading.new_loading_page(page=page, layout=create_page_forms(page, poste2, foto="poste2")))
+    mapa1 = maps.create_map(page)
 
     calltexts = CallText(page)
     texto_chamada = calltexts.create_container_calltext1()
@@ -61,6 +58,7 @@ def create_page_home(page):
 
 def create_page_forms(page, poste, foto):
 
+
     loading = LoadingPages(page)
 
     buttons = Buttons(page)
@@ -79,7 +77,7 @@ def create_page_forms(page, poste, foto):
     forms1 = forms.create_forms(poste=poste)
 
     web_images = Web_Image(page)
-    url_imagem1 = web_images.get_image_url(name=foto)
+    url_imagem1 = web_images.get_poste_image_url(number=foto)
     foto_poste = web_images.create_web_image(src=url_imagem1, col=12, height=400)
 
     return ft.ResponsiveRow(
@@ -279,6 +277,147 @@ def create_page_register(page):
     )
 
 
+class Map:
+
+    def __init__(self, page):
+        self.page = page
+
+    def create_map(self, page):
+
+        markers = Marker(page)
+        mapmarkers = markers.create_markers(page)
+
+
+        google = map.Map(
+                    expand=True,  
+                    configuration=map.MapConfiguration(
+                        initial_center=map.MapLatitudeLongitude(-23.339500000000, -47.823750000000),  
+                        initial_zoom=19 
+                    ),
+                    layers=[
+                        map.TileLayer(
+                            url_template="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        ),
+                        map.MarkerLayer(markers=mapmarkers),
+                    ],
+                )
+
+        return ft.Column(
+            visible=True,
+            col=12,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[ft.Container(
+                width=400,
+                height=400,
+                alignment=ft.alignment.center,
+                bgcolor=ft.colors.GREY,
+                border=ft.Border(
+                    left=ft.BorderSide(2, ft.colors.BLACK),  
+                    top=ft.BorderSide(2, ft.colors.BLACK),    
+                    right=ft.BorderSide(2, ft.colors.BLACK), 
+                    bottom=ft.BorderSide(2, ft.colors.BLACK) 
+                ),
+                border_radius=ft.border_radius.all(250),
+                content=ft.Container(
+                    width=395,
+                    height=395,
+                    alignment=ft.alignment.center,
+                    bgcolor=ft.colors.GREY,
+                    border_radius=ft.border_radius.all(250),
+                    content=google,
+                ))]
+        )
+
+
+class Marker:
+
+    def __init__(self, page):
+        self.page = page
+
+
+    def create_markers(self, page):
+        # Configuração da URL e cabeçalho
+        SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
+        SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
+
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json",
+        }
+
+        # Parâmetros da requisição GET
+        params = {"select": "number,coord_x,coord_y,name,situacao,tipo,pontos,bairro,logradouro"}
+
+        # Requisição à API
+        response = requests.get(
+            f"{SUPABASE_URL}/rest/v1/points_capeladoalto",
+            headers=headers,
+            params=params,
+        )
+
+        # Verifica se a requisição foi bem-sucedida
+        if response.status_code != 200:
+            print("Erro ao buscar dados:", response.text)
+            return []
+
+        data = response.json()
+
+        # Inicializa o dicionário de botões e a lista de marcadores
+        InitialButtons = {}
+        Markers = []
+
+        # Classe Buttons usada para criar botões e marcadores
+        buttons = Buttons(page)
+
+        # Loop para criar os botões com base nas linhas da tabela
+        for row in data:
+            number = row["number"]
+            coord_x = row["coord_x"]
+            coord_y = row["coord_y"]
+            name = row["name"]
+            situacao = row["situacao"]
+            tipo = row["tipo"]
+            pontos = row["pontos"]
+            bairro = row["bairro"]
+            logradouro = row["logradouro"]
+
+            loading = LoadingPages(page)
+            poste = Poste(number, name, situacao, tipo, pontos, bairro, logradouro)
+
+            def create_on_click(poste=poste, number=number):
+                return lambda e: loading.new_loading_page(
+                    page=page,
+                    layout=create_page_forms(page, poste, foto=number)
+                )
+
+            # Cria o botão com o valor correspondente de 'number'
+            btn_name = f"btn{number}"
+            InitialButtons[number] = {
+                "element": buttons.create_point_button(
+                    on_click=create_on_click(),  # Usa a função auxiliar
+                    text=str(number)
+                ),
+                "x": coord_x,
+                "y": coord_y,
+            }
+
+        # Cria marcadores com base nos botões criados
+        for number, button_data in InitialButtons.items():
+            marker_name = f"marker{number}"
+            marker = buttons.create_point_marker(
+                content=button_data["element"],
+                x=button_data["x"],
+                y=button_data["y"],
+            )
+            Markers.append(marker)
+
+        # Retorna a lista de marcadores
+        return Markers
+
+
+
+
 
 
 
@@ -308,10 +447,10 @@ def verificar(username, password, page):
             )
             page.snack_bar.open = True
             page.update()
-            return  # Impede que o código continue caso não haja conexão
+            return 
 
         # URL da API do seu projeto no Supabase
-        SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"  # Substitua pela URL do seu projeto
+        SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co" 
         SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"  # Substitua pela API Key gerada pelo Supabase
 
         # Cabeçalho com a API Key

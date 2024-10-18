@@ -1,9 +1,12 @@
 import flet as ft
 import requests
 import threading
+import flet.map as map
 
 class Poste:
-    def __init__(self, ip, situacao, tipo, pontos, bairro, logradouro):
+
+    def __init__(self, number, ip, situacao, tipo, pontos, bairro, logradouro):
+        self.number = number
         self.ip = ip
         self.situacao = situacao
         self.tipo = tipo
@@ -78,6 +81,7 @@ class Buttons:
                     ),
                     ft.Text(
                         value=text,
+                        no_wrap=True,
                         color=ft.colors.BLACK,
                         size=20,
                         text_align=ft.TextAlign.START,
@@ -86,6 +90,14 @@ class Buttons:
                         )
                 ]
             )
+    
+    def create_point_marker(self, content, x, y):
+        return map.Marker(
+                content=content,
+                coordinates=map.MapLatitudeLongitude(x, y),
+                rotate=True, 
+                )
+    
 
 
 class Web_Image:
@@ -110,6 +122,29 @@ class Web_Image:
         if response.status_code == 200 and response.json():
             # Pegando a URL da imagem a partir da coluna 'imagem_url'
             image_url = response.json()[0]["imagem_url"]
+            return image_url
+        else:
+            print("Erro ao buscar a imagem.")
+            return None
+        
+
+    def get_poste_image_url(self, number):
+        SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
+        SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
+        TABLE_NAME = "images_postes"
+        COLUMN_NUMBER = number
+
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+        }
+        
+        # Faz a requisição GET para buscar pela coluna 'number'
+        response = requests.get(f"{SUPABASE_URL}/rest/v1/{TABLE_NAME}?number=eq.{COLUMN_NUMBER}", headers=headers)
+        
+        if response.status_code == 200 and response.json():
+            # Pegando a URL da imagem a partir da coluna 'url'
+            image_url = response.json()[0]["url"]
             return image_url
         else:
             print("Erro ao buscar a imagem.")
@@ -365,89 +400,6 @@ class Forms:
     )
 
 
-class Map:
-
-    def __init__(self, page):
-        self.page = page
-
-    def create_map(self, page, btn1_action, btn2_action):
-
-        buttons = Buttons(page)
-        btn1 = buttons.create_point_button(on_click=btn1_action, text="10")
-        btn2 = buttons.create_point_button(on_click=btn2_action, text="20")
-
-
-        # Função de animação
-        def animate_button():
-            # Acessar os botões dentro das colunas btn1 e btn2
-            button_1 = btn1.controls[0]
-            button_2 = btn2.controls[0]
-
-            if button_1.width == 24:
-                # Diminuir tamanho
-                button_1.width = 20
-                button_1.height = 20
-                button_1.style.shape = ft.RoundedRectangleBorder(radius=10)
-
-                button_2.width = 20
-                button_2.height = 20
-                button_2.style.shape = ft.RoundedRectangleBorder(radius=10)
-            else:
-                # Aumentar tamanho
-                button_1.width = 24
-                button_1.height = 24
-                button_1.style.shape = ft.RoundedRectangleBorder(radius=11)
-
-                button_2.width = 24
-                button_2.height = 24
-                button_2.style.shape = ft.RoundedRectangleBorder(radius=11)
-
-            page.update()  # Atualiza a página para refletir as mudanças
-
-            # Chama a função novamente após 500ms
-            threading.Timer(0.5, animate_button).start()
-
-        # Inicia a animação
-        animate_button()
-
-        web_images = Web_Image(page)
-        url_imagem1 = web_images.get_image_url(name="mapa")
-        home_map = url_imagem1 
-        url_imagem2 = web_images.get_image_url(name="seta")
-        home_seta = web_images.create_web_image(src=url_imagem2, col=None, height=70)
-
-        return ft.Column(
-            visible=True,
-            col=12,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            controls=[ft.Container(
-                width=400,
-                height=400,
-                alignment=ft.alignment.center,
-                image_src=home_map,
-                bgcolor=ft.colors.GREY,
-                border=ft.Border(
-                    left=ft.BorderSide(2, ft.colors.BLACK),  
-                    top=ft.BorderSide(2, ft.colors.BLACK),    
-                    right=ft.BorderSide(2, ft.colors.BLACK), 
-                    bottom=ft.BorderSide(2, ft.colors.BLACK) 
-                ),
-                border_radius=ft.border_radius.all(250),
-                content=ft.Column(
-                    spacing=0,
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    controls=[
-                        ft.Row(
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            spacing=80,
-                            controls=[btn1, home_seta, btn2]  # seta importada do models.py
-                        ),
-                    ],
-                )
-            )]
-        )
-
-
 class LoadingPages:
 
     def __init__(self, page):
@@ -460,6 +412,6 @@ class LoadingPages:
         page.add(layout)
 
         page.update()
+ 
 
-        page.scroll_to(1)    
 

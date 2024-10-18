@@ -13,7 +13,7 @@ def main(page: ft.Page):
 
 
     loading = LoadingPages(page)
-    loading.new_loading_page(page=page, layout=create_page_login(page))
+    loading.new_loading_page(page=page, layout=create_page_home(page))
 
 
 
