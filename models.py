@@ -99,7 +99,6 @@ class Buttons:
                 )
     
 
-
 class Web_Image:
 
     def __init__(self, page):

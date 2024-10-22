@@ -3,9 +3,7 @@ from models import *
 import requests
 import threading
 import flet.map as map
-
-
-
+import json
 
 
 
@@ -31,11 +29,23 @@ def create_page_home(page):
 
     loading = LoadingPages(page)
 
-    maps = Map(page)
-    mapa1 = maps.create_map(page)
-
     calltexts = CallText(page)
     texto_chamada = calltexts.create_container_calltext1()
+    coord_text_lat = calltexts.create_calltext(text="Latitude: -23.339500000000",
+                      color=ft.colors.BLACK,
+                      size=15,
+                      font=ft.FontWeight.W_600,
+                      col=12,
+                      padding=0)
+    coord_text_lon = calltexts.create_calltext(text="Longitude: -47.823750000000",
+                      color=ft.colors.BLACK,
+                      size=15,
+                      font=ft.FontWeight.W_600,
+                      col=12,
+                      padding=0)
+    
+    maps = Map(page, coord_text_lat, coord_text_lon)
+    mapa1 = maps.create_map()
 
     container1 = ft.Container(padding=10)
     container2 = ft.Container(padding=5)
@@ -45,7 +55,8 @@ def create_page_home(page):
         controls=[
                 container2,
                 menu,
-                home_title,
+                coord_text_lat,
+                coord_text_lon,
                 mapa1,
                 texto_chamada,
                 container1,
@@ -279,54 +290,88 @@ def create_page_register(page):
 
 class Map:
 
-    def __init__(self, page):
+    def __init__(self, page, coord_text_lat, coord_text_lon):
         self.page = page
+        self.coord_text_lat = coord_text_lat
+        self.coord_text_lon = coord_text_lon
 
-    def create_map(self, page):
 
-        markers = Marker(page)
-        mapmarkers = markers.create_markers(page)
+    def create_map(self):
 
+        markers = Marker(self.page)
+        mappoints = markers.create_points()
+
+        def on_position_change(e):
+            latitude = e.coordinates.latitude
+            longitude = e.coordinates.longitude
+
+            self.coord_text_lat.content.value = f"Latitude: {latitude}"
+            self.coord_text_lon.content.value = f"Longitude: {longitude}"
+            self.coord_text_lat.update()
+            self.coord_text_lon.update()
+
+            self.page.update()
+
+        MarkerLayer = mappoints
 
         google = map.Map(
                     expand=True,  
                     configuration=map.MapConfiguration(
-                        initial_center=map.MapLatitudeLongitude(-23.339500000000, -47.823750000000),  
-                        initial_zoom=19 
+                        initial_center=map.MapLatitudeLongitude(-23.3396, -47.8238),  
+                        initial_zoom=19,
+                        on_position_change=on_position_change,
                     ),
                     layers=[
                         map.TileLayer(
-                            url_template="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            url_template="https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                         ),
-                        map.MarkerLayer(markers=mapmarkers),
+                        map.MarkerLayer(MarkerLayer),
                     ],
                 )
 
         return ft.Column(
-            visible=True,
-            col=12,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            controls=[ft.Container(
-                width=400,
-                height=400,
-                alignment=ft.alignment.center,
-                bgcolor=ft.colors.GREY,
-                border=ft.Border(
-                    left=ft.BorderSide(2, ft.colors.BLACK),  
-                    top=ft.BorderSide(2, ft.colors.BLACK),    
-                    right=ft.BorderSide(2, ft.colors.BLACK), 
-                    bottom=ft.BorderSide(2, ft.colors.BLACK) 
-                ),
-                border_radius=ft.border_radius.all(250),
-                content=ft.Container(
-                    width=395,
-                    height=395,
-                    alignment=ft.alignment.center,
-                    bgcolor=ft.colors.GREY,
-                    border_radius=ft.border_radius.all(250),
-                    content=google,
-                ))]
-        )
+                visible=True,
+                col=12,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                controls=[
+                    ft.Container(
+                        width=400,
+                        height=400,
+                        alignment=ft.alignment.center,
+                        bgcolor=ft.colors.GREY,
+                        border=ft.Border(
+                            left=ft.BorderSide(2, ft.colors.BLACK),
+                            top=ft.BorderSide(2, ft.colors.BLACK),
+                            right=ft.BorderSide(2, ft.colors.BLACK),
+                            bottom=ft.BorderSide(2, ft.colors.BLACK),
+                        ),
+                        border_radius=ft.border_radius.all(250),
+                        content=ft.Container(
+                            width=395,
+                            height=395,
+                            alignment=ft.alignment.center,
+                            bgcolor=ft.colors.GREY,
+                            border_radius=ft.border_radius.all(250),
+                            content=ft.Stack(
+                                expand=True,
+                                controls=[
+                                    google,  
+                                    ft.TransparentPointer( 
+                                            content=ft.Container(
+                                                alignment=ft.alignment.center,  
+                                                content=ft.Icon(
+                                                    name=ft.icons.CONTROL_POINT,
+                                                    size=40,
+                                                    color=ft.colors.BLACK,
+                                                ),
+                                            ),
+                                        ),
+                                ],
+                            ),
+                        ),
+                    )
+                ]
+            )
 
 
 class Marker:
@@ -335,7 +380,7 @@ class Marker:
         self.page = page
 
 
-    def create_markers(self, page):
+    def create_points(self):
         # Configuração da URL e cabeçalho
         SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
         SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
@@ -365,10 +410,10 @@ class Marker:
 
         # Inicializa o dicionário de botões e a lista de marcadores
         InitialButtons = {}
-        Markers = []
+        FinalPoints = []
 
         # Classe Buttons usada para criar botões e marcadores
-        buttons = Buttons(page)
+        buttons = Buttons(self.page)
 
         # Loop para criar os botões com base nas linhas da tabela
         for row in data:
@@ -382,17 +427,16 @@ class Marker:
             bairro = row["bairro"]
             logradouro = row["logradouro"]
 
-            loading = LoadingPages(page)
+            loading = LoadingPages(self.page)
             poste = Poste(number, name, situacao, tipo, pontos, bairro, logradouro)
 
             def create_on_click(poste=poste, number=number):
                 return lambda e: loading.new_loading_page(
-                    page=page,
-                    layout=create_page_forms(page, poste, foto=number)
+                    page=self.page,
+                    layout=create_page_forms(self.page, poste, foto=number)
                 )
 
             # Cria o botão com o valor correspondente de 'number'
-            btn_name = f"btn{number}"
             InitialButtons[number] = {
                 "element": buttons.create_point_button(
                     on_click=create_on_click(),  # Usa a função auxiliar
@@ -404,17 +448,15 @@ class Marker:
 
         # Cria marcadores com base nos botões criados
         for number, button_data in InitialButtons.items():
-            marker_name = f"marker{number}"
             marker = buttons.create_point_marker(
                 content=button_data["element"],
                 x=button_data["x"],
                 y=button_data["y"],
             )
-            Markers.append(marker)
+            FinalPoints.append(marker)
 
         # Retorna a lista de marcadores
-        return Markers
-
+        return FinalPoints
 
 
 
