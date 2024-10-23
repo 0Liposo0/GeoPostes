@@ -7,6 +7,7 @@ import flet.map as map
 
 
 
+
 def create_page_home(page):
 
     web_images = Web_Image(page)
@@ -25,27 +26,38 @@ def create_page_home(page):
                                        action=lambda e: page.window_close())
     itens.append(logout)
     itens.append(exit)
-    menu = menus.create_settings_menu(color=ft.colors.BLUE_900, itens=itens)
+    menu = menus.create_settings_menu(color=ft.colors.BLUE_900, itens=itens, col=10)
 
     loading = LoadingPages(page)
 
     calltexts = CallText(page)
     texto_chamada = calltexts.create_container_calltext1()
-    coord_text_lat = calltexts.create_calltext(text="Latitude: -23.339500000000",
+    coord_text_lat = calltexts.create_calltext(text="-23.339500000000",
                       color=ft.colors.BLACK,
                       size=15,
                       font=ft.FontWeight.W_600,
                       col=12,
                       padding=0)
-    coord_text_lon = calltexts.create_calltext(text="Longitude: -47.823750000000",
+    coord_text_lon = calltexts.create_calltext(text="-47.823750000000",
+                      color=ft.colors.BLACK,
+                      size=15,
+                      font=ft.FontWeight.W_600,
+                      col=12,
+                      padding=0)
+    coord_text_zoom = calltexts.create_calltext(text="19",
                       color=ft.colors.BLACK,
                       size=15,
                       font=ft.FontWeight.W_600,
                       col=12,
                       padding=0)
     
-    maps = Map(page, coord_text_lat, coord_text_lon)
+    maps = Map(page, coord_text_lat, coord_text_lon, coord_text_zoom)
     mapa1 = maps.create_map()
+
+    buttons = Buttons(page)
+    add_button = buttons.create_add_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_add_forms(page, coord_text_lat.content.value, coord_text_lon.content.value)),
+                                           col=2)
+    
 
     container1 = ft.Container(padding=10)
     container2 = ft.Container(padding=5)
@@ -55,8 +67,10 @@ def create_page_home(page):
         controls=[
                 container2,
                 menu,
+                add_button,
                 coord_text_lat,
                 coord_text_lon,
+                coord_text_zoom,
                 mapa1,
                 texto_chamada,
                 container1,
@@ -97,6 +111,39 @@ def create_page_forms(page, poste, foto):
             forms1,
             foto_poste,  
             ordem_button,
+            back_home_button   
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
+
+
+def create_page_add_forms(page, lat, long):
+
+
+    loading = LoadingPages(page)
+
+    buttons = Buttons(page)
+    add_button = buttons.create_button(on_click=None,
+                                            text="Adicionar",
+                                            color=ft.colors.GREEN,
+                                            col=6,
+                                            padding=15,)
+    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page)),
+                                            text="Voltar",
+                                            color=ft.colors.AMBER,
+                                            col=6,
+                                            padding=15,)
+    
+    forms = Forms(page)
+    forms1 = forms.create_add_forms(lat, long)
+
+
+    return ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            forms1,
+            add_button, 
             back_home_button   
         ],
         alignment=ft.MainAxisAlignment.CENTER,
@@ -186,8 +233,8 @@ def create_page_login(page):
     box_login = checkboxes.create_checkbox(text="Mostrar senha", size=15, on_change=visible_password, col=8)
 
     textfields = TextField(page)
-    username_field = textfields.create_textfield(text="Usuário ou E-mail", password=False)
-    password_field = textfields.create_textfield(text="Senha", password=True)
+    username_field = textfields.create_textfield(value=None, text="Usuário ou E-mail", password=False)
+    password_field = textfields.create_textfield(value=None, text="Senha", password=True)
 
     menus = SettingsMenu(page)
     itens = []
@@ -195,7 +242,7 @@ def create_page_login(page):
                                        color=ft.colors.AMBER,
                                        action=lambda e: page.window_close())
     itens.append(exit)
-    menu = menus.create_settings_menu(color=ft.colors.BLUE_900, itens=itens)
+    menu = menus.create_settings_menu(color=ft.colors.BLUE_900, itens=itens, col=12)
 
     loading = LoadingPages(page)
 
@@ -244,11 +291,11 @@ def create_page_register(page):
     register_title = web_images.create_web_image(src=url_imagem1, col=12, height=120)
 
     textfields = TextField(page)
-    username_field = textfields.create_textfield(text="Primeiro Nome", password=False)
-    email_field = textfields.create_textfield(text="Email", password=False)
-    number_field = textfields.create_textfield(text="Celular  Ex: 15912345678", password=False)
-    password_field1 = textfields.create_textfield(text="Senha", password=True)
-    password_field2 = textfields.create_textfield(text="Confirmar senha", password=False)
+    username_field = textfields.create_textfield(value=None, text="Primeiro Nome", password=False)
+    email_field = textfields.create_textfield(value=None, text="Email", password=False)
+    number_field = textfields.create_textfield(value=None, text="Celular  Ex: 15912345678", password=False)
+    password_field1 = textfields.create_textfield(value=None, text="Senha", password=True)
+    password_field2 = textfields.create_textfield(value=None, text="Confirmar senha", password=False)
 
     container1 = ft.Container(
       padding=5
@@ -290,42 +337,47 @@ def create_page_register(page):
 
 class Map:
 
-    def __init__(self, page, coord_text_lat, coord_text_lon):
+    def __init__(self, page, coord_text_lat, coord_text_lon, coord_text_zoom):
         self.page = page
         self.coord_text_lat = coord_text_lat
         self.coord_text_lon = coord_text_lon
+        self.coord_text_zoom = coord_text_zoom
 
 
     def create_map(self):
 
         markers = Marker(self.page)
         mappoints = markers.create_points()
+        MarkerLayer = mappoints
 
-        def on_position_change(e):
-            latitude = e.coordinates.latitude
-            longitude = e.coordinates.longitude
 
-            self.coord_text_lat.content.value = f"Latitude: {latitude}"
-            self.coord_text_lon.content.value = f"Longitude: {longitude}"
+
+        def handle_event(e: map.MapEvent):
+            self.coord_text_lat.content.value = f"{e.center.latitude:.6f}"
+            self.coord_text_lon.content.value = f"{e.center.longitude:.6f}"
+            self.coord_text_zoom.content.value = f"{e.zoom:.2f}"
             self.coord_text_lat.update()
             self.coord_text_lon.update()
-
+            self.coord_text_zoom.update()
             self.page.update()
+            
 
-        MarkerLayer = mappoints
 
         google = map.Map(
                     expand=True,  
                     configuration=map.MapConfiguration(
                         initial_center=map.MapLatitudeLongitude(-23.3396, -47.8238),  
                         initial_zoom=19,
-                        on_position_change=on_position_change,
+                        on_event=handle_event,
                     ),
                     layers=[
                         map.TileLayer(
                             url_template="https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                         ),
                         map.MarkerLayer(MarkerLayer),
+                        map.RichAttribution(
+                            attributions=[map.TextSourceAttribution(text="Teste")]
+                        )
                     ],
                 )
 
@@ -426,9 +478,11 @@ class Marker:
             pontos = row["pontos"]
             bairro = row["bairro"]
             logradouro = row["logradouro"]
+            Latitude = row["coord_x"]
+            Longitude = row["coord_y"]
 
             loading = LoadingPages(self.page)
-            poste = Poste(number, name, situacao, tipo, pontos, bairro, logradouro)
+            poste = Poste(number, name, situacao, tipo, pontos, bairro, logradouro, Latitude, Longitude)
 
             def create_on_click(poste=poste, number=number):
                 return lambda e: loading.new_loading_page(

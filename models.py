@@ -5,7 +5,7 @@ import flet.map as map
 
 class Poste:
 
-    def __init__(self, number, ip, situacao, tipo, pontos, bairro, logradouro):
+    def __init__(self, number, ip, situacao, tipo, pontos, bairro, logradouro, lat, long):
         self.number = number
         self.ip = ip
         self.situacao = situacao
@@ -13,6 +13,8 @@ class Poste:
         self.pontos = pontos
         self.bairro = bairro
         self.logradouro = logradouro
+        self.lat = lat
+        self.long = long
 
 
 class TextTheme:
@@ -64,6 +66,25 @@ class Buttons:
                         )
                     ]    
                  )
+    
+    def create_add_button(self, on_click, col):
+
+            return  ft.Column(
+                col=col,
+                controls=[
+                    ft.IconButton(
+                        icon=ft.icons.ADD_CIRCLE,
+                        icon_color=ft.colors.GREEN,
+                        expand=True,
+                        scale=2.3,
+                        on_click=on_click,
+                        alignment=ft.alignment.center,
+                        padding=0,
+                    )
+                ]
+            )
+    
+          
     
     def create_point_button(self, on_click, text):
         return ft.Column(
@@ -294,9 +315,10 @@ class TextField:
         self.page = page
 
 
-    def create_textfield(self, text, password):
+    def create_textfield(self,value, text, password):
 
         return  ft.TextField(
+            value=value,
             label= text,
             password=password,
             label_style= ft.TextStyle(color=ft.colors.BLACK),
@@ -337,9 +359,10 @@ class SettingsMenu:
                     ft.Text(value=text, color=color)
                 ))
 
-    def create_settings_menu(self, color, itens):
+    def create_settings_menu(self, color, itens, col):
 
         return ft.Column(
+                col=col,
                 controls=[
                     ft.Container(
                         width=50,
@@ -372,31 +395,146 @@ class Forms:
         texttheme1 = textthemes.create_text_theme1()
 
         return ft.Container(
-        padding=0,
-        col=12,
-        content=ft.DataTable(
-            data_row_max_height=50,
-            columns=[
-                ft.DataColumn(ft.Text(value="")),
-                ft.DataColumn(ft.Text(value="")),
-            ],
-            rows=[
-                ft.DataRow(cells=[ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                  ft.DataCell(ft.Text(value=poste.ip, theme_style=ft.TextThemeStyle.TITLE_MEDIUM))]),
-                ft.DataRow(cells=[ft.DataCell(ft.Text(value="Situação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                  ft.DataCell(ft.Text(value=poste.situacao, theme_style=ft.TextThemeStyle.TITLE_MEDIUM))]),
-                ft.DataRow(cells=[ft.DataCell(ft.Text(value="Tipo de Lâmpada", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                  ft.DataCell(ft.Text(value=poste.tipo, theme_style=ft.TextThemeStyle.TITLE_MEDIUM))]),
-                ft.DataRow(cells=[ft.DataCell(ft.Text(value="Pontos", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                  ft.DataCell(ft.Text(value=poste.pontos, theme_style=ft.TextThemeStyle.TITLE_MEDIUM))]),
-                ft.DataRow(cells=[ft.DataCell(ft.Text(value="Bairro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                  ft.DataCell(ft.Text(value=poste.bairro, theme_style=ft.TextThemeStyle.TITLE_MEDIUM))]),
-                ft.DataRow(cells=[ft.DataCell(ft.Text(value="Logradouro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                  ft.DataCell(ft.Text(value=poste.logradouro, theme_style=ft.TextThemeStyle.TITLE_MEDIUM))]),
-            ],
-        ),
-        theme=texttheme1,
-    )
+            padding=0,
+            col=12,
+            theme=texttheme1,  
+            content=ft.DataTable(
+                data_row_max_height=50,
+                columns=[
+                    ft.DataColumn(ft.Text(value="")),  
+                    ft.DataColumn(ft.Text(value="")),  
+                ],
+                rows=[
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Latitude", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=poste.lat, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Longitude", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=poste.long, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=poste.ip, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Situação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=poste.situacao, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Tipo de Lâmpada", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=poste.tipo, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Pontos", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=poste.pontos, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Bairro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=poste.bairro, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Logradouro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=poste.logradouro, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                ],
+            ),
+        )
+
+
+    def create_add_forms(self, lat, long):
+
+        textthemes = TextTheme()
+        texttheme1 = textthemes.create_text_theme1()
+
+        textfields = TextField(self.page)
+        latitude_field = textfields.create_textfield(value=lat, text=None, password=False)
+        longitude_field = textfields.create_textfield(value=long, text=None, password=False)
+        ip_field = textfields.create_textfield(value="IP SOR-", text=None, password=False)
+        situacao_field = textfields.create_textfield(value=None, text=None, password=False)
+        tipo_field = textfields.create_textfield(value=None, text=None, password=False)
+        pontos_field = textfields.create_textfield(value=None, text=None, password=False)
+        bairro_field = textfields.create_textfield(value=None, text=None, password=False)
+        logradouro_field = textfields.create_textfield(value=None, text=None, password=False)
+
+        return ft.Container(
+            padding=0,
+            col=12,
+            theme=texttheme1,
+            content=ft.DataTable(
+                data_row_max_height=50,
+                columns=[
+                    ft.DataColumn(ft.Text(value="")),  # Primeira coluna
+                    ft.DataColumn(ft.Text(value="")),  # Segunda coluna
+                ],
+                rows=[
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Latitude", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=latitude_field, width=200)  # Ajuste da largura
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Longitude", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=longitude_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ip_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Situação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=situacao_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Tipo de Lâmpada", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=tipo_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Pontos", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=pontos_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Bairro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=bairro_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Logradouro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=logradouro_field, width=200)
+                        )
+                    ]),
+                ],
+            ),
+        )
 
 
 class LoadingPages:
