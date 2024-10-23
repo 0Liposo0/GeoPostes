@@ -458,7 +458,7 @@ class Forms:
         )
 
 
-    def create_add_forms(self, lat, long):
+    def create_add_forms(self, lat, long, ip, situ, tipo, pontos, bairro, logra):
 
         textthemes = TextTheme()
         texttheme1 = textthemes.create_text_theme1()
@@ -466,12 +466,12 @@ class Forms:
         textfields = TextField(self.page)
         latitude_field = textfields.create_textfield(value=lat, text=None, password=False)
         longitude_field = textfields.create_textfield(value=long, text=None, password=False)
-        ip_field = textfields.create_textfield(value="IP SOR-", text=None, password=False)
-        situacao_field = textfields.create_textfield(value=None, text=None, password=False)
-        tipo_field = textfields.create_textfield(value=None, text=None, password=False)
-        pontos_field = textfields.create_textfield(value=None, text=None, password=False)
-        bairro_field = textfields.create_textfield(value=None, text=None, password=False)
-        logradouro_field = textfields.create_textfield(value=None, text=None, password=False)
+        ip_field = textfields.create_textfield(value=ip, text=None, password=False)
+        situacao_field = textfields.create_textfield(value=situ, text=None, password=False)
+        tipo_field = textfields.create_textfield(value=tipo, text=None, password=False)
+        pontos_field = textfields.create_textfield(value=pontos, text=None, password=False)
+        bairro_field = textfields.create_textfield(value=bairro, text=None, password=False)
+        logradouro_field = textfields.create_textfield(value=logra, text=None, password=False)
 
         return ft.Container(
             padding=0,
