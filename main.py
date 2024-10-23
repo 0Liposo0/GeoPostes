@@ -12,6 +12,7 @@ def main(page: ft.Page):
     page.scroll = "auto"  
 
 
+
     loading = LoadingPages(page)
     loading.new_loading_page(page=page, layout=create_page_login(page))
 

@@ -81,13 +81,13 @@ def create_page_home(page):
     )
 
 
-def create_page_forms(page, poste, foto):
+def create_page_forms(page, poste, numero):
 
 
     loading = LoadingPages(page)
 
     buttons = Buttons(page)
-    ordem_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_order(page, poste, foto)),
+    ordem_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_order(page, poste, numero)),
                                         text="Chamado",
                                         color=ft.colors.RED,
                                         col=6,
@@ -107,8 +107,25 @@ def create_page_forms(page, poste, foto):
     forms1 = forms.create_forms(poste=poste)
 
     web_images = Web_Image(page)
-    url_imagem1 = web_images.get_poste_image_url(number=foto)
-    foto_poste = web_images.create_web_image(src=url_imagem1, col=12, height=400)
+    url_imagem1 = web_images.get_poste_image_url(numero)
+
+    if url_imagem1 == "Nulo":
+
+        texts = CallText(page)
+        text1 = texts.create_calltext(text="Sem foto",
+                                      color=ft.colors.BLACK,
+                                      size=15,
+                                      font=ft.FontWeight.W_400,
+                                      col=12,
+                                      padding=0,
+                                      )
+        foto_poste = ft.Container(col=12,height=400,alignment=ft.alignment.center,content=(text1))  
+
+    else:
+
+        foto_poste = web_images.create_web_image(src=url_imagem1, col=12, height=400)
+
+
 
     return ft.ResponsiveRow(
         columns=12,
@@ -227,7 +244,7 @@ def create_page_edit_forms(page, poste):
 
 
 
-def create_page_order(page, poste, foto):
+def create_page_order(page, poste, numero):
 
     calltexts = CallText(page)
     text1 = calltexts.create_container_calltext2(text=poste.ip)
@@ -265,7 +282,7 @@ def create_page_order(page, poste, foto):
                                         color=ft.colors.GREEN,
                                         col=6,
                                         padding=15,)
-    back_forms_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_forms(page, poste, foto)),
+    back_forms_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_forms(page, poste, numero)),
                                               text="Voltar",
                                               color=ft.colors.AMBER,
                                               col=6,
@@ -563,7 +580,7 @@ class Marker:
             def create_on_click(poste=poste, number=number):
                 return lambda e: loading.new_loading_page(
                     page=self.page,
-                    layout=create_page_forms(self.page, poste, foto=number)
+                    layout=create_page_forms(self.page, poste, number)
                 )
 
             # Cria o botão com o valor correspondente de 'number'

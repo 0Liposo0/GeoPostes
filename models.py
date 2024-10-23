@@ -148,11 +148,10 @@ class Web_Image:
             return None
         
 
-    def get_poste_image_url(self, number):
+    def get_poste_image_url(self, numero):
         SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
         SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
-        TABLE_NAME = "images_postes"
-        COLUMN_NUMBER = number
+
 
         headers = {
             "apikey": SUPABASE_KEY,
@@ -160,7 +159,7 @@ class Web_Image:
         }
         
         # Faz a requisição GET para buscar pela coluna 'number'
-        response = requests.get(f"{SUPABASE_URL}/rest/v1/{TABLE_NAME}?number=eq.{COLUMN_NUMBER}", headers=headers)
+        response = requests.get(f"{SUPABASE_URL}/rest/v1/points_capeladoalto?number=eq.{numero}", headers=headers)
         
         if response.status_code == 200 and response.json():
             # Pegando a URL da imagem a partir da coluna 'url'
