@@ -3,7 +3,8 @@ from models import *
 import requests
 import threading
 import flet.map as map
-
+from PIL import Image
+import io
 
 
 
@@ -143,7 +144,9 @@ def create_page_forms(page, poste, numero):
 
 def create_page_add_forms(page, lat, long):
 
-    def send_point(object):
+    def send_point(object, image):
+
+        print(f"Testando a imagem 1: {image}")
 
         lat = object.content.rows[0].cells[1].content.content.value
         long = object.content.rows[1].cells[1].content.content.value
@@ -153,18 +156,18 @@ def create_page_add_forms(page, lat, long):
         pontos = object.content.rows[5].cells[1].content.content.value
         bairro = object.content.rows[6].cells[1].content.content.value
         logra = object.content.rows[7].cells[1].content.content.value
+        numero = int(ip.split('-')[1])
 
-        add_point(page, lat, long, ip, situ, tipo, pontos, bairro, logra)
+
+        add_point(page, numero, lat, long, ip, situ, tipo, pontos, bairro, logra, image=image)
      
-   
-
     loading = LoadingPages(page)
 
     forms = Forms(page)
     forms1 = forms.create_add_forms(lat, long, ip="IP SOR-", situ=None, tipo=None, pontos=None, bairro=None, logra=None)
 
     buttons = Buttons(page)
-    add_button = buttons.create_button(on_click=lambda e :send_point(forms1),
+    add_button = buttons.create_button(on_click=lambda e :send_point(forms1, container_foto.content),
                                             text="Adicionar",
                                             color=ft.colors.GREEN,
                                             col=6,
@@ -176,11 +179,39 @@ def create_page_add_forms(page, lat, long):
                                             padding=15,)
     
 
+    container_foto = ft.Container(col=8,
+                                  height=400,
+                                  expand=True,
+                                  alignment=ft.alignment.center,
+                                    border=ft.Border(
+                                        left=ft.BorderSide(2, ft.colors.BLACK),
+                                        top=ft.BorderSide(2, ft.colors.BLACK),
+                                        right=ft.BorderSide(2, ft.colors.BLACK),
+                                        bottom=ft.BorderSide(2, ft.colors.BLACK),
+                                        ),
+                                    content=None
+                                  )  
+    photos = GalleryPicker(page, container_foto)
+    icon_camera = ft.IconButton(
+        icon=ft.icons.CAMERA_ALT,
+        icon_color=ft.colors.AMBER,
+        expand=True,
+        scale=2.3,
+        on_click=photos.open_gallery,  # Chama a função diretamente
+        alignment=ft.alignment.center,
+        padding=0,
+    )
+
+    container1 = ft.Container(padding=10)
+ 
 
     return ft.ResponsiveRow(
         columns=12,
         controls=[
             forms1,
+            container1,
+            icon_camera,
+            container_foto,
             add_button, 
             back_home_button   
         ],
@@ -812,9 +843,8 @@ def register(username, email, number, password1, password2, page):
     threading.Timer(2.0, pause_and_continue).start()
 
 
-def add_point(page, lat, long, ip, situ, tipo, pontos, bairro, logra):
+def add_point(page, numero, lat, long, ip, situ, tipo, pontos, bairro, logra, image):
 
-    numero = int(ip.split('-')[1])
 
     page.snack_bar = ft.SnackBar(
             content=ft.Text("Adicionando ponto..."),
@@ -824,7 +854,27 @@ def add_point(page, lat, long, ip, situ, tipo, pontos, bairro, logra):
     page.snack_bar.open = True
     page.update()
 
-    def pause_and_continue():
+    def pause_and_continue(image):
+
+
+        def image_path_to_bytes(image_path):
+            # Abre a imagem a partir do caminho
+            with Image.open(image_path) as img:
+                # Rotaciona a imagem 90 graus para a direita
+                rotated_img = img.rotate(-90, expand=True)  # -90 graus para sentido horário
+                
+                # Cria um fluxo de bytes
+                byte_stream = io.BytesIO()
+                # Salva a imagem rotacionada no fluxo de bytes
+                rotated_img.save(byte_stream, format='JPEG')  # ou 'PNG' se necessário
+                
+                # Move o ponteiro do fluxo de bytes para o início
+                byte_stream.seek(0)
+                
+                # Retorna os bytes da imagem
+                return byte_stream.read()
+
+
 
         # Verificar se todos os campos estão preenchidos
         if not lat or not long or not ip or not situ or not tipo or not pontos or not bairro or not logra:
@@ -877,6 +927,18 @@ def add_point(page, lat, long, ip, situ, tipo, pontos, bairro, logra):
             page.snack_bar.open = True
             page.update()
             return
+        
+
+        image_url = "Nulo"
+        # ..............................
+        #Inicia o processamento da imagem
+        # ..............................
+        if image != None:
+            im_path = image.src
+            image_bytes = image_path_to_bytes(im_path)
+            send_images = SendImage()
+            image_url = send_images.upload_image(image_bytes, numero)
+
 
 
         # Obter o maior valor de user_id na tabela
@@ -901,6 +963,7 @@ def add_point(page, lat, long, ip, situ, tipo, pontos, bairro, logra):
                 "pontos": pontos,
                 "bairro": bairro,
                 "logradouro": logra,
+                "url": image_url
             }
 
             # Fazer a solicitação POST para inserir o novo registro
@@ -916,6 +979,10 @@ def add_point(page, lat, long, ip, situ, tipo, pontos, bairro, logra):
                     content=ft.Text("Ponto adicionado com sucesso"),
                     bgcolor=ft.colors.GREEN
                 )
+
+                loading = LoadingPages(page)
+                loading.new_loading_page(page=page, layout=create_page_home(page))
+                
             else:
                 print(f"Erro ao inserir ponto: {response.status_code}")
                 print(f"Resposta do erro: {response.text}")
@@ -936,10 +1003,11 @@ def add_point(page, lat, long, ip, situ, tipo, pontos, bairro, logra):
         page.update()
 
     # Iniciar o temporizador
-    threading.Timer(2.0, pause_and_continue).start()
+    threading.Timer(2.0, pause_and_continue(image)).start()
 
 
 def edit_point(page, lat, long, ip, situ, tipo, pontos, bairro, logra):
+
 
     numero = int(ip.split('-')[1])
 
@@ -1061,22 +1129,57 @@ def delete_point(page, numero):
         }
 
         # Excluir o ponto cujo número seja igual à variável `numero`
-        response = requests.delete(
+        response1 = requests.delete(
             f"{SUPABASE_URL}/rest/v1/points_capeladoalto?number=eq.{numero}",
             headers=headers,
         )
 
+        storage_path = f'postes_images_points/postes/{numero}.jpg'
+
+        response2 = requests.delete(
+            f"{SUPABASE_URL}/storage/v1/object/{storage_path}",
+            headers=headers,
+        )
+
         # Verificar se a exclusão foi bem-sucedida
-        if response.status_code == 204:
-            page.snack_bar = ft.SnackBar(
-                content=ft.Text("Ponto excluído com sucesso"),
-                bgcolor=ft.colors.GREEN
-            )
+        if response1.status_code == 204:
+
+            headers2 = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            'Content-Type': 'image/jpeg'
+            }
+
+            storage_path = f'postes_images_points/postes/{numero}.jpg'
+
+            response2 = requests.delete(
+                f"{SUPABASE_URL}/storage/v1/object/{storage_path}",
+                headers=headers2,
+            )            
+
+            if response2.status_code == 200:
+
+                page.snack_bar = ft.SnackBar(
+                    content=ft.Text("Ponto e imagem excluidos com sucesso"),
+                    bgcolor=ft.colors.GREEN
+                )
+                loading = LoadingPages(page)
+                loading.new_loading_page(page=page, layout=create_page_home(page))
+
+            else:
+
+                page.snack_bar = ft.SnackBar(
+                    content=ft.Text("Ponto excluido mas imagem mantida"),
+                    bgcolor=ft.colors.AMBER
+                )
+                loading = LoadingPages(page)
+                loading.new_loading_page(page=page, layout=create_page_home(page))
+
         else:
-            print(f"Erro ao excluir ponto: {response.status_code}")
-            print(f"Resposta do erro: {response.text}")
+            print(f"Erro ao excluir ponto: {response1.status_code}")
+            print(f"Resposta do erro: {response1.text}")
             page.snack_bar = ft.SnackBar(
-                content=ft.Text(f"Erro ao excluir ponto: {response.text}"),
+                content=ft.Text(f"Erro ao excluir ponto: {response1.text}"),
                 bgcolor=ft.colors.RED
             )
 

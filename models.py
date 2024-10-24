@@ -2,6 +2,8 @@ import flet as ft
 import requests
 import threading
 import flet.map as map
+from PIL import Image
+import io
 
 class Poste:
 
@@ -550,4 +552,83 @@ class LoadingPages:
         page.update()
  
 
+class GalleryPicker:
 
+    def __init__(self, page, object):
+
+        self.page = page
+        self.object = object
+        self.file_picker = ft.FilePicker(on_result=self.on_image_selected) # cria o objeto de seleção de arquivos e adiciona uma chamada de função para quando arquivo for escolhido
+        self.page.overlay.append(self.file_picker) # adiciona o objeto a sebreposição da página
+
+        # Atributo para armazenar a imagem temporariamente
+        self.selected_image = None
+
+    def open_gallery(self, e):   # e representa o clique do botão que disparou o evento
+        self.file_picker.pick_files(               # chama a janela de seleção de arquivos
+            allow_multiple=False,
+            file_type=ft.FilePickerFileType.IMAGE
+        )
+
+    def on_image_selected(self, e: ft.FilePickerResultEvent):
+
+            self.page.snack_bar = ft.SnackBar(
+                content=ft.Text(value="Adicionando imagem...", color=ft.colors.BLACK),
+                duration=2000,
+                bgcolor=ft.colors.AMBER,
+            )
+            self.page.snack_bar.open = True
+
+            self.selected_image = e.files[0]  # Armazena a imagem selecionada
+            
+            image = ft.Image(src=self.selected_image.path)  
+            
+
+            self.object.content = image  
+            self.page.update()  
+
+
+class SendImage:
+    def __init__(self):
+        self.supabase_url = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
+        self.supabase_key = (
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
+        )
+
+    def upload_image(self, image_data, numero):
+        # O caminho onde a imagem será armazenada no Supabase
+        storage_path = f'postes_images_points/postes/{numero}.jpg'
+
+        # Cabeçalhos para a requisição de upload
+        headers = {
+            'Authorization': f'Bearer {self.supabase_key}',
+            'Content-Type': 'image/jpeg'
+        }
+
+        # Fazendo a requisição POST para enviar a imagem
+        response = requests.post(
+            f'{self.supabase_url}/storage/v1/object/{storage_path}',
+            headers=headers,
+            data=image_data
+        )
+
+        if response.status_code == 200:
+            print("Imagem enviada com sucesso!")
+
+            # Construindo a URL pública correta da imagem
+            public_url = f"{self.supabase_url}/storage/v1/object/public/{storage_path}"
+            
+            # Verificando se a imagem é acessível
+            response = requests.get(public_url)
+
+            if response.status_code == 200:
+                print(f"Imagem encontrada: {public_url}")
+                return public_url  # Retorna a URL pública da imagem
+
+            else:
+                print(f"Erro ao buscar a imagem: {response.status_code} - {response.text}")
+                return None
+
+        else:
+            print("Erro ao enviar imagem:", response.json())
+            return None
