@@ -113,20 +113,26 @@ def create_page_home(page, coord_initial_x, coord_initial_y):
 
 
 
-    geo = GeoPosition(page, maps, point_location, current_text_lat, current_text_lon)
+    geo = GeoPosition(page, point_location, current_text_lat, current_text_lon)
    
 
-    page.floating_action_button = ft.FloatingActionButton(
-                    icon=ft.icons.MY_LOCATION,
-                    bgcolor=ft.colors.WHITE,
-                    foreground_color=ft.colors.RED,
-                    on_click= geo.get_permission 
-                )
+    button_location = page.floating_action_button = ft.FloatingActionButton(
+                        icon=ft.icons.MY_LOCATION,
+                        bgcolor=ft.colors.WHITE,
+                        foreground_color=ft.colors.RED,
+                        on_click= geo.get_permission 
+                    )
             
         
+    def call_update_map():
 
+        if point_location.coordinates is not None:
+            button_location.foreground_color = ft.colors.GREEN
 
+        maps.update_position()
+        threading.Timer(1, call_update_map).start()
 
+    call_update_map()
 
     container1 = ft.Container(padding=10)
     container2 = ft.Container(padding=5)
@@ -556,8 +562,6 @@ class Map:
         mappoints = markers.create_points()
         self.MarkerLayer = mappoints
 
-        print(f"\n valor de point_location ao iniciar o mapa {self.point_location.coordinates} \n")
-
         # Armazenar o estado atual do centro e zoom do mapa
         self.current_lat = self.coord_initial_x
         self.current_lon = self.coord_initial_y
@@ -648,19 +652,22 @@ class Map:
 
     def update_position(self):
 
-        # Remover marcador antigo se ele já existir na camada
-        if self.point_location in self.MarkerLayer:
-            self.MarkerLayer.remove(self.point_location)
-            print(f"\n O marcador foi removido  \n")
-            self.page.update()
+        if self.point_location.coordinates is not None:
 
-        # Adicionar o marcador atualizado
-        else:      
-            self.MarkerLayer.append(self.point_location)
-            print(f"\n O marcador foi adicionado  \n")
-            self.page.update()
+            # Remover marcador antigo se ele já existir na camada
+            if self.point_location in self.MarkerLayer:
+                self.MarkerLayer.remove(self.point_location)
+                self.page.update()
 
-        self.page.update() 
+            # Adicionar o marcador atualizado
+            else:      
+                self.MarkerLayer.append(self.point_location)
+                self.page.update()
+
+            self.page.update() 
+        
+        else:
+            None
 
 
 class Marker:
@@ -1289,9 +1296,8 @@ def delete_point(page, coord_initial_x, coord_initial_y, numero):
 
 class GeoPosition:
 
-    def __init__(self, page, mapa, point_location, current_lat, current_lon):
+    def __init__(self, page, point_location, current_lat, current_lon):
         self.page = page
-        self.mapa = mapa
         self.point_location = point_location
         self.current_lat = current_lat
         self.current_lon = current_lon
@@ -1302,14 +1308,11 @@ class GeoPosition:
             self.current_lat.content.value = f"{e.latitude:.6f}"
             self.current_lon.content.value = f"{e.longitude:.6f}"
             self.point_location.coordinates = map.MapLatitudeLongitude(e.latitude, e.longitude)
-            teste = self.mapa.update_position()
             self.page.update()
 
 
         self.gl = ft.Geolocator(
-                    location_settings=ft.GeolocatorSettings(
-                        accuracy=ft.GeolocatorPositionAccuracy.HIGH
-                    ),
+                    location_settings=ft.GeolocatorAppleSettings(),
                     on_position_change=handle_position_change,
                     )
         self.page.overlay.append(self.gl)
