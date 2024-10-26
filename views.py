@@ -89,50 +89,51 @@ def create_page_home(page, coord_initial_x, coord_initial_y):
 
 
     buttons = Buttons(page)
-    add_button = buttons.create_add_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_add_forms(page, coord_text_lat.content.value, coord_text_lon.content.value)),
-                                           col=2)
-
+   
 
     maps = Map(page, point_location, coord_initial_x, coord_initial_y, coord_text_lat, coord_text_lon, coord_text_zoom)
     mapa1 = maps.create_map()
     
-    
-
-    def go_current_location(e):
-
-        if point_location.coordinates is not None:
-            print(" ")
-            print("Testando")
-            print(" ")
-            lat = str(point_location.coordinates.latitude)
-            lon = str(point_location.coordinates.longitude)
-            maps.update_map_coordinates(lat, lon)
-        page.update()
-            
-    page.controls.append(mapa1)
-
-
-
     geo = GeoPosition(page, point_location, current_text_lat, current_text_lon)
    
 
-    button_location = page.floating_action_button = ft.FloatingActionButton(
-                        icon=ft.icons.MY_LOCATION,
-                        bgcolor=ft.colors.WHITE,
-                        foreground_color=ft.colors.RED,
-                        on_click= geo.get_permission 
+    page.floating_action_button = ft.FloatingActionButton(
+                        icon=ft.icons.ADD_CIRCLE,
+                        bgcolor=ft.colors.GREEN,
+                        foreground_color=ft.colors.BLACK,
+                        on_click= lambda e: loading.new_loading_page(page=page, layout=create_page_add_forms(page, coord_text_lat.content.value, coord_text_lon.content.value)) 
                     )
             
+    def go_to_location(e=None):
         
+        if point_location.coordinates is not None:
+            lat = str(point_location.coordinates.latitude)
+            lon = str(point_location.coordinates.longitude)
+            loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x=lat, coord_initial_y=lon))
+
+
+    button_location = buttons.create_call_location_button(on_click=geo.get_permission,
+                                                          text=" ",
+                                                          color=ft.colors.WHITE70,
+                                                          col=2,
+                                                          padding=0,
+                                                          on_long_press=go_to_location,
+                                                          )          
+
+
     def call_update_map():
 
         if point_location.coordinates is not None:
-            button_location.foreground_color = ft.colors.GREEN
+            button_location.controls[0].content.icon_color = ft.colors.GREEN
+        else:
+            button_location.controls[0].content.icon_color = ft.colors.RED    
 
         maps.update_position()
         threading.Timer(1, call_update_map).start()
 
     call_update_map()
+
+
 
     container1 = ft.Container(padding=10)
     container2 = ft.Container(padding=5)
@@ -143,7 +144,7 @@ def create_page_home(page, coord_initial_x, coord_initial_y):
         controls=[
                 container2,
                 menu,
-                add_button,
+                button_location,
                 coord_text_lat,
                 coord_text_lon,
                 coord_text_zoom,
@@ -641,14 +642,6 @@ class Map:
                 ]
             )
            
-    
-    def update_map_coordinates(self, lat, lon):
-
-        print(self.google.configuration.initial_center)
-        print(f"/n Atualizando mapa para: {lat}, {lon}")  
-        self.google.configuration.initial_center = map.MapLatitudeLongitude(lat, lon)
-        print(self.google.configuration.initial_center)
-        self.page.update() 
 
     def update_position(self):
 
@@ -1327,5 +1320,9 @@ class GeoPosition:
             await self.gl.request_permission_async(wait_timeout=60)   
         else:
             print(f" \n Status 2: {status} \n")
+
+      
+               
+
 
 

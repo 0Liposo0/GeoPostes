@@ -47,7 +47,7 @@ class Buttons:
         self.page = page
     
     # Método base para criar os botões
-    def create_button(self, on_click, text, color, col, padding):
+    def create_button(self, on_click, text, color, col, padding, on_long_press=None):
         return ft.Column(
             horizontal_alignment = ft.CrossAxisAlignment.CENTER,
             col=col,
@@ -62,28 +62,36 @@ class Buttons:
                                 bgcolor=color,
                                 color=ft.colors.WHITE,
                                 on_click=on_click,
+                                on_long_press=on_long_press,
                                 width=150,
                             )
                         )
                     ]    
                  )
     
-    def create_add_button(self, on_click, col):
-
-            return  ft.Column(
-                col=col,
-                controls=[
-                    ft.IconButton(
-                        icon=ft.icons.ADD_CIRCLE,
-                        icon_color=ft.colors.GREEN,
-                        expand=True,
-                        scale=2.3,
-                        on_click=on_click,
-                        alignment=ft.alignment.center,
-                        padding=0,
-                    )
-                ]
-            )
+    def create_call_location_button(self, on_click, text, color, col, padding, on_long_press=None):
+        return ft.Column(
+            horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+            col=col,
+            controls=[
+                    ft.Container(
+                            alignment=ft.alignment.center,
+                            col=col,
+                            padding=padding,
+                            expand=True,
+                            content=ft.ElevatedButton(
+                                text=text,
+                                icon=ft.icons.MY_LOCATION,
+                                icon_color=ft.colors.GREEN,
+                                bgcolor=color,
+                                color=ft.colors.WHITE,
+                                on_click=on_click,
+                                on_long_press=on_long_press,
+                                width=150,
+                            )
+                        )
+                    ]    
+                 )
     
           
     
@@ -595,6 +603,7 @@ class GalleryPicker:
                 bgcolor=ft.colors.AMBER,
             )
             self.page.snack_bar.open = True
+
 
             selected_image = e.files[0]  
 
