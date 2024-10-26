@@ -3,19 +3,10 @@ from models import *
 import requests
 import threading
 import flet.map as map
-from PIL import Image
-import io
 
 
 
-
-def create_page_home(page):
-
-    web_images = Web_Image(page)
-    url_imagem1 = web_images.get_image_url(name="titulo_geopostes")
-    home_title = web_images.create_web_image(src=url_imagem1, col=12, height=120)
-    url_imagem2 = web_images.get_image_url(name="icone_facens")
-    home_facens = web_images.create_web_image(src=url_imagem2, col=12, height=70)
+def create_page_home(page, coord_initial_x, coord_initial_y):
 
     menus = SettingsMenu(page)
     itens = []
@@ -31,37 +22,115 @@ def create_page_home(page):
 
     loading = LoadingPages(page)
 
+    
     calltexts = CallText(page)
     texto_chamada = calltexts.create_container_calltext1()
-    coord_text_lat = calltexts.create_calltext(text="-23.339500000000",
+    coord_text_lat = calltexts.create_calltext(
+                      visible=False,
+                      text=coord_initial_x,
+                      color=ft.colors.BLACK,
+                      size=15,
+                      font=ft.FontWeight.W_600,
+                      col=12,
+                      padding=0,)
+    coord_text_lon = calltexts.create_calltext(
+                      visible=False,
+                      text=coord_initial_y,
                       color=ft.colors.BLACK,
                       size=15,
                       font=ft.FontWeight.W_600,
                       col=12,
                       padding=0)
-    coord_text_lon = calltexts.create_calltext(text="-47.823750000000",
+    coord_text_zoom = calltexts.create_calltext(
+                      visible=True,
+                      text="19",
                       color=ft.colors.BLACK,
                       size=15,
                       font=ft.FontWeight.W_600,
                       col=12,
                       padding=0)
-    coord_text_zoom = calltexts.create_calltext(text="19",
+    current_text_lat = calltexts.create_calltext(
+                      visible=False,
+                      text=None,
                       color=ft.colors.BLACK,
                       size=15,
                       font=ft.FontWeight.W_600,
                       col=12,
-                      padding=0)
-    
-    maps = Map(page, coord_text_lat, coord_text_lon, coord_text_zoom)
-    mapa1 = maps.create_map()
+                      padding=0,)
+    current_text_lon = calltexts.create_calltext(
+                      visible=False,
+                      text=None,
+                      color=ft.colors.BLACK,
+                      size=15,
+                      font=ft.FontWeight.W_600,
+                      col=12,
+                      padding=0,)
+
+    point_location = map.Marker(
+                content=ft.Column(
+                            spacing=0,
+                            controls=[
+                                ft.ElevatedButton(
+                                    on_click=None,
+                                    width=20,
+                                    height=20,
+                                    bgcolor=ft.colors.BLUE,
+                                    text=" ",
+                                    style=ft.ButtonStyle(
+                                        shape=ft.RoundedRectangleBorder(radius=10),
+                                    ),
+                                ),
+                            ]
+                        ),
+                coordinates=None,
+                rotate=True, 
+                )
+
+
 
     buttons = Buttons(page)
     add_button = buttons.create_add_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_add_forms(page, coord_text_lat.content.value, coord_text_lon.content.value)),
                                            col=2)
+
+
+    maps = Map(page, point_location, coord_initial_x, coord_initial_y, coord_text_lat, coord_text_lon, coord_text_zoom)
+    mapa1 = maps.create_map()
     
+    
+
+    def go_current_location(e):
+
+        if point_location.coordinates is not None:
+            print(" ")
+            print("Testando")
+            print(" ")
+            lat = str(point_location.coordinates.latitude)
+            lon = str(point_location.coordinates.longitude)
+            maps.update_map_coordinates(lat, lon)
+        page.update()
+            
+    page.controls.append(mapa1)
+
+
+
+    geo = GeoPosition(page, maps, point_location, current_text_lat, current_text_lon)
+   
+
+    page.floating_action_button = ft.FloatingActionButton(
+                    icon=ft.icons.MY_LOCATION,
+                    bgcolor=ft.colors.WHITE,
+                    foreground_color=ft.colors.RED,
+                    on_click= geo.get_permission 
+                )
+            
+        
+
+
+
 
     container1 = ft.Container(padding=10)
     container2 = ft.Container(padding=5)
+
 
     return ft.ResponsiveRow(
         columns=12,
@@ -75,30 +144,33 @@ def create_page_home(page):
                 mapa1,
                 texto_chamada,
                 container1,
-                home_facens,
                 ],
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
 
-def create_page_forms(page, poste, numero):
+
+
+
+
+def create_page_forms(page, poste, numero, coord_initial_x, coord_initial_y):
 
 
     loading = LoadingPages(page)
 
     buttons = Buttons(page)
-    ordem_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_order(page, poste, numero)),
+    ordem_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_order(page, poste, numero, coord_initial_x, coord_initial_y)),
                                         text="Chamado",
                                         color=ft.colors.RED,
                                         col=6,
                                         padding=5,)
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page)),
+    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y)),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
                                             col=12,
                                             padding=5,)
-    edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_edit_forms(page, poste)),
+    edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_edit_forms(page, poste, coord_initial_x, coord_initial_y)),
                                             text="Editar",
                                             color=ft.colors.GREEN,
                                             col=6,
@@ -113,20 +185,20 @@ def create_page_forms(page, poste, numero):
     if url_imagem1 == "Nulo":
 
         texts = CallText(page)
-        text1 = texts.create_calltext(text="Sem foto",
-                                      color=ft.colors.BLACK,
-                                      size=15,
-                                      font=ft.FontWeight.W_400,
-                                      col=12,
-                                      padding=0,
-                                      )
+        text1 = texts.create_calltext(
+                                    visible=True,
+                                    text="Sem foto",
+                                    color=ft.colors.BLACK,
+                                    size=15,
+                                    font=ft.FontWeight.W_400,
+                                    col=12,
+                                    padding=0,
+                                    )
         foto_poste = ft.Container(col=12,height=400,alignment=ft.alignment.center,content=(text1))  
 
     else:
 
         foto_poste = web_images.create_web_image(src=url_imagem1, col=12, height=400)
-
-
 
     return ft.ResponsiveRow(
         columns=12,
@@ -144,9 +216,8 @@ def create_page_forms(page, poste, numero):
 
 def create_page_add_forms(page, lat, long):
 
-    def send_point(object, image):
 
-        print(f"Testando a imagem 1: {image}")
+    def send_point(object, image):
 
         lat = object.content.rows[0].cells[1].content.content.value
         long = object.content.rows[1].cells[1].content.content.value
@@ -167,19 +238,19 @@ def create_page_add_forms(page, lat, long):
     forms1 = forms.create_add_forms(lat, long, ip="IP SOR-", situ=None, tipo=None, pontos=None, bairro=None, logra=None)
 
     buttons = Buttons(page)
-    add_button = buttons.create_button(on_click=lambda e :send_point(forms1, container_foto.content),
+    add_button = buttons.create_button(on_click=lambda e :send_point(forms1, image_bytes[0]),
                                             text="Adicionar",
                                             color=ft.colors.GREEN,
                                             col=6,
                                             padding=15,)
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page)),
+    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, lat, long)),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
                                             col=6,
                                             padding=15,)
     
 
-    container_foto = ft.Container(col=8,
+    image_temp = ft.Container(col=8,
                                   height=400,
                                   expand=True,
                                   alignment=ft.alignment.center,
@@ -190,8 +261,9 @@ def create_page_add_forms(page, lat, long):
                                         bottom=ft.BorderSide(2, ft.colors.BLACK),
                                         ),
                                     content=None
-                                  )  
-    photos = GalleryPicker(page, container_foto)
+                                  )
+    image_bytes = [None]
+    photos = GalleryPicker(page, image_temp, image_bytes)
     icon_camera = ft.IconButton(
         icon=ft.icons.CAMERA_ALT,
         icon_color=ft.colors.AMBER,
@@ -202,6 +274,7 @@ def create_page_add_forms(page, lat, long):
         padding=0,
     )
 
+
     container1 = ft.Container(padding=10)
  
 
@@ -211,7 +284,7 @@ def create_page_add_forms(page, lat, long):
             forms1,
             container1,
             icon_camera,
-            container_foto,
+            image_temp,
             add_button, 
             back_home_button   
         ],
@@ -221,9 +294,9 @@ def create_page_add_forms(page, lat, long):
     )
 
 
-def create_page_edit_forms(page, poste):
+def create_page_edit_forms(page, poste, coord_initial_x, coord_initial_y):
 
-    def send_point(object):
+    def send_point(object, coord_initial_x, coord_initial_y):
 
         lat = object.content.rows[0].cells[1].content.content.value
         long = object.content.rows[1].cells[1].content.content.value
@@ -234,7 +307,7 @@ def create_page_edit_forms(page, poste):
         bairro = object.content.rows[6].cells[1].content.content.value
         logra = object.content.rows[7].cells[1].content.content.value
 
-        edit_point(page, lat, long, ip, situ, tipo, pontos, bairro, logra)
+        edit_point(page, coord_initial_x, coord_initial_y, lat, long, ip, situ, tipo, pontos, bairro, logra)
      
     loading = LoadingPages(page)
 
@@ -242,17 +315,17 @@ def create_page_edit_forms(page, poste):
     forms1 = forms.create_add_forms(poste.lat, poste.long, poste.ip, poste.situacao, poste.tipo, poste.pontos, poste.bairro, poste.logradouro)
 
     buttons = Buttons(page)
-    add_button = buttons.create_button(on_click=lambda e :send_point(forms1),
+    add_button = buttons.create_button(on_click=lambda e :send_point(forms1, coord_initial_x, coord_initial_y),
                                             text="Salvar",
                                             color=ft.colors.GREEN,
                                             col=6,
                                             padding=5,)
-    delete_button = buttons.create_button(on_click=lambda e :delete_point(page, poste.number),
+    delete_button = buttons.create_button(on_click=lambda e :delete_point(page, coord_initial_x, coord_initial_y, poste.number),
                                             text="Excluir",
                                             color=ft.colors.RED,
                                             col=6,
                                             padding=5,)
-    back_home_button = buttons.create_button(on_click=lambda e :loading.new_loading_page(page=page, layout=create_page_home(page)),
+    back_home_button = buttons.create_button(on_click=lambda e :loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y)),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
                                             col=7,
@@ -273,25 +346,27 @@ def create_page_edit_forms(page, poste):
     )
  
 
-
-
-def create_page_order(page, poste, numero):
+def create_page_order(page, poste, numero, coord_initial_x, coord_initial_y):
 
     calltexts = CallText(page)
     text1 = calltexts.create_container_calltext2(text=poste.ip)
-    text2 = calltexts.create_calltext(text="Qual o motivo da ordem de serviço",
+    text2 = calltexts.create_calltext(
+                      visible=True,
+                      text="Qual o motivo da ordem de serviço",
                       color=ft.colors.BLACK,
                       size=30,
                       font=ft.FontWeight.W_900,
                       col=12,
                       padding=20)
-    text3 = calltexts.create_calltext(text="Ordem enviada com sucesso",
-                                           color=ft.colors.GREEN,
-                                           size=30,
-                                           font=None,
-                                           col=12,
-                                           padding=None
-                                           )
+    text3 = calltexts.create_calltext(
+                        visible=True,
+                        text="Ordem enviada com sucesso",
+                        color=ft.colors.GREEN,
+                        size=30,
+                        font=None,
+                        col=12,
+                        padding=None
+                        )
 
 
     checkboxes = CheckBox(page)
@@ -313,7 +388,7 @@ def create_page_order(page, poste, numero):
                                         color=ft.colors.GREEN,
                                         col=6,
                                         padding=15,)
-    back_forms_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_forms(page, poste, numero)),
+    back_forms_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_forms(page, poste, numero, coord_initial_x, coord_initial_y)),
                                               text="Voltar",
                                               color=ft.colors.AMBER,
                                               col=6,
@@ -461,20 +536,32 @@ def create_page_register(page):
 
 class Map:
 
-    def __init__(self, page, coord_text_lat, coord_text_lon, coord_text_zoom):
+    def __init__(self, page, point_location, coord_initial_x, coord_initial_y, coord_text_lat, coord_text_lon, coord_text_zoom):
         self.page = page
+        self.point_location = point_location
+        self.coord_initial_x = coord_initial_x
+        self.coord_initial_y = coord_initial_y
         self.coord_text_lat = coord_text_lat
         self.coord_text_lon = coord_text_lon
         self.coord_text_zoom = coord_text_zoom
+
+        self.google = None
+
+        self.MarkerLayer = None
 
 
     def create_map(self):
 
         markers = Marker(self.page)
         mappoints = markers.create_points()
-        MarkerLayer = mappoints
+        self.MarkerLayer = mappoints
 
+        print(f"\n valor de point_location ao iniciar o mapa {self.point_location.coordinates} \n")
 
+        # Armazenar o estado atual do centro e zoom do mapa
+        self.current_lat = self.coord_initial_x
+        self.current_lon = self.coord_initial_y
+        self.current_zoom = 19
 
         def handle_event(e: map.MapEvent):
             self.coord_text_lat.content.value = f"{e.center.latitude:.6f}"
@@ -483,14 +570,14 @@ class Map:
             self.coord_text_lat.update()
             self.coord_text_lon.update()
             self.coord_text_zoom.update()
+
             self.page.update()
-            
 
 
-        google = map.Map(
+        self.google = map.Map(
                     expand=True,  
                     configuration=map.MapConfiguration(
-                        initial_center=map.MapLatitudeLongitude(-23.3396, -47.8238),  
+                        initial_center=map.MapLatitudeLongitude(self.coord_initial_x, self.coord_initial_y),  
                         initial_zoom=19,
                         on_event=handle_event,
                     ),
@@ -498,12 +585,13 @@ class Map:
                         map.TileLayer(
                             url_template="https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                         ),
-                        map.MarkerLayer(MarkerLayer),
+                        map.MarkerLayer(self.MarkerLayer),
                         map.RichAttribution(
                             attributions=[map.TextSourceAttribution(text="Teste")]
                         )
                     ],
                 )
+        
 
         return ft.Column(
                 visible=True,
@@ -531,7 +619,7 @@ class Map:
                             content=ft.Stack(
                                 expand=True,
                                 controls=[
-                                    google,  
+                                    self.google,  
                                     ft.TransparentPointer( 
                                             content=ft.Container(
                                                 alignment=ft.alignment.center,  
@@ -548,6 +636,31 @@ class Map:
                     )
                 ]
             )
+           
+    
+    def update_map_coordinates(self, lat, lon):
+
+        print(self.google.configuration.initial_center)
+        print(f"/n Atualizando mapa para: {lat}, {lon}")  
+        self.google.configuration.initial_center = map.MapLatitudeLongitude(lat, lon)
+        print(self.google.configuration.initial_center)
+        self.page.update() 
+
+    def update_position(self):
+
+        # Remover marcador antigo se ele já existir na camada
+        if self.point_location in self.MarkerLayer:
+            self.MarkerLayer.remove(self.point_location)
+            print(f"\n O marcador foi removido  \n")
+            self.page.update()
+
+        # Adicionar o marcador atualizado
+        else:      
+            self.MarkerLayer.append(self.point_location)
+            print(f"\n O marcador foi adicionado  \n")
+            self.page.update()
+
+        self.page.update() 
 
 
 class Marker:
@@ -608,10 +721,10 @@ class Marker:
             loading = LoadingPages(self.page)
             poste = Poste(number, name, situacao, tipo, pontos, bairro, logradouro, Latitude, Longitude)
 
-            def create_on_click(poste=poste, number=number):
+            def create_on_click(poste=poste, number=number, Latitude=Latitude, Longitude=Longitude):
                 return lambda e: loading.new_loading_page(
                     page=self.page,
-                    layout=create_page_forms(self.page, poste, number)
+                    layout=create_page_forms(self.page, poste, number, Latitude, Longitude)
                 )
 
             # Cria o botão com o valor correspondente de 'number'
@@ -654,7 +767,7 @@ def verificar(username, password, page):
             duration= 1000,
         )
         page.snack_bar.open = True
-        loading.new_loading_page(page=page, layout=create_page_home(page))
+        loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x="-23.3396", coord_initial_y="-47.8238"))
     
     else:
         # Verificar conexão com a internet
@@ -700,7 +813,7 @@ def verificar(username, password, page):
             duration= 1000,
             )
             page.snack_bar.open = True
-            loading.new_loading_page(page=page, layout=create_page_home(page))  # Vai para a página inicial se o login for bem-sucedido
+            loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x="-23.3396", coord_initial_y="-47.8238"))
             
         else:
             # Exibe mensagem de erro se as credenciais não forem encontradas
@@ -857,25 +970,6 @@ def add_point(page, numero, lat, long, ip, situ, tipo, pontos, bairro, logra, im
     def pause_and_continue(image):
 
 
-        def image_path_to_bytes(image_path):
-            # Abre a imagem a partir do caminho
-            with Image.open(image_path) as img:
-                # Rotaciona a imagem 90 graus para a direita
-                rotated_img = img.rotate(-90, expand=True)  # -90 graus para sentido horário
-                
-                # Cria um fluxo de bytes
-                byte_stream = io.BytesIO()
-                # Salva a imagem rotacionada no fluxo de bytes
-                rotated_img.save(byte_stream, format='JPEG')  # ou 'PNG' se necessário
-                
-                # Move o ponteiro do fluxo de bytes para o início
-                byte_stream.seek(0)
-                
-                # Retorna os bytes da imagem
-                return byte_stream.read()
-
-
-
         # Verificar se todos os campos estão preenchidos
         if not lat or not long or not ip or not situ or not tipo or not pontos or not bairro or not logra:
             page.snack_bar = ft.SnackBar(
@@ -934,10 +1028,8 @@ def add_point(page, numero, lat, long, ip, situ, tipo, pontos, bairro, logra, im
         #Inicia o processamento da imagem
         # ..............................
         if image != None:
-            im_path = image.src
-            image_bytes = image_path_to_bytes(im_path)
             send_images = SendImage()
-            image_url = send_images.upload_image(image_bytes, numero)
+            image_url = send_images.upload_image(image, numero)
 
 
 
@@ -981,7 +1073,7 @@ def add_point(page, numero, lat, long, ip, situ, tipo, pontos, bairro, logra, im
                 )
 
                 loading = LoadingPages(page)
-                loading.new_loading_page(page=page, layout=create_page_home(page))
+                loading.new_loading_page(page=page, layout=create_page_home(page, lat, long,))
                 
             else:
                 print(f"Erro ao inserir ponto: {response.status_code}")
@@ -1006,7 +1098,7 @@ def add_point(page, numero, lat, long, ip, situ, tipo, pontos, bairro, logra, im
     threading.Timer(2.0, pause_and_continue(image)).start()
 
 
-def edit_point(page, lat, long, ip, situ, tipo, pontos, bairro, logra):
+def edit_point(page, coord_initial_x, coord_initial_y, lat, long, ip, situ, tipo, pontos, bairro, logra):
 
 
     numero = int(ip.split('-')[1])
@@ -1079,6 +1171,10 @@ def edit_point(page, lat, long, ip, situ, tipo, pontos, bairro, logra):
                 content=ft.Text("Alterações Salvas"),
                 bgcolor=ft.colors.GREEN
             )
+
+            loading = LoadingPages(page)
+            loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y))
+
         else:
             print(f"Erro ao editar ponto: {response.status_code}")
             print(f"Resposta do erro: {response.text}")
@@ -1095,7 +1191,7 @@ def edit_point(page, lat, long, ip, situ, tipo, pontos, bairro, logra):
     threading.Timer(2.0, pause_and_continue).start()
 
 
-def delete_point(page, numero):
+def delete_point(page, coord_initial_x, coord_initial_y, numero):
 
     page.snack_bar = ft.SnackBar(
         content=ft.Text("Excluindo ponto..."),
@@ -1164,7 +1260,7 @@ def delete_point(page, numero):
                     bgcolor=ft.colors.GREEN
                 )
                 loading = LoadingPages(page)
-                loading.new_loading_page(page=page, layout=create_page_home(page))
+                loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y))
 
             else:
 
@@ -1173,7 +1269,7 @@ def delete_point(page, numero):
                     bgcolor=ft.colors.AMBER
                 )
                 loading = LoadingPages(page)
-                loading.new_loading_page(page=page, layout=create_page_home(page))
+                loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y))
 
         else:
             print(f"Erro ao excluir ponto: {response1.status_code}")
@@ -1189,3 +1285,44 @@ def delete_point(page, numero):
 
     # Iniciar o temporizador
     threading.Timer(2.0, pause_and_continue).start()
+
+
+class GeoPosition:
+
+    def __init__(self, page, mapa, point_location, current_lat, current_lon):
+        self.page = page
+        self.mapa = mapa
+        self.point_location = point_location
+        self.current_lat = current_lat
+        self.current_lon = current_lon
+
+
+
+        def handle_position_change(e):
+            self.current_lat.content.value = f"{e.latitude:.6f}"
+            self.current_lon.content.value = f"{e.longitude:.6f}"
+            self.point_location.coordinates = map.MapLatitudeLongitude(e.latitude, e.longitude)
+            teste = self.mapa.update_position()
+            self.page.update()
+
+
+        self.gl = ft.Geolocator(
+                    location_settings=ft.GeolocatorSettings(
+                        accuracy=ft.GeolocatorPositionAccuracy.HIGH
+                    ),
+                    on_position_change=handle_position_change,
+                    )
+        self.page.overlay.append(self.gl)
+        self.current_location = handle_position_change
+    
+
+    async def get_permission(self, e):
+
+        status = await self.gl.get_permission_status_async()
+        if str(status) == "GeolocatorPermissionStatus.DENIED":
+            print(f" \n Status 1: {status} \n")
+            await self.gl.request_permission_async(wait_timeout=60)   
+        else:
+            print(f" \n Status 2: {status} \n")
+
+

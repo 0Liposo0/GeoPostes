@@ -2,8 +2,7 @@ import flet as ft
 import requests
 import threading
 import flet.map as map
-from PIL import Image
-import io
+
 
 class Poste:
 
@@ -114,6 +113,23 @@ class Buttons:
                 ]
             )
     
+    def create_location_button(self):
+        return ft.Column(
+                spacing=0,
+                controls=[
+                    ft.ElevatedButton(
+                        on_click=None,
+                        width=20,
+                        height=20,
+                        bgcolor=ft.colors.BLUE,
+                        text="",
+                        style=ft.ButtonStyle(
+                            shape=ft.RoundedRectangleBorder(radius=10),
+                        ),
+                    ),
+                ]
+            )
+    
     def create_point_marker(self, content, x, y):
         return map.Marker(
                 content=content,
@@ -198,13 +214,13 @@ class CallText:
         self.page = page
 
     
-    def create_calltext(self, text, color, size, font, col, padding):
+    def create_calltext(self, text, color, size, font, col, padding, visible):
 
         textthemes = TextTheme()
         texttheme1 = textthemes.create_text_theme1()
 
         return  ft.Container(
-            visible=True,
+            visible=visible,
             col=col,
             padding=padding,
             content=ft.Text(
@@ -549,20 +565,21 @@ class LoadingPages:
 
         page.add(layout)
 
+        page.scroll_to(1)
+
         page.update()
  
 
 class GalleryPicker:
 
-    def __init__(self, page, object):
+    def __init__(self, page, image_temp, image_bytes):
 
         self.page = page
-        self.object = object
+        self.image_temp = image_temp
+        self.image_bytes = image_bytes
         self.file_picker = ft.FilePicker(on_result=self.on_image_selected) # cria o objeto de seleção de arquivos e adiciona uma chamada de função para quando arquivo for escolhido
         self.page.overlay.append(self.file_picker) # adiciona o objeto a sebreposição da página
 
-        # Atributo para armazenar a imagem temporariamente
-        self.selected_image = None
 
     def open_gallery(self, e):   # e representa o clique do botão que disparou o evento
         self.file_picker.pick_files(               # chama a janela de seleção de arquivos
@@ -579,13 +596,16 @@ class GalleryPicker:
             )
             self.page.snack_bar.open = True
 
-            self.selected_image = e.files[0]  # Armazena a imagem selecionada
-            
-            image = ft.Image(src=self.selected_image.path)  
-            
+            selected_image = e.files[0]  
 
-            self.object.content = image  
-            self.page.update()  
+            image_container = ft.Image(src=selected_image.path) 
+            with open(image_container.src, 'rb') as file:
+                bytes = file.read() 
+
+
+            self.image_temp.content = image_container 
+            self.image_bytes[0] = bytes 
+            self.page.update()
 
 
 class SendImage:
@@ -595,7 +615,7 @@ class SendImage:
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
         )
 
-    def upload_image(self, image_data, numero):
+    def upload_image(self, image, numero):
         # O caminho onde a imagem será armazenada no Supabase
         storage_path = f'postes_images_points/postes/{numero}.jpg'
 
@@ -609,7 +629,7 @@ class SendImage:
         response = requests.post(
             f'{self.supabase_url}/storage/v1/object/{storage_path}',
             headers=headers,
-            data=image_data
+            data=image
         )
 
         if response.status_code == 200:

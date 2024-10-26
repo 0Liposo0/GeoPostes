@@ -2,7 +2,7 @@ import flet as ft
 from views import *
 from models import *
 
-def main(page: ft.Page):
+async def main(page: ft.Page):
     page.title = 'GeoPostes'
     page.window.always_on_top = True
     page.window.height = 960
