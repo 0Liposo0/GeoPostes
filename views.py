@@ -11,20 +11,15 @@ def create_page_home(page, coord_initial_x, coord_initial_y):
     menus = SettingsMenu(page)
     itens = []
     logout = menus.itens_settings_menu(text="Deslogar",
-                                       color=ft.colors.AMBER,
+                                       color=ft.colors.BLUE,
                                        action=lambda e: loading.new_loading_page(page=page, layout=create_page_login(page)))
-    exit = menus.itens_settings_menu(text="Sair da aplicação",
-                                       color=ft.colors.AMBER,
-                                       action=lambda e: page.window_close())
     itens.append(logout)
-    itens.append(exit)
-    menu = menus.create_settings_menu(color=ft.colors.BLUE_900, itens=itens, col=10)
+    menu = menus.create_settings_menu(color=ft.colors.WHITE, itens=itens, col=10)
 
     loading = LoadingPages(page)
 
     
     calltexts = CallText(page)
-    texto_chamada = calltexts.create_container_calltext1()
     coord_text_lat = calltexts.create_calltext(
                       visible=False,
                       text=coord_initial_x,
@@ -42,7 +37,7 @@ def create_page_home(page, coord_initial_x, coord_initial_y):
                       col=12,
                       padding=0)
     coord_text_zoom = calltexts.create_calltext(
-                      visible=True,
+                      visible=False,
                       text="19",
                       color=ft.colors.BLACK,
                       size=15,
@@ -96,37 +91,40 @@ def create_page_home(page, coord_initial_x, coord_initial_y):
     
     geo = GeoPosition(page, point_location, current_text_lat, current_text_lon)
    
-
-    page.floating_action_button = ft.FloatingActionButton(
-                        icon=ft.icons.ADD_CIRCLE,
-                        bgcolor=ft.colors.GREEN,
-                        foreground_color=ft.colors.BLACK,
-                        on_click= lambda e: loading.new_loading_page(page=page, layout=create_page_add_forms(page, coord_text_lat.content.value, coord_text_lon.content.value)) 
-                    )
-            
+          
     def go_to_location(e=None):
-        
+
         if point_location.coordinates is not None:
             lat = str(point_location.coordinates.latitude)
             lon = str(point_location.coordinates.longitude)
-            loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x=lat, coord_initial_y=lon))
+            loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x=lat, coord_initial_y=lon), home=True)
 
 
-    button_location = buttons.create_call_location_button(on_click=geo.get_permission,
-                                                          text=" ",
-                                                          color=ft.colors.WHITE70,
-                                                          col=2,
-                                                          padding=0,
-                                                          on_long_press=go_to_location,
-                                                          )          
+    button_location = buttons.create_call_location_button(
+                                                        icon=ft.icons.MY_LOCATION,
+                                                        on_click=geo.get_permission,
+                                                        color=ft.colors.WHITE,
+                                                        col=2,
+                                                        padding=0,
+                                                        )
+      
+    button_go_location = buttons.create_call_location_button(
+                                                        icon=ft.icons.LOCATION_ON_SHARP,
+                                                        on_click=go_to_location,
+                                                        color=ft.colors.WHITE,
+                                                        col=2,
+                                                        padding=0,
+                                                        )          
 
 
     def call_update_map():
 
         if point_location.coordinates is not None:
             button_location.controls[0].content.icon_color = ft.colors.GREEN
+            button_go_location.controls[0].content.icon_color = ft.colors.GREEN
         else:
             button_location.controls[0].content.icon_color = ft.colors.RED    
+            button_go_location.controls[0].content.icon_color = ft.colors.RED
 
         maps.update_position()
         threading.Timer(1, call_update_map).start()
@@ -134,23 +132,61 @@ def create_page_home(page, coord_initial_x, coord_initial_y):
     call_update_map()
 
 
+    anchor = ft.SearchBar(
+        width=300,
+        bar_bgcolor=ft.colors.WHITE,
+        bar_hint_text="Procurar",
+        view_hint_text="Escolha o numero",
+        on_change=None,
+        on_submit=None,
+        on_tap=None,
+        controls=[],
+    )
 
-    container1 = ft.Container(padding=10)
-    container2 = ft.Container(padding=5)
+    page.appbar = ft.AppBar(
+        bgcolor=ft.colors.BLUE,
+        toolbar_height=80,
+        actions=[
+            ft.Column(controls=[ft.Container(width=15)]),
+            anchor,
+            ft.Column(controls=[ft.Container(width=40)]),
+            menu,
+            ft.Column(controls=[ft.Container(width=15)]),
+        ],
+    )
+
+
+
+    page.floating_action_button = ft.FloatingActionButton(
+                        content=ft.Icon(name=ft.icons.ADD_LOCATION_ROUNDED, color=ft.colors.BLUE, scale=2),
+                        bgcolor=ft.colors.WHITE,
+                        shape=ft.RoundedRectangleBorder(radius=50),
+                        on_click= lambda e: loading.new_loading_page(page=page, layout=create_page_add_forms(page, coord_text_lat.content.value, coord_text_lon.content.value)) 
+                    )
+    page.floating_action_button_location = ft.FloatingActionButtonLocation.MINI_CENTER_DOCKED
+    
+
+    page.bottom_appbar = ft.BottomAppBar(
+        bgcolor=ft.colors.BLUE,
+        shape=ft.NotchShape.CIRCULAR,
+        height=80,
+        content=ft.Row(
+            controls=[
+                button_location,
+                ft.Container(expand=True),
+                button_go_location,
+            ]
+        ),
+    )
 
 
     return ft.ResponsiveRow(
         columns=12,
         controls=[
-                container2,
-                menu,
-                button_location,
                 coord_text_lat,
                 coord_text_lon,
                 coord_text_zoom,
                 mapa1,
-                texto_chamada,
-                container1,
                 ],
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -172,7 +208,7 @@ def create_page_forms(page, poste, numero, coord_initial_x, coord_initial_y):
                                         color=ft.colors.RED,
                                         col=6,
                                         padding=5,)
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y)),
+    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y), home=True),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
                                             col=12,
@@ -250,7 +286,7 @@ def create_page_add_forms(page, lat, long):
                                             color=ft.colors.GREEN,
                                             col=6,
                                             padding=15,)
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, lat, long)),
+    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, lat, long), home=True),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
                                             col=6,
@@ -332,7 +368,7 @@ def create_page_edit_forms(page, poste, coord_initial_x, coord_initial_y):
                                             color=ft.colors.RED,
                                             col=6,
                                             padding=5,)
-    back_home_button = buttons.create_button(on_click=lambda e :loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y)),
+    back_home_button = buttons.create_button(on_click=lambda e :loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y), home=True),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
                                             col=7,
@@ -442,14 +478,6 @@ def create_page_login(page):
     username_field = textfields.create_textfield(value=None, text="Usuário ou E-mail", password=False)
     password_field = textfields.create_textfield(value=None, text="Senha", password=True)
 
-    menus = SettingsMenu(page)
-    itens = []
-    exit = menus.itens_settings_menu(text="Sair da aplicação",
-                                       color=ft.colors.AMBER,
-                                       action=lambda e: page.window_close())
-    itens.append(exit)
-    menu = menus.create_settings_menu(color=ft.colors.BLUE_900, itens=itens, col=12)
-
     loading = LoadingPages(page)
 
     buttons = Buttons(page)
@@ -471,8 +499,7 @@ def create_page_login(page):
     return ft.ResponsiveRow(
         columns=12,
         controls=[
-            container2,
-            menu,
+            container1,
             login_title,
             container1,  
             username_field,  
@@ -600,27 +627,17 @@ class Map:
 
         return ft.Column(
                 visible=True,
+                spacing=0,
                 col=12,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=[
-                    ft.Container(
-                        width=400,
-                        height=400,
-                        alignment=ft.alignment.center,
-                        bgcolor=ft.colors.GREY,
-                        border=ft.Border(
-                            left=ft.BorderSide(2, ft.colors.BLACK),
-                            top=ft.BorderSide(2, ft.colors.BLACK),
-                            right=ft.BorderSide(2, ft.colors.BLACK),
-                            bottom=ft.BorderSide(2, ft.colors.BLACK),
-                        ),
-                        border_radius=ft.border_radius.all(250),
-                        content=ft.Container(
-                            width=395,
-                            height=395,
+                        ft.Container(
+                            width=420,
+                            height=600,
                             alignment=ft.alignment.center,
                             bgcolor=ft.colors.GREY,
-                            border_radius=ft.border_radius.all(250),
+                            padding=0,
+                            expand=True,
                             content=ft.Stack(
                                 expand=True,
                                 controls=[
@@ -638,7 +655,7 @@ class Map:
                                 ],
                             ),
                         ),
-                    )
+
                 ]
             )
            
@@ -767,7 +784,7 @@ def verificar(username, password, page):
             duration= 1000,
         )
         page.snack_bar.open = True
-        loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x="-23.3396", coord_initial_y="-47.8238"))
+        loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x="-23.3396", coord_initial_y="-47.8238"), home=True)
     
     else:
         # Verificar conexão com a internet
@@ -813,7 +830,7 @@ def verificar(username, password, page):
             duration= 1000,
             )
             page.snack_bar.open = True
-            loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x="-23.3396", coord_initial_y="-47.8238"))
+            loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x="-23.3396", coord_initial_y="-47.8238"), home=True)
             
         else:
             # Exibe mensagem de erro se as credenciais não forem encontradas

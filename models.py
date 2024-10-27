@@ -69,25 +69,23 @@ class Buttons:
                     ]    
                  )
     
-    def create_call_location_button(self, on_click, text, color, col, padding, on_long_press=None):
+    def create_call_location_button(self, icon, on_click, color, col, padding):
         return ft.Column(
-            horizontal_alignment = ft.CrossAxisAlignment.CENTER,
             col=col,
+            alignment=ft.MainAxisAlignment.CENTER,
             controls=[
                     ft.Container(
                             alignment=ft.alignment.center,
                             col=col,
+                            width=50,
+                            height=50,
+                            border_radius=ft.border_radius.all(25),
                             padding=padding,
-                            expand=True,
-                            content=ft.ElevatedButton(
-                                text=text,
-                                icon=ft.icons.MY_LOCATION,
-                                icon_color=ft.colors.GREEN,
-                                bgcolor=color,
-                                color=ft.colors.WHITE,
+                            bgcolor=color,
+                            content=ft.IconButton(
+                                icon=icon,
+                                icon_color=ft.colors.RED,
                                 on_click=on_click,
-                                on_long_press=on_long_press,
-                                width=150,
                             )
                         )
                     ]    
@@ -248,9 +246,9 @@ class CallText:
         btn_null.controls[1].visible = False
 
         return  ft.Column(
-                col=10,
+                col=12,
                 spacing=10,
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.START,
                 controls=[ ft.Container(
                             visible=True,
                             padding=10,
@@ -388,6 +386,7 @@ class SettingsMenu:
 
         return ft.Column(
                 col=col,
+                alignment=ft.MainAxisAlignment.CENTER,
                 controls=[
                     ft.Container(
                         width=50,
@@ -399,8 +398,8 @@ class SettingsMenu:
                         content=(
                             ft.PopupMenuButton(
                                 icon=ft.icons.MENU,
-                                icon_color=ft.colors.AMBER,
-                                bgcolor=ft.colors.BLUE_900,
+                                icon_color=ft.colors.BLUE,
+                                bgcolor=ft.colors.WHITE,
                                 items=itens
                             )
                         )
@@ -567,7 +566,7 @@ class LoadingPages:
     def __init__(self, page):
         self.page = page
 
-    def new_loading_page(self, page, layout):
+    def new_loading_page(self, page, layout, home=False):
 
         page.clean()
 
@@ -575,6 +574,16 @@ class LoadingPages:
 
         page.scroll_to(1)
 
+        if home == False:
+            page.floating_action_button.visible = False
+            page.bottom_appbar.visible = False
+            page.appbar.visible = False
+
+        else:
+            page.floating_action_button.visible = True
+            page.bottom_appbar.visible = True
+            page.appbar.visible = True
+        
         page.update()
  
 
