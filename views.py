@@ -8,15 +8,10 @@ import flet.map as map
 
 def create_page_home(page, coord_initial_x, coord_initial_y):
 
-    menus = SettingsMenu(page)
-    itens = []
-    logout = menus.itens_settings_menu(text="Deslogar",
-                                       color=ft.colors.BLUE,
-                                       action=lambda e: loading.new_loading_page(page=page, layout=create_page_login(page)))
-    itens.append(logout)
-    menu = menus.create_settings_menu(color=ft.colors.WHITE, itens=itens, col=10)
+    page.clean()
 
     loading = LoadingPages(page)
+
 
     
     calltexts = CallText(page)
@@ -60,6 +55,22 @@ def create_page_home(page, coord_initial_x, coord_initial_y):
                       font=ft.FontWeight.W_600,
                       col=12,
                       padding=0,)
+
+    menus = SettingsMenu(page)
+    itens = []
+    logout = menus.itens_settings_menu(text="Deslogar",
+                                       color=ft.colors.BLUE,
+                                       action=lambda e: loading.new_loading_page(page=page, layout=create_page_login(page)))
+    reload = menus.itens_settings_menu(text="Atualizar",
+                                       color=ft.colors.BLUE,
+                                       action=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x=coord_text_lat.content.value, coord_initial_y=coord_text_lon.content.value), home=True)
+                                        )
+    itens.append(logout)
+    itens.append(reload)
+    menu = menus.create_settings_menu(color=ft.colors.WHITE, itens=itens, col=10)
+
+
+
 
     point_location = map.Marker(
                 content=ft.Column(
@@ -118,30 +129,33 @@ def create_page_home(page, coord_initial_x, coord_initial_y):
 
 
     def call_update_map():
+        try:
+            if point_location.coordinates is not None:
+                button_location.controls[0].content.icon_color = ft.colors.GREEN
+                button_go_location.controls[0].content.icon_color = ft.colors.GREEN
+            else:
+                button_location.controls[0].content.icon_color = ft.colors.RED
+                button_go_location.controls[0].content.icon_color = ft.colors.RED
 
-        if point_location.coordinates is not None:
-            button_location.controls[0].content.icon_color = ft.colors.GREEN
-            button_go_location.controls[0].content.icon_color = ft.colors.GREEN
-        else:
-            button_location.controls[0].content.icon_color = ft.colors.RED    
-            button_go_location.controls[0].content.icon_color = ft.colors.RED
+            # Atualiza o mapa
+            maps.update_position()
 
-        maps.update_position()
+        except AttributeError as e:
+            print(f"Erro de atributo: {e}")
+        except Exception as e:
+            print(f"Erro inesperado: {e}")
+
+        # Reinicia o timer de forma segura
         threading.Timer(1, call_update_map).start()
 
+    
     call_update_map()
 
 
-    anchor = ft.SearchBar(
-        width=300,
-        bar_bgcolor=ft.colors.WHITE,
-        bar_hint_text="Procurar",
-        view_hint_text="Escolha o numero",
-        on_change=None,
-        on_submit=None,
-        on_tap=None,
-        controls=[],
-    )
+    searchs_bars = SearchBar(page)
+    lista_postes = searchs_bars.create_list()
+    anchor = searchs_bars.create_search_bar()
+
 
     page.appbar = ft.AppBar(
         bgcolor=ft.colors.BLUE,
@@ -179,6 +193,11 @@ def create_page_home(page, coord_initial_x, coord_initial_y):
         ),
     )
 
+  
+  
+
+
+    
 
     return ft.ResponsiveRow(
         columns=12,
@@ -199,6 +218,7 @@ def create_page_home(page, coord_initial_x, coord_initial_y):
 
 def create_page_forms(page, poste, numero, coord_initial_x, coord_initial_y):
 
+    page.clean()
 
     loading = LoadingPages(page)
 
@@ -259,6 +279,7 @@ def create_page_forms(page, poste, numero, coord_initial_x, coord_initial_y):
 
 def create_page_add_forms(page, lat, long):
 
+    page.clean()
 
     def send_point(object, image):
 
@@ -281,7 +302,7 @@ def create_page_add_forms(page, lat, long):
     forms1 = forms.create_add_forms(lat, long, ip="IP SOR-", situ=None, tipo=None, pontos=None, bairro=None, logra=None)
 
     buttons = Buttons(page)
-    add_button = buttons.create_button(on_click=lambda e :send_point(forms1, image_bytes[0]),
+    add_button = buttons.create_button(on_click=lambda e :send_point(forms1, image_temp.content),
                                             text="Adicionar",
                                             color=ft.colors.GREEN,
                                             col=6,
@@ -305,8 +326,8 @@ def create_page_add_forms(page, lat, long):
                                         ),
                                     content=None
                                   )
-    image_bytes = [None]
-    photos = GalleryPicker(page, image_temp, image_bytes)
+
+    photos = GalleryPicker(page, image_temp)
     icon_camera = ft.IconButton(
         icon=ft.icons.CAMERA_ALT,
         icon_color=ft.colors.AMBER,
@@ -338,6 +359,8 @@ def create_page_add_forms(page, lat, long):
 
 
 def create_page_edit_forms(page, poste, coord_initial_x, coord_initial_y):
+
+    page.clean()
 
     def send_point(object, coord_initial_x, coord_initial_y):
 
@@ -390,6 +413,8 @@ def create_page_edit_forms(page, poste, coord_initial_x, coord_initial_y):
  
 
 def create_page_order(page, poste, numero, coord_initial_x, coord_initial_y):
+
+    page.clean()
 
     calltexts = CallText(page)
     text1 = calltexts.create_container_calltext2(text=poste.ip)
@@ -462,6 +487,8 @@ def create_page_order(page, poste, numero, coord_initial_x, coord_initial_y):
 
 def create_page_login(page):
 
+    page.clean()
+
     web_images = Web_Image(page)
     url_imagem1 = web_images.get_image_url(name="titulo_geopostes")
     login_title = web_images.create_web_image(src=url_imagem1, col=12, height=120) 
@@ -518,6 +545,8 @@ def create_page_login(page):
 
 
 def create_page_register(page):
+
+    page.clean()
 
     web_images = Web_Image(page)
     url_imagem1 = web_images.get_image_url(name="titulo_geopostes")
@@ -633,7 +662,7 @@ class Map:
                 controls=[
                         ft.Container(
                             width=420,
-                            height=600,
+                            height=800,
                             alignment=ft.alignment.center,
                             bgcolor=ft.colors.GREY,
                             padding=0,
@@ -977,142 +1006,142 @@ def add_point(page, numero, lat, long, ip, situ, tipo, pontos, bairro, logra, im
 
 
     page.snack_bar = ft.SnackBar(
-            content=ft.Text("Adicionando ponto..."),
+            content=ft.Text("Adicionando..."),
             bgcolor=ft.colors.ORANGE,
-            duration=2000,
+            duration=1000,
         )
     page.snack_bar.open = True
     page.update()
 
-    def pause_and_continue(image):
-
-
-        # Verificar se todos os campos estão preenchidos
-        if not lat or not long or not ip or not situ or not tipo or not pontos or not bairro or not logra:
-            page.snack_bar = ft.SnackBar(
-                content=ft.Text("Alguns campos não foram preenchidos"),
-                bgcolor=ft.colors.RED
-            )
-            page.snack_bar.open = True
-            page.update()
-            return  # Interrompe a execução da função
-        
-
-        # Verificar conexão com a internet
-        try:
-            requests.get("https://www.google.com", timeout=5)
-        except requests.ConnectionError:
-            page.snack_bar = ft.SnackBar(
-                content=ft.Text("Sem conexão com a internet"),
-                bgcolor=ft.colors.RED
-            )
-            page.snack_bar.open = True
-            page.update()
-            return  # Impede que o código continue caso não haja conexão
-
-        # URL da API do seu projeto no Supabase
-        SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
-        SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
-
-        # Cabeçalho com a API Key
-        headers = {
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": "application/json",
-        }
-
-
-        # Verificar se o ponto já foi cadastrado
-        response = requests.get(
-            f"{SUPABASE_URL}/rest/v1/points_capeladoalto",
-            headers=headers,
-            params={"select": "name", "name": f"eq.{ip}"}
+ 
+    # Verificar se todos os campos estão preenchidos
+    if not lat or not long or not ip or not situ or not tipo or not pontos or not bairro or not logra:
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Alguns campos não foram preenchidos"),
+            bgcolor=ft.colors.RED
         )
-
-        if response.status_code == 200 and response.json():
-            # Se o ponto já existir, mostre a mensagem e retorne
-            page.snack_bar = ft.SnackBar(
-                content=ft.Text(f"{ip} já foi cadastrado, ponto não adicionado"),
-                bgcolor=ft.colors.RED
-            )
-            page.snack_bar.open = True
-            page.update()
-            return
-        
-
-        image_url = "Nulo"
-        # ..............................
-        #Inicia o processamento da imagem
-        # ..............................
-        if image != None:
-            send_images = SendImage()
-            image_url = send_images.upload_image(image, numero)
-
-
-
-        # Obter o maior valor de user_id na tabela
-        response = requests.get(
-            f"{SUPABASE_URL}/rest/v1/points_capeladoalto",
-            headers=headers,
-            params={"select": "id", "order": "id.desc", "limit": 1},
-        )
-
-        if response.status_code == 200:
-            max_user_id = response.json()[0]["id"] if response.json() else 0
-            new_user_id = max_user_id + 1
-
-            # Dados para inserir no Supabase
-            data = {
-                "number": numero,
-                "coord_x": lat,
-                "coord_y": long,
-                "name": ip,
-                "situacao": situ,
-                "tipo": tipo,
-                "pontos": pontos,
-                "bairro": bairro,
-                "logradouro": logra,
-                "url": image_url
-            }
-
-            # Fazer a solicitação POST para inserir o novo registro
-            response = requests.post(
-                f"{SUPABASE_URL}/rest/v1/points_capeladoalto",
-                headers=headers,
-                json=data,
-            )
-
-            # Verificar se a inserção foi bem-sucedida
-            if response.status_code == 201:
-                page.snack_bar = ft.SnackBar(
-                    content=ft.Text("Ponto adicionado com sucesso"),
-                    bgcolor=ft.colors.GREEN
-                )
-
-                loading = LoadingPages(page)
-                loading.new_loading_page(page=page, layout=create_page_home(page, lat, long,))
-                
-            else:
-                print(f"Erro ao inserir ponto: {response.status_code}")
-                print(f"Resposta do erro: {response.text}")
-                page.snack_bar = ft.SnackBar(
-                    content=ft.Text(f"Erro ao inserir ponto: {response.text}"),
-                    bgcolor=ft.colors.RED
-                )
-        else:
-            print(f"Erro ao obter o maior user_id: {response.status_code}")
-            print(f"Resposta do erro: {response.text}")
-            page.snack_bar = ft.SnackBar(
-                content=ft.Text(f"Erro ao obter id: {response.text}"),
-                bgcolor=ft.colors.RED
-            )
-
-        # Abrir o snack bar e atualizar a página
         page.snack_bar.open = True
         page.update()
+        return  # Interrompe a execução da função
+    
 
-    # Iniciar o temporizador
-    threading.Timer(2.0, pause_and_continue(image)).start()
+    # Verificar conexão com a internet
+    try:
+        requests.get("https://www.google.com", timeout=5)
+    except requests.ConnectionError:
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Sem conexão com a internet"),
+            bgcolor=ft.colors.RED
+        )
+        page.snack_bar.open = True
+        page.update()
+        return  # Impede que o código continue caso não haja conexão
+
+    # URL da API do seu projeto no Supabase
+    SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
+    SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
+
+    # Cabeçalho com a API Key
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
+    }
+
+
+    # Verificar se o ponto já foi cadastrado
+    response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/points_capeladoalto",
+        headers=headers,
+        params={"select": "name", "name": f"eq.{ip}"}
+    )
+
+    if response.status_code == 200 and response.json():
+        # Se o ponto já existir, mostre a mensagem e retorne
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(f"{ip} já foi cadastrado, ponto não adicionado"),
+            bgcolor=ft.colors.RED
+        )
+        page.snack_bar.open = True
+        page.update()
+        return
+    
+
+    image_url = "Nulo"
+    # ..............................
+    #Inicia o processamento da imagem
+    # ..............................
+    if image != None:
+        send_images = SendImage(page)
+        image_url = send_images.upload_image(image, numero)
+
+
+
+    # Obter o maior valor de user_id na tabela
+    response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/points_capeladoalto",
+        headers=headers,
+        params={"select": "id", "order": "id.desc", "limit": 1},
+    )
+
+    if response.status_code == 200:
+        max_user_id = response.json()[0]["id"] if response.json() else 0
+        new_user_id = max_user_id + 1
+
+        # Dados para inserir no Supabase
+        data = {
+            "number": numero,
+            "coord_x": lat,
+            "coord_y": long,
+            "name": ip,
+            "situacao": situ,
+            "tipo": tipo,
+            "pontos": pontos,
+            "bairro": bairro,
+            "logradouro": logra,
+            "url": image_url
+        }
+
+        # Fazer a solicitação POST para inserir o novo registro
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/points_capeladoalto",
+            headers=headers,
+            json=data,
+        )
+
+        # Verificar se a inserção foi bem-sucedida
+        if response.status_code == 201:
+            page.snack_bar = ft.SnackBar(
+                content=ft.Text("Ponto adicionado com sucesso"),
+                bgcolor=ft.colors.GREEN,
+                duration=2000,
+            )
+
+            loading = LoadingPages(page)
+            loading.new_loading_page(page=page, layout=create_page_home(page, lat, long,), home=True)
+            
+        else:
+            print(f"Erro ao inserir ponto: {response.status_code}")
+            print(f"Resposta do erro: {response.text}")
+            page.snack_bar = ft.SnackBar(
+                content=ft.Text(f"Erro ao inserir ponto: {response.text}"),
+                bgcolor=ft.colors.RED,
+                duration=4000,
+            )
+    else:
+        print(f"Erro ao obter o maior user_id: {response.status_code}")
+        print(f"Resposta do erro: {response.text}")
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(f"Erro ao obter id: {response.text}"),
+            bgcolor=ft.colors.RED,
+            duration=4000,
+        )
+
+    # Abrir o snack bar e atualizar a página
+    page.snack_bar.open = True
+    page.update()
+
+
 
 
 def edit_point(page, coord_initial_x, coord_initial_y, lat, long, ip, situ, tipo, pontos, bairro, logra):
@@ -1122,186 +1151,185 @@ def edit_point(page, coord_initial_x, coord_initial_y, lat, long, ip, situ, tipo
 
     # Mostrar snack bar de "Editando ponto..."
     page.snack_bar = ft.SnackBar(
-        content=ft.Text("Editando ponto..."),
+        content=ft.Text("Alterando..."),
         bgcolor=ft.colors.ORANGE,
-        duration=2000,
+        duration=1000,
     )
     page.snack_bar.open = True
     page.update()
 
-    def pause_and_continue():
-        # Verificar se todos os campos estão preenchidos
-        if not all([lat, long, ip, situ, tipo, pontos, bairro, logra]):
-            page.snack_bar = ft.SnackBar(
-                content=ft.Text("Alguns campos não foram preenchidos"),
-                bgcolor=ft.colors.RED
-            )
-            page.snack_bar.open = True
-            page.update()
-            return  # Interrompe a execução da função
-
-        # Verificar conexão com a internet
-        try:
-            requests.get("https://www.google.com", timeout=5)
-        except requests.ConnectionError:
-            page.snack_bar = ft.SnackBar(
-                content=ft.Text("Sem conexão com a internet"),
-                bgcolor=ft.colors.RED
-            )
-            page.snack_bar.open = True
-            page.update()
-            return  # Interrompe se não houver conexão
-
-        # URL e chave da API do Supabase
-        SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
-        SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
-
-        # Cabeçalhos com a API Key
-        headers = {
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": "application/json",
-        }
-
-        # Dados a serem atualizados
-        data = {
-            "coord_x": lat,
-            "coord_y": long,
-            "name": ip,
-            "situacao": situ,
-            "tipo": tipo,
-            "pontos": pontos,
-            "bairro": bairro,
-            "logradouro": logra,
-        }
-
-        # Realiza a requisição PATCH para atualizar o registro onde "number" é igual a `numero`
-        response = requests.patch(
-            f"{SUPABASE_URL}/rest/v1/points_capeladoalto?number=eq.{numero}",
-            headers=headers,
-            json=data,
+    # Verificar se todos os campos estão preenchidos
+    if not all([lat, long, ip, situ, tipo, pontos, bairro, logra]):
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Alguns campos não foram preenchidos"),
+            bgcolor=ft.colors.RED
         )
-
-        # Verificar se a atualização foi bem-sucedida
-        if response.status_code in [200, 204]:  # 204 indica sucesso sem conteúdo
-            page.snack_bar = ft.SnackBar(
-                content=ft.Text("Alterações Salvas"),
-                bgcolor=ft.colors.GREEN
-            )
-
-            loading = LoadingPages(page)
-            loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y))
-
-        else:
-            print(f"Erro ao editar ponto: {response.status_code}")
-            print(f"Resposta do erro: {response.text}")
-            page.snack_bar = ft.SnackBar(
-                content=ft.Text(f"Erro ao editar ponto: {response.text}"),
-                bgcolor=ft.colors.RED
-            )
-
-        # Exibir o snack bar e atualizar a página
         page.snack_bar.open = True
         page.update()
+        return  # Interrompe a execução da função
 
-    # Iniciar o temporizador
-    threading.Timer(2.0, pause_and_continue).start()
+    # Verificar conexão com a internet
+    try:
+        requests.get("https://www.google.com", timeout=5)
+    except requests.ConnectionError:
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Sem conexão com a internet"),
+            bgcolor=ft.colors.RED
+        )
+        page.snack_bar.open = True
+        page.update()
+        return  # Interrompe se não houver conexão
+
+    # URL e chave da API do Supabase
+    SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
+    SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
+
+    # Cabeçalhos com a API Key
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    # Dados a serem atualizados
+    data = {
+        "coord_x": lat,
+        "coord_y": long,
+        "name": ip,
+        "situacao": situ,
+        "tipo": tipo,
+        "pontos": pontos,
+        "bairro": bairro,
+        "logradouro": logra,
+    }
+
+    # Realiza a requisição PATCH para atualizar o registro onde "number" é igual a `numero`
+    response = requests.patch(
+        f"{SUPABASE_URL}/rest/v1/points_capeladoalto?number=eq.{numero}",
+        headers=headers,
+        json=data,
+    )
+
+    # Verificar se a atualização foi bem-sucedida
+    if response.status_code in [200, 204]:  # 204 indica sucesso sem conteúdo
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Alterações Salvas"),
+            bgcolor=ft.colors.GREEN,
+            duration=2000,
+        )
+
+        loading = LoadingPages(page)
+        loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y), home=True)
+
+    else:
+        print(f"Erro ao editar ponto: {response.status_code}")
+        print(f"Resposta do erro: {response.text}")
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(f"Erro ao editar ponto: {response.text}"),
+            bgcolor=ft.colors.RED
+        )
+
+    # Exibir o snack bar e atualizar a página
+    page.snack_bar.open = True
+    page.update()
+
+
 
 
 def delete_point(page, coord_initial_x, coord_initial_y, numero):
 
     page.snack_bar = ft.SnackBar(
-        content=ft.Text("Excluindo ponto..."),
+        content=ft.Text("Excluindo..."),
         bgcolor=ft.colors.ORANGE,
-        duration=2000,
+        duration=1000,
     )
     page.snack_bar.open = True
     page.update()
 
-    def pause_and_continue():
-        # Verificar conexão com a internet
-        try:
-            requests.get("https://www.google.com", timeout=5)
-        except requests.ConnectionError:
-            page.snack_bar = ft.SnackBar(
-                content=ft.Text("Sem conexão com a internet"),
-                bgcolor=ft.colors.RED
-            )
-            page.snack_bar.open = True
-            page.update()
-            return  # Interrompe a execução se não há conexão
-
-        # URL e chave do Supabase
-        SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
-        SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
-
-        headers = {
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": "application/json",
-        }
-
-        # Excluir o ponto cujo número seja igual à variável `numero`
-        response1 = requests.delete(
-            f"{SUPABASE_URL}/rest/v1/points_capeladoalto?number=eq.{numero}",
-            headers=headers,
+    # Verificar conexão com a internet
+    try:
+        requests.get("https://www.google.com", timeout=5)
+    except requests.ConnectionError:
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Sem conexão com a internet"),
+            bgcolor=ft.colors.RED
         )
+        page.snack_bar.open = True
+        page.update()
+        return  # Interrompe a execução se não há conexão
+
+    # URL e chave do Supabase
+    SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
+    SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
+
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    # Excluir o ponto cujo número seja igual à variável `numero`
+    response1 = requests.delete(
+        f"{SUPABASE_URL}/rest/v1/points_capeladoalto?number=eq.{numero}",
+        headers=headers,
+    )
+
+    storage_path = f'postes_images_points/postes/{numero}.jpg'
+
+    response2 = requests.delete(
+        f"{SUPABASE_URL}/storage/v1/object/{storage_path}",
+        headers=headers,
+    )
+
+    # Verificar se a exclusão foi bem-sucedida
+    if response1.status_code == 204:
+
+        headers2 = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        'Content-Type': 'image/jpeg'
+        }
 
         storage_path = f'postes_images_points/postes/{numero}.jpg'
 
         response2 = requests.delete(
             f"{SUPABASE_URL}/storage/v1/object/{storage_path}",
-            headers=headers,
-        )
+            headers=headers2,
+        )            
 
-        # Verificar se a exclusão foi bem-sucedida
-        if response1.status_code == 204:
+        if response2.status_code == 200:
 
-            headers2 = {
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            'Content-Type': 'image/jpeg'
-            }
-
-            storage_path = f'postes_images_points/postes/{numero}.jpg'
-
-            response2 = requests.delete(
-                f"{SUPABASE_URL}/storage/v1/object/{storage_path}",
-                headers=headers2,
-            )            
-
-            if response2.status_code == 200:
-
-                page.snack_bar = ft.SnackBar(
-                    content=ft.Text("Ponto e imagem excluidos com sucesso"),
-                    bgcolor=ft.colors.GREEN
-                )
-                loading = LoadingPages(page)
-                loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y))
-
-            else:
-
-                page.snack_bar = ft.SnackBar(
-                    content=ft.Text("Ponto excluido mas imagem mantida"),
-                    bgcolor=ft.colors.AMBER
-                )
-                loading = LoadingPages(page)
-                loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y))
+            page.snack_bar = ft.SnackBar(
+                content=ft.Text("Ponto e imagem excluidos com sucesso"),
+                bgcolor=ft.colors.GREEN,
+                duration=2000,
+            )
+            loading = LoadingPages(page)
+            loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y), home=True)
 
         else:
-            print(f"Erro ao excluir ponto: {response1.status_code}")
-            print(f"Resposta do erro: {response1.text}")
+
             page.snack_bar = ft.SnackBar(
-                content=ft.Text(f"Erro ao excluir ponto: {response1.text}"),
-                bgcolor=ft.colors.RED
+                content=ft.Text("Ponto excluido mas imagem mantida"),
+                bgcolor=ft.colors.AMBER,
+                duration=2000,
             )
+            loading = LoadingPages(page)
+            loading.new_loading_page(page=page, layout=create_page_home(page, coord_initial_x, coord_initial_y), home=True)
 
-        # Exibir a mensagem e atualizar a página
-        page.snack_bar.open = True
-        page.update()
+    else:
+        print(f"Erro ao excluir ponto: {response1.status_code}")
+        print(f"Resposta do erro: {response1.text}")
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(f"Erro ao excluir ponto: {response1.text}"),
+            bgcolor=ft.colors.RED
+        )
 
-    # Iniciar o temporizador
-    threading.Timer(2.0, pause_and_continue).start()
+    # Exibir a mensagem e atualizar a página
+    page.snack_bar.open = True
+    page.update()
+
+
 
 
 class GeoPosition:
@@ -1339,7 +1367,97 @@ class GeoPosition:
             print(f" \n Status 2: {status} \n")
 
       
-               
+
+class SearchBar:
+    def __init__(self, page):
+        self.page = page
+        self.list = []
+
+        def handle_tap(e):
+            self.anchor.open_view() 
+
+        def close_anchor(e=None):
+            print("Fui chamado")
+            self.anchor.close_view()
+
+        self.call_close = close_anchor
+
+        self.anchor =  ft.SearchBar(
+            width=300,
+            bar_bgcolor=ft.colors.WHITE,
+            bar_hint_text="Procurar",
+            view_hint_text="Escolha o número",
+            on_change=None,
+            on_submit=None,
+            on_tap=handle_tap,
+            controls=None,
+        )
+
+    def create_list(self):
+        # Configuração da URL e cabeçalho
+        SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
+        SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
+
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json",
+        }
+
+        # Parâmetros da requisição GET
+        params = {"select": "number,coord_x,coord_y"}
+
+        # Requisição à API
+        response = requests.get(
+            f"{SUPABASE_URL}/rest/v1/points_capeladoalto",
+            headers=headers,
+            params=params,
+        )
+
+        # Verifica se a requisição foi bem-sucedida
+        if response.status_code != 200:
+            print("Erro ao buscar dados:", response.text)
+            return []
+
+        data = response.json()
+
+        # Inicializa a lista de itens
+        itens = []
+
+        # Loop para criar os botões com base nas linhas da tabela
+        for row in data:
+            number = row["number"]
+            Latitude = row["coord_x"]
+            Longitude = row["coord_y"]
+
+            loading = LoadingPages(self.page)
+
+            # Função para criar o evento de clique com coordenadas fixas
+            def create_on_click(lat=Latitude, lon=Longitude):
+
+                return lambda e: loading.new_loading_page(
+                    page=self.page,
+                    layout=create_page_home(self.page, coord_initial_x=lat, coord_initial_y=lon),
+                    home=True,
+                )
+
+            # Adiciona o botão à lista de itens
+            itens.append(
+                ft.ListTile(
+                    title=ft.Text(f"IP SOR-{number}"),
+                    on_click=create_on_click()
+                )
+            )
+
+        self.list = itens
+        self.anchor.controls =  self.list        
+
+    def create_search_bar(self):
+
+        if self.anchor.controls is not None:
+            return self.anchor
+
+                
 
 
 

@@ -19,3 +19,7 @@ async def main(page: ft.Page):
 
 if __name__ == "__main__":
     ft.app(target=main)
+
+
+    def salve(e):
+        print("Salve")

@@ -1,6 +1,5 @@
 import flet as ft
 import requests
-import threading
 import flet.map as map
 
 
@@ -566,9 +565,11 @@ class LoadingPages:
     def __init__(self, page):
         self.page = page
 
-    def new_loading_page(self, page, layout, home=False):
+    def new_loading_page(self, page, layout, home=False, anchor=False):
 
         page.clean()
+
+        page.go("/")
 
         page.add(layout)
 
@@ -599,16 +600,30 @@ class LoadingPages:
 
 class GalleryPicker:
 
-    def __init__(self, page, image_temp, image_bytes):
+    def __init__(self, page, image_temp):
 
         self.page = page
         self.image_temp = image_temp
-        self.image_bytes = image_bytes
+        self.ph = ft.PermissionHandler()
+        self.page.overlay.append(self.ph)
+
         self.file_picker = ft.FilePicker(on_result=self.on_image_selected) # cria o objeto de seleção de arquivos e adiciona uma chamada de função para quando arquivo for escolhido
         self.page.overlay.append(self.file_picker) # adiciona o objeto a sebreposição da página
 
 
     def open_gallery(self, e):   # e representa o clique do botão que disparou o evento
+   
+        
+
+#        def request_permission(e):
+#            print(f"\n Função 2 chamada \n")
+#            data = ft.PermissionType.ACCESS_MEDIA_LOCATION
+#           o = self.ph.request_permission(data)
+#            print(f"Checked {data.name}: {o}")
+
+#        print(f"\n Função 1 chamada \n")
+#        request_permission(e)
+   
         self.file_picker.pick_files(               # chama a janela de seleção de arquivos
             allow_multiple=False,
             file_type=ft.FilePickerFileType.IMAGE
@@ -623,21 +638,19 @@ class GalleryPicker:
             )
             self.page.snack_bar.open = True
 
-
-            selected_image = e.files[0]  
+            selected_image = e.files[0]
+            print(selected_image.path)  
 
             image_container = ft.Image(src=selected_image.path) 
-            with open(image_container.src, 'rb') as file:
-                bytes = file.read() 
-
 
             self.image_temp.content = image_container 
-            self.image_bytes[0] = bytes 
+
             self.page.update()
 
 
 class SendImage:
-    def __init__(self):
+    def __init__(self, page):
+        self.page = page
         self.supabase_url = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
         self.supabase_key = (
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
@@ -653,30 +666,48 @@ class SendImage:
             'Content-Type': 'image/jpeg'
         }
 
-        # Fazendo a requisição POST para enviar a imagem
-        response = requests.post(
-            f'{self.supabase_url}/storage/v1/object/{storage_path}',
-            headers=headers,
-            data=image
-        )
+        try:
 
-        if response.status_code == 200:
-            print("Imagem enviada com sucesso!")
+            with open(image.src, 'rb') as file:
+                        bytes = file.read()
 
-            # Construindo a URL pública correta da imagem
-            public_url = f"{self.supabase_url}/storage/v1/object/public/{storage_path}"
-            
-            # Verificando se a imagem é acessível
-            response = requests.get(public_url)
+            # Fazendo a requisição POST para enviar a imagem
+            response = requests.post(
+                f'{self.supabase_url}/storage/v1/object/{storage_path}',
+                headers=headers,
+                data=bytes
+            )
 
             if response.status_code == 200:
-                print(f"Imagem encontrada: {public_url}")
-                return public_url  # Retorna a URL pública da imagem
+                print("Imagem enviada com sucesso!")
+
+                # Construindo a URL pública correta da imagem
+                public_url = f"{self.supabase_url}/storage/v1/object/public/{storage_path}"
+                
+                # Verificando se a imagem é acessível
+                response = requests.get(public_url)
+
+                if response.status_code == 200:
+                    print(f"Imagem encontrada: {public_url}")
+                    return public_url  # Retorna a URL pública da imagem
+
+                else:
+                    print(f"Erro ao buscar a imagem: {response.status_code} - {response.text}")
+                    return None
 
             else:
-                print(f"Erro ao buscar a imagem: {response.status_code} - {response.text}")
+                print("Erro ao enviar imagem:", response.json())
                 return None
+        
+        except:
 
-        else:
-            print("Erro ao enviar imagem:", response.json())
-            return None
+            self.page.snack_bar = ft.SnackBar(
+                content=ft.Text(f"Adicionado, mas o dispositivo negou acesso a imagem"),
+                bgcolor=ft.colors.AMBER,
+                duration=2000,
+            )
+            self.page.snack_bar.open = True
+
+            image = "Nulo"
+
+            return image
