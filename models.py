@@ -1,6 +1,7 @@
 import flet as ft
 import requests
 import flet.map as map
+import threading
 
 
 class Poste:
@@ -193,24 +194,9 @@ class Web_Image:
             return None
 
 
-    def create_web_image(self, src, col, height):
-        return ft.Container(
-                visible=True,
-                col=col,
-                alignment=ft.alignment.center,
-                padding=0,
-                content=ft.Row(
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    spacing=0,
-                    controls=[
-                        ft.Image(
-                        src=src,
-                        repeat=ft.ImageRepeat.NO_REPEAT,
-                        height=height,
-                        ),
-                    ]
-                )
-            )    
+    def create_web_image(self, src):
+
+        return ft.Image(src=src, repeat=None)
 
 
 class CallText:
@@ -581,6 +567,7 @@ class LoadingPages:
             page.appbar.visible = False
 
         else:
+            page.go("/home")
             page.floating_action_button.visible = True
             page.bottom_appbar.visible = True
             page.appbar.visible = True
@@ -590,6 +577,8 @@ class LoadingPages:
     def first_loading_page(self, page, layout):
 
         page.clean()
+
+        page.go("/")
 
         page.add(layout)
 
@@ -604,27 +593,13 @@ class GalleryPicker:
 
         self.page = page
         self.image_temp = image_temp
-        self.ph = ft.PermissionHandler()
-        self.page.overlay.append(self.ph)
-
-        self.file_picker = ft.FilePicker(on_result=self.on_image_selected) # cria o objeto de seleção de arquivos e adiciona uma chamada de função para quando arquivo for escolhido
-        self.page.overlay.append(self.file_picker) # adiciona o objeto a sebreposição da página
+        self.fp = ft.FilePicker(on_result=self.on_image_selected) # cria o objeto de seleção de arquivos e adiciona uma chamada de função para quando arquivo for escolhido
+        self.page.overlay.append(self.fp) # adiciona o objeto a sebreposição da página
 
 
     def open_gallery(self, e):   # e representa o clique do botão que disparou o evento
    
-        
-
-#        def request_permission(e):
-#            print(f"\n Função 2 chamada \n")
-#            data = ft.PermissionType.ACCESS_MEDIA_LOCATION
-#           o = self.ph.request_permission(data)
-#            print(f"Checked {data.name}: {o}")
-
-#        print(f"\n Função 1 chamada \n")
-#        request_permission(e)
-   
-        self.file_picker.pick_files(               # chama a janela de seleção de arquivos
+        self.fp.pick_files(               # chama a janela de seleção de arquivos
             allow_multiple=False,
             file_type=ft.FilePickerFileType.IMAGE
         )
@@ -648,7 +623,8 @@ class GalleryPicker:
             self.page.update()
 
 
-class SendImage:
+class SupaBase:
+
     def __init__(self, page):
         self.page = page
         self.supabase_url = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
@@ -656,58 +632,321 @@ class SendImage:
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
         )
 
-    def upload_image(self, image, numero):
-        # O caminho onde a imagem será armazenada no Supabase
-        storage_path = f'postes_images_points/postes/{numero}.jpg'
 
-        # Cabeçalhos para a requisição de upload
+    def add_storage(self, numero, image):
+        
         headers = {
             'Authorization': f'Bearer {self.supabase_key}',
             'Content-Type': 'image/jpeg'
         }
 
-        try:
+        storage_path = f'postes_images_points/postes/{numero}.jpg'
 
-            with open(image.src, 'rb') as file:
-                        bytes = file.read()
+        with open(image.src, 'rb') as file:
+            bytes = file.read()
 
-            # Fazendo a requisição POST para enviar a imagem
-            response = requests.post(
+
+        response = requests.post(
                 f'{self.supabase_url}/storage/v1/object/{storage_path}',
                 headers=headers,
                 data=bytes
             )
-
-            if response.status_code == 200:
-                print("Imagem enviada com sucesso!")
-
-                # Construindo a URL pública correta da imagem
-                public_url = f"{self.supabase_url}/storage/v1/object/public/{storage_path}"
-                
-                # Verificando se a imagem é acessível
-                response = requests.get(public_url)
-
-                if response.status_code == 200:
-                    print(f"Imagem encontrada: {public_url}")
-                    return public_url  # Retorna a URL pública da imagem
-
-                else:
-                    print(f"Erro ao buscar a imagem: {response.status_code} - {response.text}")
-                    return None
-
-            else:
-                print("Erro ao enviar imagem:", response.json())
-                return None
         
-        except:
+        if response.status_code == 200:
+                print("Imagem enviada com sucesso!")
+        else:
+            print("Erro ao enviar imagem:", response.json())
+            return None
+        
+    def get_storage(self, numero):
 
+        storage_path = f'postes_images_points/postes/{numero}.jpg'
+        public_url = f"{self.supabase_url}/storage/v1/object/public/{storage_path}"
+        response = requests.get(public_url)
+        if response.status_code == 200:
+            print(f"Imagem encontrada: {public_url}")
+            return public_url 
+        else:
+            print(f"Erro ao buscar a imagem: {response.status_code} - {response.text}")
+            url = "Nulo"
+            return url
+        
+    def delete_storage(self, numero):
+
+        storage_path = f'postes_images_points/postes/{numero}.jpg'
+        url = f"{self.supabase_url}/storage/v1/object/{storage_path}"
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            'Content-Type': 'image/jpeg'
+        }
+        response = requests.delete(
+            url,
+            headers=headers,
+        )
+
+        if response.status_code != 200:
             self.page.snack_bar = ft.SnackBar(
-                content=ft.Text(f"Adicionado, mas o dispositivo negou acesso a imagem"),
+                content=ft.Text("Imagem mantida"),
                 bgcolor=ft.colors.AMBER,
-                duration=2000,
+                duration=4000,
+                behavior=ft.SnackBarBehavior.FLOATING,
+            )
+            self.page
+
+    def get_login(self, username, password):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+            "or": f"(usuario.eq.{username},email.eq.{username})",
+            "senha": f"eq.{password}",
+            "select": "*"
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/login_geopostes",
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
+    def register(self, username, email, number, password1, password2):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/login_geopostes",
+            headers=headers,
+            params={"select": "email", "email": f"eq.{email}"}
+        )
+
+        if response.status_code == 200 and response.json():
+            # Se o e-mail já existir, mostre a mensagem e retorne
+            self.page.snack_bar = ft.SnackBar(
+                content=ft.Text("E-mail já cadastrado"),
+                bgcolor=ft.colors.RED
             )
             self.page.snack_bar.open = True
+            self.page.update()
 
-            image = "Nulo"
+            return 
 
-            return image
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/login_geopostes",
+            headers=headers,
+            params={"select": "user_id", "order": "user_id.desc", "limit": 1},
+        )
+
+        if response.status_code == 200:
+            max_user_id = response.json()[0]["user_id"] if response.json() else 0
+            new_user_id = max_user_id + 1
+
+            # Dados para inserir no Supabase
+            data = {
+                "user_id": new_user_id,
+                "usuario": username,
+                "email": email,
+                "numero": number,
+                "senha": password1,
+            }
+
+            # Fazer a solicitação POST para inserir o novo registro
+            response = requests.post(
+                f"{self.supabase_url}/rest/v1/login_geopostes",
+                headers=headers,
+                json=data,
+            )
+
+            return response
+
+    def add_point(self,numero, lat, long, ip, situ, tipo, pontos, bairro, logra, image):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/points_capeladoalto",
+            headers=headers,
+            params={"select": "name", "name": f"eq.{ip}"}
+        )
+
+        if response.status_code == 200 and response.json():
+            # Se o ponto já existir, mostre a mensagem e retorne
+            self.page.snack_bar = ft.SnackBar(
+                content=ft.Text(f"{ip} já foi cadastrado, ponto não adicionado"),
+                bgcolor=ft.colors.RED
+            )
+            self.page.snack_bar.open = True
+            self.page.update()
+            return
+
+        image_url = "Nulo"
+        if image != None:
+
+            sp = SupaBase(self.page)
+            try:
+                sp.add_storage(numero=numero, image=image)
+                image_url = sp.get_storage(numero=numero)
+            except:
+                self.page.snack_bar = ft.SnackBar(
+                        content=ft.Text(f"O dispositivo negou acesso a imagem"),
+                        bgcolor=ft.colors.AMBER,
+                        duration=1000,
+                    )
+                self.page.snack_bar.open = True
+
+        data = {
+            "number": numero,
+            "coord_x": lat,
+            "coord_y": long,
+            "name": ip,
+            "situacao": situ,
+            "tipo": tipo,
+            "pontos": pontos,
+            "bairro": bairro,
+            "logradouro": logra,
+            "url": image_url
+        }
+
+        response = requests.post(
+            f"{self.supabase_url}/rest/v1/points_capeladoalto",
+            headers=headers,
+            json=data,
+        )
+
+        return response
+    
+    def edit_point(self, image, lat, long, ip, situ, tipo, pontos, bairro, logra, numero_ant):
+
+        numero = int(ip.split('-')[1])
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        image_url = "Nulo"
+        sp = SupaBase(self.page)
+        if "supabase" in image.src:
+            data = {
+            "coord_x": lat,
+            "coord_y": long,
+            "name": ip,
+            "situacao": situ,
+            "tipo": tipo,
+            "pontos": pontos,
+            "bairro": bairro,
+            "logradouro": logra,
+            }
+        else:
+            try:
+                with open(image.src, 'rb') as file: #verificar com antecedencia se a imagem vai poder ser acessada
+                    bytes = file.read()
+                sp.delete_storage(numero=numero_ant)
+                sp.add_storage(numero=numero, image=image)
+                image_url = sp.get_storage(numero=numero)
+                data = {
+                "coord_x": lat,
+                "coord_y": long,
+                "name": ip,
+                "situacao": situ,
+                "tipo": tipo,
+                "pontos": pontos,
+                "bairro": bairro,
+                "logradouro": logra,
+                "url": image_url,
+                }
+            except:
+                self.page.snack_bar = ft.SnackBar(
+                        content=ft.Text(f"O dispositivo negou acesso a imagem"),
+                        bgcolor=ft.colors.AMBER,
+                        duration=1000,
+                    )
+                self.page.snack_bar.open = True
+                data = {
+                "coord_x": lat,
+                "coord_y": long,
+                "name": ip,
+                "situacao": situ,
+                "tipo": tipo,
+                "pontos": pontos,
+                "bairro": bairro,
+                "logradouro": logra,
+                }
+
+        response = requests.patch(
+            f"{self.supabase_url}/rest/v1/points_capeladoalto?number=eq.{numero}",
+            headers=headers,
+            json=data,
+        )
+
+        return response
+
+
+
+
+class GeoPosition:
+
+    def __init__(self, page, point_location, current_lat, current_lon):
+        self.page = page
+        self.point_location = point_location
+        self.current_lat = current_lat
+        self.current_lon = current_lon
+
+
+        def handle_position_change(e):
+
+            self.current_lat.content.value = f"{e.latitude:.6f}"
+            self.current_lon.content.value = f"{e.longitude:.6f}"
+            self.point_location.coordinates = map.MapLatitudeLongitude(e.latitude, e.longitude)
+            self.page.update()
+
+
+
+        self.gl = ft.Geolocator(
+                    location_settings=ft.GeolocatorAppleSettings(
+                        distance_filter=1,
+                    ),
+                    on_position_change=handle_position_change,
+                    data = 0,
+                    )
+        self.page.overlay.append(self.gl)
+
+    async def get_permission(self, e=None):
+
+        status = await self.gl.get_permission_status_async()
+        if str(status) == "GeolocatorPermissionStatus.DENIED":
+            print(f"\n Chmado 3 \n")
+            print(f" \n Status 1: {status} \n")
+            await self.gl.request_permission_async(wait_timeout=60)
+            return status   
+        else:
+            return status
+            
+
+
+
+        
+
+
+
+    
+
+
+
+      
+
