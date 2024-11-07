@@ -47,7 +47,7 @@ class Buttons:
         self.page = page
     
     # Método base para criar os botões
-    def create_button(self, on_click, text, color, col, padding, on_long_press=None):
+    def create_button(self, on_click, text, color, col, padding, width=150):
         return ft.Column(
             horizontal_alignment = ft.CrossAxisAlignment.CENTER,
             col=col,
@@ -62,14 +62,14 @@ class Buttons:
                                 bgcolor=color,
                                 color=ft.colors.WHITE,
                                 on_click=on_click,
-                                on_long_press=on_long_press,
-                                width=150,
+                                width=width,
                             )
                         )
                     ]    
                  )
+
     
-    def create_call_location_button(self, icon, on_click, color, col, padding):
+    def create_call_location_button(self, icon, on_click, color, col, padding, icon_color=ft.colors.RED):
         return ft.Column(
             col=col,
             alignment=ft.MainAxisAlignment.CENTER,
@@ -84,7 +84,29 @@ class Buttons:
                             bgcolor=color,
                             content=ft.IconButton(
                                 icon=icon,
-                                icon_color=ft.colors.RED,
+                                icon_color=icon_color,
+                                on_click=on_click,
+                            )
+                        )
+                    ]    
+                 )
+
+    def create_icon_button(self, icon, on_click, color, col, padding, icon_color):
+        return ft.Column(
+            col=col,
+            alignment=ft.MainAxisAlignment.CENTER,
+            controls=[
+                    ft.Container(
+                            alignment=ft.alignment.center,
+                            col=col,
+                            width=40,
+                            height=40,
+                            border_radius=ft.border_radius.all(20),
+                            padding=padding,
+                            bgcolor=color,
+                            content=ft.IconButton(
+                                icon=icon,
+                                icon_color=icon_color,
                                 on_click=on_click,
                             )
                         )
@@ -299,7 +321,7 @@ class CheckBox:
         self.page = page
 
 
-    def create_checkbox(self, text, size, on_change, col):
+    def create_checkbox(self, text, size, on_change, col, data=None):
 
         return ft.Column(
             horizontal_alignment = ft.CrossAxisAlignment.START,
@@ -307,6 +329,7 @@ class CheckBox:
             controls=[
                 ft.Checkbox(
                     label=text,
+                    data = data,
                     on_change=on_change,
                     label_style=ft.TextStyle(
                         color=ft.colors.BLACK,
@@ -367,7 +390,7 @@ class SettingsMenu:
                     ft.Text(value=text, color=color)
                 ))
 
-    def create_settings_menu(self, color, itens, col):
+    def create_settings_menu(self, color, col, action):
 
         return ft.Column(
                 col=col,
@@ -381,11 +404,11 @@ class SettingsMenu:
                         border_radius=ft.border_radius.all(25),
                         padding=0,
                         content=(
-                            ft.PopupMenuButton(
+                            ft.IconButton(
                                 icon=ft.icons.MENU,
                                 icon_color=ft.colors.BLUE,
                                 bgcolor=ft.colors.WHITE,
-                                items=itens
+                                on_click=action,
                             )
                         )
                     )
@@ -465,6 +488,111 @@ class Forms:
                 ],
             ),
         )
+    
+
+    def create_os_forms(self, data_criacao, ip, reclamante, function, celular, ordem, origem, obser, materiais, ponto, status, data_andamen, data_conclu, equipe):
+
+        textthemes = TextTheme()
+        texttheme1 = textthemes.create_text_theme1()
+
+        return ft.Container(
+            padding=0,
+            col=12,
+            theme=texttheme1,  
+            content=ft.DataTable(
+                data_row_max_height=50,
+                columns=[
+                    ft.DataColumn(ft.Text(value="")),  
+                    ft.DataColumn(ft.Text(value="")),  
+                ],
+                rows=[
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Criação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=data_criacao, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=ip, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Reclamante", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=reclamante, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=function, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Celular", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=celular, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Ordem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=ordem, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Origem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=origem, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Observação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=obser, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Materiais", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=materiais, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Ponto", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=ponto, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Status", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=status, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Data do andamento", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=data_andamen, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Data da conclusão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=data_conclu, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Equipe", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=equipe, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                ],
+            ),
+        )
 
 
     def create_add_forms(self, lat, long, ip, situ, tipo, pontos, bairro, logra):
@@ -539,6 +667,105 @@ class Forms:
                         ft.DataCell(ft.Text(value="Logradouro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
                             ft.Container(content=logradouro_field, width=200)
+                        )
+                    ]),
+                ],
+            ),
+        )
+
+    def create_add_os_forms(self, ip, recla, order, origem, observ, materi, pontos, status, data_andamen, data_conclu, equipe):
+
+        textthemes = TextTheme()
+        texttheme1 = textthemes.create_text_theme1()
+
+        textfields = TextField(self.page)
+        ip_field = textfields.create_textfield(value=ip, text=None, password=False)
+        reclamante_field = textfields.create_textfield(value=recla, text=None, password=False)
+        order_field = textfields.create_textfield(value=order, text=None, password=False)
+        origem_field = textfields.create_textfield(value=origem, text=None, password=False)
+        observ_field = textfields.create_textfield(value=observ, text=None, password=False)
+        materi_field = textfields.create_textfield(value=materi, text=None, password=False)
+        pontos_field = textfields.create_textfield(value=pontos, text=None, password=False)
+        status_field = textfields.create_textfield(value=status, text=None, password=False)
+        data_andamen_field = textfields.create_textfield(value=data_andamen, text=None, password=False)
+        data_conclu_field = textfields.create_textfield(value=data_conclu, text=None, password=False)
+        equipe_field = textfields.create_textfield(value=equipe, text=None, password=False)
+
+        return ft.Container(
+            padding=0,
+            col=12,
+            theme=texttheme1,
+            content=ft.DataTable(
+                data_row_max_height=50,
+                columns=[
+                    ft.DataColumn(ft.Text(value="")),  # Primeira coluna
+                    ft.DataColumn(ft.Text(value="")),  # Segunda coluna
+                ],
+                rows=[
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ip_field, width=200)  # Ajuste da largura
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Reclamante", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=reclamante_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Ordem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=order_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Origem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=origem_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Observação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=observ_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Material", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=materi_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Ponto Queimado", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=pontos_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Status", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=status_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Data de Andamento", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=data_andamen_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Data de Conclusão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=data_conclu_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Equipe", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=equipe_field, width=200)
                         )
                     ]),
                 ],
@@ -715,6 +942,7 @@ class SupaBase:
         )
 
         return response
+    
 
     def register(self, username, email, number, password1, password2):
 
@@ -939,6 +1167,79 @@ class GeoPosition:
             
 
 
+class NavigationDrawer:
+
+    def __init__(self, page):
+        self.page = page
+
+
+
+
+
+
+    def create_navigation(self, name, action1, action2, action3, action4):
+
+        space = ft.Container(padding=10)
+
+        web_images = Web_Image(self.page)
+        url_imagem1 = web_images.get_image_url(name="perfil")
+
+        perfil = ft.Column(
+            visible=True,
+            col=12,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[ft.Container(
+                width=150,
+                height=150,
+                alignment=ft.alignment.center,
+                image_src=url_imagem1,
+                bgcolor=ft.colors.GREY,
+                border=ft.Border(
+                    left=ft.BorderSide(2, ft.colors.BLACK),  
+                    top=ft.BorderSide(2, ft.colors.BLACK),    
+                    right=ft.BorderSide(2, ft.colors.BLACK), 
+                    bottom=ft.BorderSide(2, ft.colors.BLACK) 
+                ),
+                border_radius=ft.border_radius.all(75),
+            )
+            ]
+        )
+
+        nome = ft.Text(
+            value=name,
+            text_align=ft.TextAlign.CENTER,
+        )
+
+
+        navigation =  ft.NavigationDrawer(
+                position=ft.NavigationDrawerPosition.END,
+                on_dismiss=None,
+                on_change=None,
+                controls=[
+                    space,
+                    perfil,
+                    nome,
+                    space,
+                    ft.ListTile(
+                        title=ft.Text(f"Deslogar"),
+                        on_click=action1
+                    ),
+                    ft.ListTile(
+                        title=ft.Text(f"Atualizar"),
+                        on_click=action2
+                    ),
+                    ft.ListTile(
+                        title=ft.Text(f"Lista de Postes"),
+                        on_click=action3
+                    ),
+                    ft.ListTile(
+                        title=ft.Text(f"Lista de Ordens de serviço"),
+                        on_click=action4
+                    ),
+                ],
+            )
+
+        return navigation
 
         
 
