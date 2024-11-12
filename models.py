@@ -4,6 +4,7 @@ import flet.map as map
 import threading
 
 
+
 class Poste:
 
     def __init__(self, number, ip, situacao, tipo, pontos, bairro, logradouro, lat, long):
@@ -673,23 +674,27 @@ class Forms:
             ),
         )
 
-    def create_add_os_forms(self, ip, recla, order, origem, observ, materi, pontos, status, data_andamen, data_conclu, equipe):
+
+    def create_add_os_forms(self, list_os_forms):
 
         textthemes = TextTheme()
         texttheme1 = textthemes.create_text_theme1()
 
         textfields = TextField(self.page)
-        ip_field = textfields.create_textfield(value=ip, text=None, password=False)
-        reclamante_field = textfields.create_textfield(value=recla, text=None, password=False)
-        order_field = textfields.create_textfield(value=order, text=None, password=False)
-        origem_field = textfields.create_textfield(value=origem, text=None, password=False)
-        observ_field = textfields.create_textfield(value=observ, text=None, password=False)
-        materi_field = textfields.create_textfield(value=materi, text=None, password=False)
-        pontos_field = textfields.create_textfield(value=pontos, text=None, password=False)
-        status_field = textfields.create_textfield(value=status, text=None, password=False)
-        data_andamen_field = textfields.create_textfield(value=data_andamen, text=None, password=False)
-        data_conclu_field = textfields.create_textfield(value=data_conclu, text=None, password=False)
-        equipe_field = textfields.create_textfield(value=equipe, text=None, password=False)
+        data_cria_field = textfields.create_textfield(value=list_os_forms[0], text=None, password=False)
+        ip_field = textfields.create_textfield(value=list_os_forms[1], text=None, password=False)
+        reclamante_field = textfields.create_textfield(value=list_os_forms[2], text=None, password=False)
+        usuario_field = textfields.create_textfield(value=list_os_forms[3], text=None, password=False)
+        celular_field = textfields.create_textfield(value=list_os_forms[4], text=None, password=False)
+        order_field = textfields.create_textfield(value=list_os_forms[5], text=None, password=False)
+        origem_field = textfields.create_textfield(value=list_os_forms[6], text=None, password=False)
+        observ_field = textfields.create_textfield(value=list_os_forms[7], text=None, password=False)
+        materi_field = textfields.create_textfield(value=list_os_forms[8], text=None, password=False)
+        pontos_field = textfields.create_textfield(value=list_os_forms[9], text=None, password=False)
+        status_field = textfields.create_textfield(value=list_os_forms[10], text=None, password=False)
+        data_andamen_field = textfields.create_textfield(value=list_os_forms[11], text=None, password=False)
+        data_conclu_field = textfields.create_textfield(value=list_os_forms[12], text=None, password=False)
+        equipe_field = textfields.create_textfield(value=list_os_forms[13], text=None, password=False)
 
         return ft.Container(
             padding=0,
@@ -698,20 +703,38 @@ class Forms:
             content=ft.DataTable(
                 data_row_max_height=50,
                 columns=[
-                    ft.DataColumn(ft.Text(value="")),  # Primeira coluna
-                    ft.DataColumn(ft.Text(value="")),  # Segunda coluna
+                    ft.DataColumn(ft.Text(value="")),  
+                    ft.DataColumn(ft.Text(value="")), 
                 ],
                 rows=[
                     ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Data de Criação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=data_cria_field, width=200)  
+                        )
+                    ]),
+                    ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=ip_field, width=200)  # Ajuste da largura
+                            ft.Container(content=ip_field, width=200)  
                         )
                     ]),
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Reclamante", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
                             ft.Container(content=reclamante_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=usuario_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Celular", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=celular_field, width=200)
                         )
                     ]),
                     ft.DataRow(cells=[
@@ -943,7 +966,6 @@ class SupaBase:
 
         return response
     
-
     def register(self, username, email, number, password1, password2):
 
         headers = {
@@ -997,7 +1019,9 @@ class SupaBase:
 
             return response
 
-    def add_point(self,numero, lat, long, ip, situ, tipo, pontos, bairro, logra, image):
+    def add_point(self, list_forms, image):
+
+        numero = int(list_forms[2].split('-')[1])
 
         headers = {
             "apikey": self.supabase_key,
@@ -1008,13 +1032,13 @@ class SupaBase:
         response = requests.get(
             f"{self.supabase_url}/rest/v1/points_capeladoalto",
             headers=headers,
-            params={"select": "name", "name": f"eq.{ip}"}
+            params={"select": "name", "name": f"eq.{list_forms[2]}"}
         )
 
         if response.status_code == 200 and response.json():
             # Se o ponto já existir, mostre a mensagem e retorne
             self.page.snack_bar = ft.SnackBar(
-                content=ft.Text(f"{ip} já foi cadastrado, ponto não adicionado"),
+                content=ft.Text(f"{list_forms[2]} já foi cadastrado, ponto não adicionado"),
                 bgcolor=ft.colors.RED
             )
             self.page.snack_bar.open = True
@@ -1038,14 +1062,14 @@ class SupaBase:
 
         data = {
             "number": numero,
-            "coord_x": lat,
-            "coord_y": long,
-            "name": ip,
-            "situacao": situ,
-            "tipo": tipo,
-            "pontos": pontos,
-            "bairro": bairro,
-            "logradouro": logra,
+            "coord_x": list_forms[0],
+            "coord_y": list_forms[1],
+            "name": list_forms[2],
+            "situacao": list_forms[3],
+            "tipo": list_forms[4],
+            "pontos": list_forms[5],
+            "bairro": list_forms[6],
+            "logradouro": list_forms[7],
             "url": image_url
         }
 
@@ -1057,9 +1081,60 @@ class SupaBase:
 
         return response
     
-    def edit_point(self, image, lat, long, ip, situ, tipo, pontos, bairro, logra, numero_ant):
+    def add_os(self, list_add_os):
 
-        numero = int(ip.split('-')[1])
+        numero = int(list_add_os[1].split('-')[1])
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
+            headers=headers,
+            params={"select": "ordem", "ordem": f"eq.{list_add_os[5]}"}
+        )
+
+        if response.status_code == 200 and response.json():
+            self.page.snack_bar = ft.SnackBar(
+                content=ft.Text(f"{list_add_os[5]} já foi cadastrado, ordem não adicionada"),
+                bgcolor=ft.colors.RED
+            )
+            self.page.snack_bar.open = True
+            self.page.update()
+            return
+
+        data = {
+            "created_at": list_add_os[0],
+            "ip": list_add_os[1],
+            "numero": numero,
+            "reclamante": list_add_os[2],
+            "function": list_add_os[3],
+            "celular": list_add_os[4],
+            "ordem": list_add_os[5],
+            "origem": list_add_os[6],
+            "observacao": list_add_os[7],
+            "materiais": list_add_os[8],
+            "ponto": list_add_os[9],
+            "status": list_add_os[10],
+            "data_andamento": list_add_os[11],
+            "data_conclusao": list_add_os[12],
+            "equipe": list_add_os[13],
+        }
+
+        response = requests.post(
+            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
+            headers=headers,
+            json=data,
+        )
+
+        return response
+    
+    def edit_point(self, image, list_forms, numero_ant):
+
+        numero = int(list_forms[2].split('-')[1])
 
         headers = {
             "apikey": self.supabase_key,
@@ -1071,14 +1146,15 @@ class SupaBase:
         sp = SupaBase(self.page)
         if "supabase" in image.src:
             data = {
-            "coord_x": lat,
-            "coord_y": long,
-            "name": ip,
-            "situacao": situ,
-            "tipo": tipo,
-            "pontos": pontos,
-            "bairro": bairro,
-            "logradouro": logra,
+                "number": numero,
+                "coord_x": list_forms[0],
+                "coord_y": list_forms[1],
+                "name": list_forms[2],
+                "situacao": list_forms[3],
+                "tipo": list_forms[4],
+                "pontos": list_forms[5],
+                "bairro": list_forms[6],
+                "logradouro": list_forms[7],
             }
         else:
             try:
@@ -1088,15 +1164,16 @@ class SupaBase:
                 sp.add_storage(numero=numero, image=image)
                 image_url = sp.get_storage(numero=numero)
                 data = {
-                "coord_x": lat,
-                "coord_y": long,
-                "name": ip,
-                "situacao": situ,
-                "tipo": tipo,
-                "pontos": pontos,
-                "bairro": bairro,
-                "logradouro": logra,
-                "url": image_url,
+                    "number": numero,
+                    "coord_x": list_forms[0],
+                    "coord_y": list_forms[1],
+                    "name": list_forms[2],
+                    "situacao": list_forms[3],
+                    "tipo": list_forms[4],
+                    "pontos": list_forms[5],
+                    "bairro": list_forms[6],
+                    "logradouro": list_forms[7],
+                    "url": image_url
                 }
             except:
                 self.page.snack_bar = ft.SnackBar(
@@ -1106,14 +1183,15 @@ class SupaBase:
                     )
                 self.page.snack_bar.open = True
                 data = {
-                "coord_x": lat,
-                "coord_y": long,
-                "name": ip,
-                "situacao": situ,
-                "tipo": tipo,
-                "pontos": pontos,
-                "bairro": bairro,
-                "logradouro": logra,
+                    "number": numero,
+                    "coord_x": list_forms[0],
+                    "coord_y": list_forms[1],
+                    "name": list_forms[2],
+                    "situacao": list_forms[3],
+                    "tipo": list_forms[4],
+                    "pontos": list_forms[5],
+                    "bairro": list_forms[6],
+                    "logradouro": list_forms[7],
                 }
 
         response = requests.patch(
@@ -1124,22 +1202,91 @@ class SupaBase:
 
         return response
 
+    def get_os(self, order):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+        "ordem": f"eq.{order}",
+        "select": "created_at, ip, reclamante, function, celular, ordem, origem, observacao, materiais, ponto, status, data_andamento, data_conclusao, equipe",
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
+    def edit_os(self, list_edited_os_forms):
+
+        numero = int(list_edited_os_forms[1].split('-')[1])
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+
+        data = {
+            "created_at": list_edited_os_forms[0],
+            "ip": list_edited_os_forms[1],
+            "numero": numero,
+            "reclamante": list_edited_os_forms[2],
+            "function": list_edited_os_forms[3],
+            "celular": list_edited_os_forms[4],
+            "ordem": list_edited_os_forms[5],
+            "origem": list_edited_os_forms[6],
+            "observacao": list_edited_os_forms[7],
+            "materiais": list_edited_os_forms[8],
+            "ponto": list_edited_os_forms[9],
+            "status": list_edited_os_forms[10],
+            "data_andamento": list_edited_os_forms[11],
+            "data_conclusao": list_edited_os_forms[12],
+            "equipe": list_edited_os_forms[13],
+        }
+
+        response = requests.patch(
+            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto?ordem=eq.{list_edited_os_forms[5]}",
+            headers=headers,
+            json=data,
+        )
+
+        return response
+
+    def delete_os(self, order):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        response = requests.delete(
+            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto?ordem=eq.{order}",
+            headers=headers,
+        )
+
+        return response
 
 
 
 class GeoPosition:
 
-    def __init__(self, page, point_location, current_lat, current_lon):
+    def __init__(self, page, point_location):
         self.page = page
         self.point_location = point_location
-        self.current_lat = current_lat
-        self.current_lon = current_lon
+
 
 
         def handle_position_change(e):
 
-            self.current_lat.content.value = f"{e.latitude:.6f}"
-            self.current_lon.content.value = f"{e.longitude:.6f}"
             self.point_location.coordinates = map.MapLatitudeLongitude(e.latitude, e.longitude)
             self.page.update()
 
@@ -1147,7 +1294,7 @@ class GeoPosition:
 
         self.gl = ft.Geolocator(
                     location_settings=ft.GeolocatorAppleSettings(
-                        distance_filter=1,
+                        distance_filter=0,
                     ),
                     on_position_change=handle_position_change,
                     data = 0,
@@ -1158,8 +1305,6 @@ class GeoPosition:
 
         status = await self.gl.get_permission_status_async()
         if str(status) == "GeolocatorPermissionStatus.DENIED":
-            print(f"\n Chmado 3 \n")
-            print(f" \n Status 1: {status} \n")
             await self.gl.request_permission_async(wait_timeout=60)
             return status   
         else:

@@ -3,31 +3,19 @@ from models import *
 import requests
 import threading
 import flet.map as map
+from datetime import datetime
 
 
-def create_page_home(page, name, coord_initial_x, coord_initial_y):
+def create_page_home(page, name, list_initial_coordinates):
 
     page.clean()
 
     loading = LoadingPages(page)
-
     calltexts = CallText(page)
-    coord_text_lat = calltexts.create_calltext(
-                      visible=False,
-                      text=coord_initial_x,
-                      color=ft.colors.BLACK,
-                      size=15,
-                      font=ft.FontWeight.W_600,
-                      col=12,
-                      padding=0,)
-    coord_text_lon = calltexts.create_calltext(
-                      visible=False,
-                      text=coord_initial_y,
-                      color=ft.colors.BLACK,
-                      size=15,
-                      font=ft.FontWeight.W_600,
-                      col=12,
-                      padding=0)
+
+    list_center_map_coordinates = [list_initial_coordinates[0], list_initial_coordinates[1]]
+
+  
     coord_text_zoom = calltexts.create_calltext(
                       visible=False,
                       text="19",
@@ -36,26 +24,11 @@ def create_page_home(page, name, coord_initial_x, coord_initial_y):
                       font=ft.FontWeight.W_600,
                       col=12,
                       padding=0)
-    current_text_lat = calltexts.create_calltext(
-                      visible=False,
-                      text=None,
-                      color=ft.colors.BLACK,
-                      size=15,
-                      font=ft.FontWeight.W_600,
-                      col=12,
-                      padding=0,)
-    current_text_lon = calltexts.create_calltext(
-                      visible=False,
-                      text=None,
-                      color=ft.colors.BLACK,
-                      size=15,
-                      font=ft.FontWeight.W_600,
-                      col=12,
-                      padding=0,)
+
 
     navigations = NavigationDrawer(page)
     action1 = lambda e: loading.new_loading_page(page=page, layout=create_page_login(page)) 
-    action2 = lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, name, coord_initial_x=coord_text_lat.content.value, coord_initial_y=coord_text_lon.content.value), home=True)
+    action2 = lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, name, list_center_map_coordinates), home=True)
     action3 = lambda e: loading.new_loading_page(page=page, layout=create_view_postes_form(page, name, rightmenu)) 
     action4 = lambda e: loading.new_loading_page(page=page, layout=create_view_orders_form(page, name, rightmenu)) 
 
@@ -63,9 +36,6 @@ def create_page_home(page, name, coord_initial_x, coord_initial_y):
 
     menus = SettingsMenu(page)
     menu = menus.create_settings_menu(color=ft.colors.WHITE, col=10, action=lambda e: page.open(rightmenu))
-
-
-
 
 
     point_location = map.Marker(
@@ -108,10 +78,10 @@ def create_page_home(page, name, coord_initial_x, coord_initial_y):
     buttons = Buttons(page)
    
 
-    maps = Map(page, name, point_location, coord_initial_x, coord_initial_y, coord_text_lat, coord_text_lon, coord_text_zoom)
+    maps = Map(page, name, point_location, list_initial_coordinates, list_center_map_coordinates, coord_text_zoom)
     mapa1 = maps.create_map()
     
-    geo = GeoPosition(page, point_location, current_text_lat, current_text_lon)
+    geo = GeoPosition(page, point_location)
 
     maps.update_position
    
@@ -120,14 +90,13 @@ def create_page_home(page, name, coord_initial_x, coord_initial_y):
 
         if point_location.coordinates is not None:
             lat = str(point_location.coordinates.latitude)
-            lon = str(point_location.coordinates.longitude)
-            loading.new_loading_page(page=page, layout=create_page_home(page, name, coord_initial_x=lat, coord_initial_y=lon), home=True)
+            long = str(point_location.coordinates.longitude)
+            list_initial_coordinates = [lat, long]
+            loading.new_loading_page(page=page, layout=create_page_home(page, name, list_initial_coordinates), home=True)
 
 
     async def location(e=None):
         status = await geo.get_permission()
-        print(f" \n {status} \n " )
-        print(status)
         if str(status) == "GeolocatorPermissionStatus.WHILE_IN_USE" or "GeolocatorPermissionStatus.ALWAYS":
             go_to_location()
 
@@ -173,14 +142,11 @@ def create_page_home(page, name, coord_initial_x, coord_initial_y):
             ft.Column(controls=[ft.Container(width=15)]),
         ],
     )
-
-
-
     page.floating_action_button = ft.FloatingActionButton(
                         content=ft.Icon(name=ft.icons.ADD_LOCATION_ROUNDED, color=ft.colors.BLUE, scale=2),
                         bgcolor=ft.colors.WHITE,
                         shape=ft.RoundedRectangleBorder(radius=50),
-                        on_click= lambda e: loading.new_loading_page(page=page, layout=create_page_add_forms(page, name, coord_text_lat.content.value, coord_text_lon.content.value)) 
+                        on_click= lambda e: loading.new_loading_page(page=page, layout=create_page_add_forms(page, name, list_initial_coordinates=[list_center_map_coordinates[0], list_center_map_coordinates[1]])) 
                     )
     page.floating_action_button_location = ft.FloatingActionButtonLocation.MINI_CENTER_DOCKED
     
@@ -202,8 +168,6 @@ def create_page_home(page, name, coord_initial_x, coord_initial_y):
     return ft.ResponsiveRow(
         columns=12,
         controls=[
-                coord_text_lat,
-                coord_text_lon,
                 coord_text_zoom,
                 mapa1,
                 ],
@@ -214,26 +178,24 @@ def create_page_home(page, name, coord_initial_x, coord_initial_y):
 
 
 
-
-
-def create_page_forms(page, name, poste, numero, coord_initial_x, coord_initial_y):
+def create_page_forms(page, name, poste, numero, list_initial_coordinates):
 
     page.clean()
 
     loading = LoadingPages(page)
 
     buttons = Buttons(page)
-    ordem_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_adm_page_order(page, name, poste, numero, coord_initial_x, coord_initial_y)),
+    ordem_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_adm_page_order(page, name, poste, numero, list_initial_coordinates)),
                                         text="Ordens",
                                         color=ft.colors.RED,
                                         col=6,
                                         padding=5,)
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, name, coord_initial_x, coord_initial_y), home=True),
+    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, name, list_initial_coordinates), home=True),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
                                             col=12,
                                             padding=5,)
-    edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_edit_forms(page, name, poste, coord_initial_x, coord_initial_y)),
+    edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_edit_forms(page, name, poste, list_initial_coordinates)),
                                             text="Editar",
                                             color=ft.colors.GREEN,
                                             col=6,
@@ -292,37 +254,17 @@ def create_page_forms(page, name, poste, numero, coord_initial_x, coord_initial_
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
-
-def create_page_os_forms(page, name, order, poste, numero, coord_initial_x, coord_initial_y):
+def create_page_os_forms(page, name, order, poste, numero, list_initial_coordinates):
 
     page.clean()
     loading = LoadingPages(page)
     forms = Forms(page)
+    sp = SupaBase(page)
 
 
-    SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
-    SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
+    os = sp.get_os(order)
 
-    headers = {
-        "apikey": SUPABASE_KEY,
-        "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type": "application/json",
-    }
-
-
-    params = {
-        "ordem": f"eq.{order}",
-        "select": "created_at, ip, reclamante, function, celular, ordem, origem, observacao, materiais, ponto, status, data_andamento, data_conclusao, equipe",
-    }
-
-    # Requisição à API
-    response = requests.get(
-        f"{SUPABASE_URL}/rest/v1/ordens_postes_capeladoalto",
-        headers=headers,
-        params=params,
-    )
-
-    data = response.json()
+    data = os.json()
 
     row = data[0]
 
@@ -346,10 +288,10 @@ def create_page_os_forms(page, name, order, poste, numero, coord_initial_x, coor
 
 
     def go_back(e=None):
-        if numero == None:
+        if poste == None:
             loading.new_loading_page(page=page, layout=create_view_orders_form(page, name, menu=None))
         else:
-            loading.new_loading_page(page=page, layout=create_adm_page_order(page, name, poste, numero, coord_initial_x, coord_initial_y))
+            loading.new_loading_page(page=page, layout=create_adm_page_order(page, name, poste, numero, list_initial_coordinates))
 
 
     buttons = Buttons(page)
@@ -358,7 +300,7 @@ def create_page_os_forms(page, name, order, poste, numero, coord_initial_x, coor
                                             color=ft.colors.AMBER,
                                             col=12,
                                             padding=5,)
-    edit_button = buttons.create_button(on_click=None,
+    edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_edit_os_forms(page, name, poste, ordem, list_initial_coordinates)),
                                             text="Editar",
                                             color=ft.colors.GREEN,
                                             col=6,
@@ -378,30 +320,31 @@ def create_page_os_forms(page, name, order, poste, numero, coord_initial_x, coor
 
 
 
-
-def create_page_add_forms(page, name, lat, long):
+def create_page_add_forms(page, name, list_initial_coordinates):
 
     page.clean()
 
     def send_point(name_profile, object, image):
 
-        lat = object.content.rows[0].cells[1].content.content.value
-        long = object.content.rows[1].cells[1].content.content.value
-        ip = object.content.rows[2].cells[1].content.content.value
-        situ = object.content.rows[3].cells[1].content.content.value
-        tipo = object.content.rows[4].cells[1].content.content.value
-        pontos = object.content.rows[5].cells[1].content.content.value
-        bairro = object.content.rows[6].cells[1].content.content.value
-        logra = object.content.rows[7].cells[1].content.content.value
-        numero = int(ip.split('-')[1])
+        list_forms = [
+                object.content.rows[0].cells[1].content.content.value,
+                object.content.rows[1].cells[1].content.content.value,
+                object.content.rows[2].cells[1].content.content.value,
+                object.content.rows[3].cells[1].content.content.value,
+                object.content.rows[4].cells[1].content.content.value,
+                object.content.rows[5].cells[1].content.content.value,
+                object.content.rows[6].cells[1].content.content.value,
+                object.content.rows[7].cells[1].content.content.value,
+        ]
 
+        list_initial_coordinates = [list_forms[0], list_forms[1]]
 
-        add_point(page, name_profile, numero, lat, long, ip, situ, tipo, pontos, bairro, logra, image=image)
+        add_point(page, name_profile, list_initial_coordinates, list_forms, image=image)
      
     loading = LoadingPages(page)
 
     forms = Forms(page)
-    forms1 = forms.create_add_forms(lat, long, ip="IP SOR-", situ=None, tipo=None, pontos=None, bairro=None, logra=None)
+    forms1 = forms.create_add_forms(list_initial_coordinates[0], list_initial_coordinates[1], ip="IP SOR-", situ=None, tipo=None, pontos=None, bairro=None, logra=None)
 
     buttons = Buttons(page)
     add_button = buttons.create_button(on_click=lambda e :send_point(name, forms1, image_temp.content),
@@ -409,7 +352,7 @@ def create_page_add_forms(page, name, lat, long):
                                             color=ft.colors.GREEN,
                                             col=6,
                                             padding=15,)
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, name, lat, long), home=True),
+    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, name, list_initial_coordinates), home=True),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
                                             col=6,
@@ -459,25 +402,91 @@ def create_page_add_forms(page, name, lat, long):
 
     )
 
+def create_page_add_os_forms(page, name, poste, ip_name, list_initial_coordinates):
 
-def create_page_edit_forms(page, name, poste, coord_initial_x, coord_initial_y):
+    page.clean()
+    loading = LoadingPages(page)
+    forms = Forms(page)
+    buttons = Buttons(page)
+    
+    def send_point(name_profile, object):
+
+        list_add_os = [
+            object.content.rows[0].cells[1].content.content.value,
+            object.content.rows[1].cells[1].content.content.value,
+            object.content.rows[2].cells[1].content.content.value,
+            object.content.rows[3].cells[1].content.content.value,
+            object.content.rows[4].cells[1].content.content.value,
+            object.content.rows[5].cells[1].content.content.value,
+            object.content.rows[6].cells[1].content.content.value,
+            object.content.rows[7].cells[1].content.content.value,
+            object.content.rows[8].cells[1].content.content.value,
+            object.content.rows[9].cells[1].content.content.value,
+            object.content.rows[10].cells[1].content.content.value,
+            object.content.rows[11].cells[1].content.content.value,
+            object.content.rows[12].cells[1].content.content.value,
+            object.content.rows[13].cells[1].content.content.value,
+        ]
+        
+        add_os(page, list_add_os)
+
+    data_atual = datetime.now()
+    data_formatada = data_atual.strftime("%d/%m/%Y")
+
+    list_os_forms = [data_formatada, ip_name, None, None, None, None, None, None, None, None, None, None, None, None]
+
+    numero = int(ip_name.split('-')[1])
+
+    forms1 = forms.create_add_os_forms(list_os_forms)
+
+    add_button = buttons.create_button(on_click=lambda e :send_point(name, forms1),
+                                            text="Adicionar",
+                                            color=ft.colors.GREEN,
+                                            col=6,
+                                            padding=15,)
+    
+    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_adm_page_order(page, name, poste, numero, list_initial_coordinates)),
+                                            text="Voltar",
+                                            color=ft.colors.AMBER,
+                                            col=6,
+                                            padding=15,)
+    
+    return ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            forms1,
+            add_button, 
+            back_home_button   
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+
+    )
+
+
+
+def create_page_edit_forms(page, name, poste, list_initial_coordinates):
 
     page.clean()
 
-    def send_point(name_profile, object, image, coord_initial_x, coord_initial_y):
+    def send_point(name_profile, object, image, list_initial_coordinates):
 
-        lat = object.content.rows[0].cells[1].content.content.value
-        long = object.content.rows[1].cells[1].content.content.value
-        ip = object.content.rows[2].cells[1].content.content.value
-        situ = object.content.rows[3].cells[1].content.content.value
-        tipo = object.content.rows[4].cells[1].content.content.value
-        pontos = object.content.rows[5].cells[1].content.content.value
-        bairro = object.content.rows[6].cells[1].content.content.value
-        logra = object.content.rows[7].cells[1].content.content.value
+        list_forms = [
+            object.content.rows[0].cells[1].content.content.value,
+            object.content.rows[1].cells[1].content.content.value,
+            object.content.rows[2].cells[1].content.content.value,
+            object.content.rows[3].cells[1].content.content.value,
+            object.content.rows[4].cells[1].content.content.value,
+            object.content.rows[5].cells[1].content.content.value,
+            object.content.rows[6].cells[1].content.content.value,
+            object.content.rows[7].cells[1].content.content.value,
+        ]
 
         numero_ant = poste.number
 
-        edit_point(page, name_profile, image, coord_initial_x, coord_initial_y, lat, long, ip, situ, tipo, pontos, bairro, logra, numero_ant)
+        list_initial_coordinates = [list_forms[0], list_forms[1]]
+
+        edit_point(page, name_profile, image, list_initial_coordinates, list_forms, numero_ant)
      
     loading = LoadingPages(page)
 
@@ -485,17 +494,17 @@ def create_page_edit_forms(page, name, poste, coord_initial_x, coord_initial_y):
     forms1 = forms.create_add_forms(poste.lat, poste.long, poste.ip, poste.situacao, poste.tipo, poste.pontos, poste.bairro, poste.logradouro)
 
     buttons = Buttons(page)
-    add_button = buttons.create_button(on_click=lambda e :send_point(name, forms1, image_temp.content, coord_initial_x, coord_initial_y),
+    add_button = buttons.create_button(on_click=lambda e :send_point(name, forms1, image_temp.content, list_initial_coordinates),
                                             text="Salvar",
                                             color=ft.colors.GREEN,
                                             col=6,
                                             padding=5,)
-    delete_button = buttons.create_button(on_click=lambda e :delete_point(page, name, coord_initial_x, coord_initial_y, poste.number),
+    delete_button = buttons.create_button(on_click=lambda e :delete_point(page, name, list_initial_coordinates, poste.number),
                                             text="Excluir",
                                             color=ft.colors.RED,
                                             col=6,
                                             padding=5,)
-    back_home_button = buttons.create_button(on_click=lambda e :loading.new_loading_page(page=page, layout=create_page_home(page, name, coord_initial_x, coord_initial_y), home=True),
+    back_home_button = buttons.create_button(on_click=lambda e :loading.new_loading_page(page=page, layout=create_page_forms(page, name, poste, poste.number, list_initial_coordinates)),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
                                             col=7,
@@ -549,9 +558,99 @@ def create_page_edit_forms(page, name, poste, coord_initial_x, coord_initial_y):
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
+
+def create_page_edit_os_forms(page, name, poste, order, list_initial_coordinates):
+
+    page.clean()
+
+    loading = LoadingPages(page)
+    forms = Forms(page)
+    buttons = Buttons(page)
+    sp = SupaBase(page)
+
+    def send_point(name_profile, object, list_initial_coordinates):
+
+        list_os_edited_forms = [
+            object.content.rows[0].cells[1].content.content.value,
+            object.content.rows[1].cells[1].content.content.value,
+            object.content.rows[2].cells[1].content.content.value,
+            object.content.rows[3].cells[1].content.content.value,
+            object.content.rows[4].cells[1].content.content.value,
+            object.content.rows[5].cells[1].content.content.value,
+            object.content.rows[6].cells[1].content.content.value,
+            object.content.rows[7].cells[1].content.content.value,
+            object.content.rows[8].cells[1].content.content.value,
+            object.content.rows[9].cells[1].content.content.value,
+            object.content.rows[10].cells[1].content.content.value,
+            object.content.rows[11].cells[1].content.content.value,
+            object.content.rows[12].cells[1].content.content.value,
+            object.content.rows[13].cells[1].content.content.value,
+        ]
+
+        edit_os(page, name, order, poste, list_initial_coordinates, list_os_edited_forms)
+     
+
+    os = sp.get_os(order)
+
+    data = os.json()
+
+    row = data[0]
+
+    data_criacao = row["created_at"]
+    ip = row["ip"]
+    reclamante = row["reclamante"]
+    function = row["function"]
+    celular = row["celular"]
+    ordem = row["ordem"]
+    origem = row["origem"]
+    obser = row["observacao"]
+    materiais = row["materiais"]
+    ponto = row["ponto"]
+    status = row["status"]
+    data_andamen = row["data_andamento"]
+    data_conclu = row["data_conclusao"]
+    equipe = row["equipe"]
+
+    numero = int(ip.split('-')[1])
+
+    list_os_forms = [data_criacao, ip, reclamante, function, celular, ordem, origem, obser, materiais, ponto, status, data_andamen, data_conclu, equipe]
+
+    forms1 = forms.create_add_os_forms(list_os_forms)
+
+
+    add_button = buttons.create_button(on_click=lambda e :send_point(name, forms1, list_initial_coordinates),
+                                            text="Salvar",
+                                            color=ft.colors.GREEN,
+                                            col=6,
+                                            padding=5,)
+    delete_button = buttons.create_button(on_click=lambda e :delete_os(page, name, poste, numero, list_initial_coordinates, ordem),
+                                            text="Excluir",
+                                            color=ft.colors.RED,
+                                            col=6,
+                                            padding=5,)
+    back_home_button = buttons.create_button(on_click=lambda e :loading.new_loading_page(page=page, layout=create_page_os_forms(page, name, order, poste, numero, list_initial_coordinates)),
+                                            text="Voltar",
+                                            color=ft.colors.AMBER,
+                                            col=7,
+                                            padding=5,)
+    
+
+
+    return ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            forms1,
+            add_button,
+            delete_button,
+            back_home_button   
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
  
 
-def create_page_order(page, name, poste, numero, coord_initial_x, coord_initial_y):
+
+def create_page_order(page, name, poste, numero, list_initial_coordinates):
 
     page.clean()
 
@@ -595,7 +694,7 @@ def create_page_order(page, name, poste, numero, coord_initial_x, coord_initial_
                                         color=ft.colors.GREEN,
                                         col=6,
                                         padding=15,)
-    back_forms_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_forms(page, name, poste, numero, coord_initial_x, coord_initial_y)),
+    back_forms_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_forms(page, name, poste, numero, list_initial_coordinates)),
                                               text="Voltar",
                                               color=ft.colors.AMBER,
                                               col=6,
@@ -623,8 +722,7 @@ def create_page_order(page, name, poste, numero, coord_initial_x, coord_initial_
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
-
-def create_adm_page_order(page, name, poste, numero, coord_initial_x, coord_initial_y):
+def create_adm_page_order(page, name, poste, numero, list_initial_coordinates):
 
     page.clean()
 
@@ -673,7 +771,7 @@ def create_adm_page_order(page, name, poste, numero, coord_initial_x, coord_init
             def forms(ordem):
                 return lambda e: loading.new_loading_page(
                     page=page,
-                    layout=create_page_os_forms(page, name, ordem, poste, numero, coord_initial_x, coord_initial_y)
+                    layout=create_page_os_forms(page, name, ordem, poste, numero, list_initial_coordinates)
                 )
          
 
@@ -718,12 +816,12 @@ def create_adm_page_order(page, name, poste, numero, coord_initial_x, coord_init
             ),
         )
 
-    send_button = buttons.create_button(on_click=None,
+    send_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_add_os_forms(page, name, poste, poste.ip, list_initial_coordinates)),
                                         text="Adicionar",
                                         color=ft.colors.GREEN,
                                         col=6,
                                         padding=15,)
-    back_forms_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_forms(page, name, poste, numero, coord_initial_x, coord_initial_y)),
+    back_forms_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_forms(page, name, poste, numero, list_initial_coordinates)),
                                               text="Voltar",
                                               color=ft.colors.AMBER,
                                               col=6,
@@ -813,7 +911,6 @@ def create_page_login(page):
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
-
 def create_page_register(page):
 
     page.clean()
@@ -871,9 +968,6 @@ def create_page_register(page):
 
 
 
-
-
-
 def create_view_postes_form(page, profile_name, menu):
 
     textthemes = TextTheme()
@@ -920,23 +1014,25 @@ def create_view_postes_form(page, profile_name, menu):
             Latitude = row["coord_x"]
             Longitude = row["coord_y"]
 
+            list_initial_coordinates = [Latitude, Longitude]
+
             loading = LoadingPages(page)
-            poste = Poste(number, name, situacao, tipo, pontos, bairro, logradouro, Latitude, Longitude)
+            poste = Poste(number, name, situacao, tipo, pontos, bairro, logradouro, list_initial_coordinates[0], list_initial_coordinates[1])
 
-            def forms(poste=poste, number=number, Latitude=Latitude, Longitude=Longitude):
+            def forms(poste=poste, number=number, list_initial_coordinates=list_initial_coordinates):
                 return lambda e: loading.new_loading_page(
                     page=page,
-                    layout=create_page_forms(page, profile_name, poste, number, Latitude, Longitude)
+                    layout=create_page_forms(page, profile_name, poste, number, list_initial_coordinates)
                 )
 
-            def edit(poste=poste, number=number, Latitude=Latitude, Longitude=Longitude):
+            def edit(poste=poste, number=number, list_initial_coordinates=list_initial_coordinates):
                 return lambda e: loading.new_loading_page(
                     page=page,
-                    layout=create_page_edit_forms(page, profile_name, poste, Latitude, Longitude)
+                    layout=create_page_edit_forms(page, profile_name, poste, list_initial_coordinates)
                 )
 
-            def delete(poste=poste, number=number, Latitude=Latitude, Longitude=Longitude):
-                return lambda e :delete_point(page, profile_name, Latitude, Longitude, number)
+            def delete(poste=poste, number=number, list_initial_coordinates=list_initial_coordinates):
+                return lambda e :delete_point(page, profile_name, list_initial_coordinates, number)
 
             linha = ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value=name, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
@@ -998,7 +1094,9 @@ def create_view_postes_form(page, profile_name, menu):
             ),
         )
 
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, profile_name, coord_initial_x="-23.3396", coord_initial_y="-47.8238"), home=True),
+    list_initial_coordinates = ["-23.3396", "-47.8238"]
+
+    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, profile_name, list_initial_coordinates), home=True),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
                                             col=12,
@@ -1014,7 +1112,6 @@ def create_view_postes_form(page, profile_name, menu):
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
-
 
 def create_view_orders_form(page, profile_name, menu):
 
@@ -1061,7 +1158,7 @@ def create_view_orders_form(page, profile_name, menu):
             def forms(ordem):
                 return lambda e: loading.new_loading_page(
                     page=page,
-                    layout=create_page_os_forms(page, profile_name, ordem, poste=None, numero=None, coord_initial_x=None, coord_initial_y=None)
+                    layout=create_page_os_forms(page, profile_name, ordem, poste=None, numero=None, list_initial_coordinates=None)
                 )
          
 
@@ -1105,7 +1202,9 @@ def create_view_orders_form(page, profile_name, menu):
             ),
         )
 
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, profile_name, coord_initial_x="-23.3396", coord_initial_y="-47.8238"), home=True),
+    list_initial_coordinates = ["-23.3396", "-47.8238"]
+
+    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, profile_name, list_initial_coordinates), home=True),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
                                             col=12,
@@ -1123,16 +1222,376 @@ def create_view_orders_form(page, profile_name, menu):
     )
 
 
+
+
+
+
+
+def verificar(username, password, page):
+
+    loading = LoadingPages(page)
+    sp = SupaBase(page)
+
+    if username == "Carlos" and password == "63607120":
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Administrador reconhecido"),
+            bgcolor=ft.colors.GREEN,
+            duration= 1000,
+        )
+        page.snack_bar.open = True
+        list_initial_coordinates = ["-23.3396", "-47.8238"]
+        loading.new_loading_page(page=page, layout=create_page_home(page, name="Carlos", list_initial_coordinates=list_initial_coordinates), home=True)
+
+    else:
+
+        response = sp.get_login(username=username, password=password)
+
+        if response.status_code == 200 and len(response.json()) > 0:
+            page.snack_bar = ft.SnackBar(
+            content=ft.Text("Login realizado"),
+            bgcolor=ft.colors.GREEN,
+            duration= 1000,
+            )
+            list_initial_coordinates = ["-23.3396", "-47.8238"]
+            loading.new_loading_page(page=page, layout=create_page_home(page, username, list_initial_coordinates), home=True)
+            
+        else:
+            # Exibe mensagem de erro se as credenciais não forem encontradas
+            page.snack_bar = ft.SnackBar(
+                content=ft.Text("Login ou senha incorretos"),
+                bgcolor=ft.colors.RED
+            )
+
+        page.snack_bar.open = True
+        page.update()
+
+def register(username, email, number, password1, password2, page):
+
+    sp = SupaBase(page)
+
+    # Verificar se todos os campos estão preenchidos
+    if not username or not email or not number or not password1 or not password2:
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Alguns campos não foram preenchidos"),
+            bgcolor=ft.colors.RED
+        )
+        page.snack_bar.open = True
+        page.update()
+        return  # Interrompe a execução da função
+    
+    #Verificar se as senhas coincidem
+    if password1 != password2:
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("As senhas não coincidem"),
+            bgcolor=ft.colors.RED
+        )
+        page.snack_bar.open = True
+        page.update()
+        return  # Interrompe a execução da função 
+    
+    response = sp.register(username, email, number, password1, password2)
+
+    # Verificar se a inserção foi bem-sucedida
+    if response.status_code == 201:
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Usuário registrado com sucesso"),
+            bgcolor=ft.colors.GREEN
+        )
+    else:
+        print(f"Erro ao inserir registro: {response.status_code}")
+        print(f"Resposta do erro: {response.text}")
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(f"Erro ao registrar usuário: {response.text}"),
+            bgcolor=ft.colors.RED
+        )
+
+    page.snack_bar.open = True
+    page.update()
+
+
+
+def add_point(page, name_profile, list_initial_coordinates, list_forms, image):
+
+    sp = SupaBase(page)
+
+    # Verificar se todos os campos estão preenchidos
+    if any(field == "" or field is None for field in list_forms):
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Alguns campos não foram preenchidos"),
+            bgcolor=ft.colors.RED
+        )
+        page.snack_bar.open = True
+        page.update()
+        return  # Interrompe a execução da função
+    
+    response = sp.add_point(list_forms, image)
+
+    # Verificar se a inserção foi bem-sucedida
+    if response.status_code == 201:
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Ponto adicionado com sucesso"),
+            bgcolor=ft.colors.GREEN,
+            duration=2500,
+        )
+
+        loading = LoadingPages(page)
+        loading.new_loading_page(page=page, layout=create_page_home(page, name_profile, list_initial_coordinates), home=True)
+        
+    else:
+        print(f"Erro ao inserir ponto: {response.status_code}")
+        print(f"Resposta do erro: {response.text}")
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(f"Erro ao inserir ponto: {response.text}"),
+            bgcolor=ft.colors.RED,
+            duration=4000,
+        )
+ 
+    page.snack_bar.open = True
+    page.update()
+
+def add_os(page, list_add_os):
+
+    sp = SupaBase(page)
+   
+    if any(field == "" or field is None for field in list_add_os):
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Alguns campos não foram preenchidos"),
+            bgcolor=ft.colors.RED
+        )
+        page.snack_bar.open = True
+        page.update()
+        return  # Interrompe a execução da função
+    
+    response = sp.add_os(list_add_os)
+
+    # Verificar se a inserção foi bem-sucedida
+    if response.status_code == 201:
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Ordem adicionada com sucesso"),
+            bgcolor=ft.colors.GREEN,
+            duration=2500,
+        )
+      
+    else:
+        print(f"Erro ao adicionar ordem: {response.status_code}")
+        print(f"Resposta do erro: {response.text}")
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(f"Erro ao adicionar ordem: {response.text}"),
+            bgcolor=ft.colors.RED,
+            duration=4000,
+        )
+ 
+    page.snack_bar.open = True
+    page.update()
+
+
+
+def edit_point(page, name_profile, image, list_initial_coordinates, list_forms, numero_ant):
+
+    sp = SupaBase(page)
+
+    page.snack_bar = ft.SnackBar(
+        content=ft.Text("Alterando..."),
+        bgcolor=ft.colors.ORANGE,
+        duration=1000,
+    )
+    page.snack_bar.open = True
+    page.update()
+
+    if any(field == "" or field is None for field in list_forms):
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Alguns campos não foram preenchidos"),
+            bgcolor=ft.colors.RED
+        )
+        page.snack_bar.open = True
+        page.update()
+        return  # Interrompe a execução da função
+
+    response = sp.edit_point(image, list_forms, numero_ant)
+    
+    if response.status_code in [200, 204]:  # 204 indica sucesso sem conteúdo
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Alterações Salvas"),
+            bgcolor=ft.colors.GREEN,
+            duration=2000,
+        )
+        loading = LoadingPages(page)
+        loading.new_loading_page(page=page, layout=create_page_home(page, name_profile, list_initial_coordinates), home=True)
+
+    else:
+        print(f"Erro ao editar ponto: {response.status_code}")
+        print(f"Resposta do erro: {response.text}")
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(f"Erro ao editar ponto: {response.text}"),
+            bgcolor=ft.colors.RED
+        )
+
+
+    page.snack_bar.open = True
+
+def edit_os(page, name, order, poste, list_initial_coordinates, list_edited_os_forms):
+
+    sp = SupaBase(page)
+    loading = LoadingPages(page)
+
+    numero = int(list_edited_os_forms[1].split('-')[1])
+
+    page.snack_bar = ft.SnackBar(
+        content=ft.Text("Alterando..."),
+        bgcolor=ft.colors.ORANGE,
+        duration=1000,
+    )
+    page.snack_bar.open = True
+    page.update()
+
+
+    if any(field == "" or field is None for field in list_edited_os_forms):
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Alguns campos não foram preenchidos"),
+            bgcolor=ft.colors.RED
+        )
+        page.snack_bar.open = True
+        page.update()
+        return  # Interrompe a execução da função
+
+    response = sp.edit_os(list_edited_os_forms)
+    
+    if response.status_code in [200, 204]:  # 204 indica sucesso sem conteúdo
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Alterações Salvas"),
+            bgcolor=ft.colors.GREEN,
+            duration=2000,
+        )
+        loading.new_loading_page(page=page, layout=create_page_os_forms(page, name, order, poste, numero, list_initial_coordinates))
+
+    else:
+        print(f"Erro ao editar ponto: {response.status_code}")
+        print(f"Resposta do erro: {response.text}")
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(f"Erro ao editar ponto: {response.text}"),
+            bgcolor=ft.colors.RED
+        )
+
+
+    page.snack_bar.open = True
+    page.update()
+
+
+
+def delete_point(page, name_profile, list_initial_coordinates, numero):
+
+    page.snack_bar = ft.SnackBar(
+        content=ft.Text("Excluindo..."),
+        bgcolor=ft.colors.ORANGE,
+        duration=1000,
+    )
+    page.snack_bar.open = True
+    page.update()
+
+    # Verificar conexão com a internet
+    try:
+        requests.get("https://www.google.com", timeout=5)
+    except requests.ConnectionError:
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text("Sem conexão com a internet"),
+            bgcolor=ft.colors.RED
+        )
+        page.snack_bar.open = True
+        page.update()
+        return  # Interrompe a execução se não há conexão
+
+    # URL e chave do Supabase
+    SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
+    SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
+
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    # Excluir o ponto cujo número seja igual à variável `numero`
+    response1 = requests.delete(
+        f"{SUPABASE_URL}/rest/v1/points_capeladoalto?number=eq.{numero}",
+        headers=headers,
+    )
+
+    # Verificar se a exclusão foi bem-sucedida
+    if response1.status_code == 204:
+
+        sp = SupaBase(page)
+        sp.delete_storage(numero=numero)
+
+        page.snack_bar = ft.SnackBar(
+                content=ft.Text("Ponto excluido"),
+                bgcolor=ft.colors.GREEN,
+                duration=2500,
+            )
+
+        loading = LoadingPages(page)
+        loading.new_loading_page(page=page, layout=create_page_home(page, name_profile, list_initial_coordinates), home=True)
+
+    else:
+        print(f"Erro ao excluir ponto: {response1.status_code}")
+        print(f"Resposta do erro: {response1.text}")
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(f"Erro ao excluir ponto: {response1.text}"),
+            bgcolor=ft.colors.RED
+        )
+
+    # Exibir a mensagem e atualizar a página
+    page.snack_bar.open = True
+    page.update()
+
+def delete_os(page, name_profile, poste, numero, list_initial_coordinates, order):
+
+    page.snack_bar = ft.SnackBar(
+        content=ft.Text("Excluindo..."),
+        bgcolor=ft.colors.ORANGE,
+        duration=1000,
+    )
+    page.snack_bar.open = True
+    page.update()
+
+    sp = SupaBase(page)
+
+    response = sp.delete_os(order)
+
+    if response.status_code == 204:
+
+        page.snack_bar = ft.SnackBar(
+                content=ft.Text("Ordem excluida"),
+                bgcolor=ft.colors.GREEN,
+                duration=2500,
+            )
+
+        loading = LoadingPages(page)
+        loading.new_loading_page(page=page, layout=create_adm_page_order(page, name_profile, poste, numero, list_initial_coordinates))
+
+    else:
+        print(f"Erro ao excluir ordem: {response.status_code}")
+        print(f"Resposta do erro: {response.text}")
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(f"Erro ao excluir ordem: {response.text}"),
+            bgcolor=ft.colors.RED
+        )
+
+    # Exibir a mensagem e atualizar a página
+    page.snack_bar.open = True
+    page.update()
+
+
+
+
+
 class Map:
 
-    def __init__(self, page, name, point_location, coord_initial_x, coord_initial_y, coord_text_lat, coord_text_lon, coord_text_zoom):
+    def __init__(self, page, name, point_location, list_initial_coordinates, list_center_map_coordinates, coord_text_zoom):
         self.page = page
         self.name = name
         self.point_location = point_location
-        self.coord_initial_x = coord_initial_x
-        self.coord_initial_y = coord_initial_y
-        self.coord_text_lat = coord_text_lat
-        self.coord_text_lon = coord_text_lon
+        self.initial_coordinates = list_initial_coordinates
+        self.center_map_coordinates = list_center_map_coordinates 
         self.coord_text_zoom = coord_text_zoom
 
         self.google = None
@@ -1147,11 +1606,9 @@ class Map:
         self.MarkerLayer = mappoints
 
         def handle_event(e: map.MapEvent):
-            self.coord_text_lat.content.value = f"{e.center.latitude:.6f}"
-            self.coord_text_lon.content.value = f"{e.center.longitude:.6f}"
+            self.center_map_coordinates[0] = f"{e.center.latitude:.6f}"
+            self.center_map_coordinates[1] = f"{e.center.longitude:.6f}"
             self.coord_text_zoom.content.value = f"{e.zoom:.2f}"
-            self.coord_text_lat.update()
-            self.coord_text_lon.update()
             self.coord_text_zoom.update()
 
             self.page.update()
@@ -1160,7 +1617,7 @@ class Map:
         self.google = map.Map(
                     expand=True,  
                     configuration=map.MapConfiguration(
-                        initial_center=map.MapLatitudeLongitude(self.coord_initial_x, self.coord_initial_y),  
+                        initial_center=map.MapLatitudeLongitude(self.initial_coordinates[0], self.initial_coordinates[1]),  
                         initial_zoom=19,
                         on_event=handle_event,
                     ),
@@ -1286,13 +1743,15 @@ class Marker:
             Latitude = row["coord_x"]
             Longitude = row["coord_y"]
 
+            list_initial_coordinates = [Latitude, Longitude]
+
             loading = LoadingPages(self.page)
             poste = Poste(number, name, situacao, tipo, pontos, bairro, logradouro, Latitude, Longitude)
 
-            def create_on_click(poste=poste, number=number, Latitude=Latitude, Longitude=Longitude):
+            def create_on_click(poste=poste, number=number, list_initial_coordinates=list_initial_coordinates):
                 return lambda e: loading.new_loading_page(
                     page=self.page,
-                    layout=create_page_forms(self.page, nome_perfil, poste, number, Latitude, Longitude)
+                    layout=create_page_forms(self.page, nome_perfil, poste, number, list_initial_coordinates)
                 )
 
             # Cria o botão com o valor correspondente de 'number'
@@ -1316,243 +1775,6 @@ class Marker:
 
         # Retorna a lista de marcadores
         return FinalPoints
-
-
-
-
-
-
-def verificar(username, password, page):
-
-    loading = LoadingPages(page)
-    sp = SupaBase(page)
-
-    if username == "Carlos" and password == "63607120":
-        page.snack_bar = ft.SnackBar(
-            content=ft.Text("Administrador reconhecido"),
-            bgcolor=ft.colors.GREEN,
-            duration= 1000,
-        )
-        page.snack_bar.open = True
-        loading.new_loading_page(page=page, layout=create_page_home(page, name="Carlos", coord_initial_x="-23.3396", coord_initial_y="-47.8238"), home=True)
-
-    else:
-
-        response = sp.get_login(username=username, password=password)
-
-        if response.status_code == 200 and len(response.json()) > 0:
-            page.snack_bar = ft.SnackBar(
-            content=ft.Text("Login realizado"),
-            bgcolor=ft.colors.GREEN,
-            duration= 1000,
-            )
-            loading.new_loading_page(page=page, layout=create_page_home(page, username, coord_initial_x="-23.3396", coord_initial_y="-47.8238"), home=True)
-            
-        else:
-            # Exibe mensagem de erro se as credenciais não forem encontradas
-            page.snack_bar = ft.SnackBar(
-                content=ft.Text("Login ou senha incorretos"),
-                bgcolor=ft.colors.RED
-            )
-
-        page.snack_bar.open = True
-        page.update()
-
-
-def register(username, email, number, password1, password2, page):
-
-    sp = SupaBase(page)
-
-    # Verificar se todos os campos estão preenchidos
-    if not username or not email or not number or not password1 or not password2:
-        page.snack_bar = ft.SnackBar(
-            content=ft.Text("Alguns campos não foram preenchidos"),
-            bgcolor=ft.colors.RED
-        )
-        page.snack_bar.open = True
-        page.update()
-        return  # Interrompe a execução da função
-    
-    #Verificar se as senhas coincidem
-    if password1 != password2:
-        page.snack_bar = ft.SnackBar(
-            content=ft.Text("As senhas não coincidem"),
-            bgcolor=ft.colors.RED
-        )
-        page.snack_bar.open = True
-        page.update()
-        return  # Interrompe a execução da função 
-    
-    response = sp.register(username, email, number, password1, password2)
-
-    # Verificar se a inserção foi bem-sucedida
-    if response.status_code == 201:
-        page.snack_bar = ft.SnackBar(
-            content=ft.Text("Usuário registrado com sucesso"),
-            bgcolor=ft.colors.GREEN
-        )
-    else:
-        print(f"Erro ao inserir registro: {response.status_code}")
-        print(f"Resposta do erro: {response.text}")
-        page.snack_bar = ft.SnackBar(
-            content=ft.Text(f"Erro ao registrar usuário: {response.text}"),
-            bgcolor=ft.colors.RED
-        )
-
-    page.snack_bar.open = True
-    page.update()
-
-
-def add_point(page, name_profile, numero, lat, long, ip, situ, tipo, pontos, bairro, logra, image):
-
-    sp = SupaBase(page)
-
-    # Verificar se todos os campos estão preenchidos
-    if not lat or not long or not ip or not situ or not tipo or not pontos or not bairro or not logra:
-        page.snack_bar = ft.SnackBar(
-            content=ft.Text("Alguns campos não foram preenchidos"),
-            bgcolor=ft.colors.RED
-        )
-        page.snack_bar.open = True
-        page.update()
-        return  # Interrompe a execução da função
-    
-    response = sp.add_point(numero, lat, long, ip, situ, tipo, pontos, bairro, logra, image)
-
-    # Verificar se a inserção foi bem-sucedida
-    if response.status_code == 201:
-        page.snack_bar = ft.SnackBar(
-            content=ft.Text("Ponto adicionado com sucesso"),
-            bgcolor=ft.colors.GREEN,
-            duration=2500,
-        )
-
-        loading = LoadingPages(page)
-        loading.new_loading_page(page=page, layout=create_page_home(page, name_profile, lat, long,), home=True)
-        
-    else:
-        print(f"Erro ao inserir ponto: {response.status_code}")
-        print(f"Resposta do erro: {response.text}")
-        page.snack_bar = ft.SnackBar(
-            content=ft.Text(f"Erro ao inserir ponto: {response.text}"),
-            bgcolor=ft.colors.RED,
-            duration=4000,
-        )
- 
-    page.snack_bar.open = True
-    page.update()
-
-
-def edit_point(page, name_profile, image, coord_initial_x, coord_initial_y, lat, long, ip, situ, tipo, pontos, bairro, logra, numero_ant):
-
-    sp = SupaBase(page)
-
-    page.snack_bar = ft.SnackBar(
-        content=ft.Text("Alterando..."),
-        bgcolor=ft.colors.ORANGE,
-        duration=1000,
-    )
-    page.snack_bar.open = True
-    page.update()
-
-    if not all([lat, long, ip, situ, tipo, pontos, bairro, logra]):
-        page.snack_bar = ft.SnackBar(
-            content=ft.Text("Alguns campos não foram preenchidos"),
-            bgcolor=ft.colors.RED
-        )
-        page.snack_bar.open = True
-        page.update()
-        return  # Interrompe a execução da função
-
-    response = sp.edit_point(image, lat, long, ip, situ, tipo, pontos, bairro, logra, numero_ant)
-    
-    if response.status_code in [200, 204]:  # 204 indica sucesso sem conteúdo
-        page.snack_bar = ft.SnackBar(
-            content=ft.Text("Alterações Salvas"),
-            bgcolor=ft.colors.GREEN,
-            duration=2000,
-        )
-        loading = LoadingPages(page)
-        loading.new_loading_page(page=page, layout=create_page_home(page, name_profile, coord_initial_x, coord_initial_y), home=True)
-
-    else:
-        print(f"Erro ao editar ponto: {response.status_code}")
-        print(f"Resposta do erro: {response.text}")
-        page.snack_bar = ft.SnackBar(
-            content=ft.Text(f"Erro ao editar ponto: {response.text}"),
-            bgcolor=ft.colors.RED
-        )
-
-
-    page.snack_bar.open = True
-    page.update()
-
-
-
-def delete_point(page, name_profile, coord_initial_x, coord_initial_y, numero):
-
-    page.snack_bar = ft.SnackBar(
-        content=ft.Text("Excluindo..."),
-        bgcolor=ft.colors.ORANGE,
-        duration=1000,
-    )
-    page.snack_bar.open = True
-    page.update()
-
-    # Verificar conexão com a internet
-    try:
-        requests.get("https://www.google.com", timeout=5)
-    except requests.ConnectionError:
-        page.snack_bar = ft.SnackBar(
-            content=ft.Text("Sem conexão com a internet"),
-            bgcolor=ft.colors.RED
-        )
-        page.snack_bar.open = True
-        page.update()
-        return  # Interrompe a execução se não há conexão
-
-    # URL e chave do Supabase
-    SUPABASE_URL = "https://ipyhpxhsmyzzkvucdonu.supabase.co"
-    SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
-
-    headers = {
-        "apikey": SUPABASE_KEY,
-        "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type": "application/json",
-    }
-
-    # Excluir o ponto cujo número seja igual à variável `numero`
-    response1 = requests.delete(
-        f"{SUPABASE_URL}/rest/v1/points_capeladoalto?number=eq.{numero}",
-        headers=headers,
-    )
-
-    # Verificar se a exclusão foi bem-sucedida
-    if response1.status_code == 204:
-
-        sp = SupaBase(page)
-        sp.delete_storage(numero=numero)
-
-        page.snack_bar = ft.SnackBar(
-                content=ft.Text("Ponto excluido"),
-                bgcolor=ft.colors.GREEN,
-                duration=2500,
-            )
-
-        loading = LoadingPages(page)
-        loading.new_loading_page(page=page, layout=create_page_home(page, name_profile, coord_initial_x, coord_initial_y), home=True)
-
-    else:
-        print(f"Erro ao excluir ponto: {response1.status_code}")
-        print(f"Resposta do erro: {response1.text}")
-        page.snack_bar = ft.SnackBar(
-            content=ft.Text(f"Erro ao excluir ponto: {response1.text}"),
-            bgcolor=ft.colors.RED
-        )
-
-    # Exibir a mensagem e atualizar a página
-    page.snack_bar.open = True
-    page.update()
 
 
 class SearchBar:
@@ -1614,11 +1836,11 @@ class SearchBar:
             loading = LoadingPages(self.page)
 
             # Função para criar o evento de clique com coordenadas fixas
-            def create_on_click(lat=Latitude, lon=Longitude):
+            def create_on_click(lat=Latitude, long=Longitude):
 
                 return lambda e: loading.new_loading_page(
                     page=self.page,
-                    layout=create_page_home(self.page, name, coord_initial_x=lat, coord_initial_y=lon),
+                    layout=create_page_home(self.page, name, list_initial_coordinates=[lat, long]),
                     home=True,
                 )
 

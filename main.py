@@ -12,10 +12,12 @@ def main(page: ft.Page):
     page.scroll = "auto"
     page.padding=0  
 
+    list_initial_coordinates = ["-23.3396", "-47.8238"]
+    name = "Carlos"
 
     loading = LoadingPages(page)
-#    loading.first_loading_page(page=page, layout=create_page_login(page))
-    loading.new_loading_page(page=page, layout=create_page_home(page, name="Carlos", coord_initial_x="-23.3396", coord_initial_y="-47.8238"), home=True)
+    loading.first_loading_page(page=page, layout=create_page_login(page))
+#    loading.new_loading_page(page=page, layout=create_page_home(page, name, list_initial_coordinates), home=True)
 
 if __name__ == "__main__":
     ft.app(target=main, upload_dir="uploads")
