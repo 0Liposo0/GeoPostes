@@ -1,7 +1,8 @@
 import flet as ft
 import requests
 import flet.map as map
-import threading
+from PIL import Image
+import io
 
 
 
@@ -491,7 +492,7 @@ class Forms:
         )
     
 
-    def create_os_forms(self, data_criacao, ip, reclamante, function, celular, ordem, origem, obser, materiais, ponto, status, data_andamen, data_conclu, equipe):
+    def create_os_forms(self, data_criacao, ip, reclamante, function, celular, order, origem, obser, materiais, ponto, status, data_andamen, data_conclu, equipe):
 
         textthemes = TextTheme()
         texttheme1 = textthemes.create_text_theme1()
@@ -540,7 +541,7 @@ class Forms:
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Ordem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=ft.Text(value=ordem, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                            ft.Container(content=ft.Text(value=order, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
                         )
                     ]),
                     ft.DataRow(cells=[
@@ -864,11 +865,10 @@ class GalleryPicker:
             self.page.snack_bar.open = True
 
             selected_image = e.files[0]
-            print(selected_image.path)  
 
-            image_container = ft.Image(src=selected_image.path) 
+            image_container = ft.Image(src=selected_image.path, col=8) 
 
-            self.image_temp.content = image_container 
+            self.image_temp.content = image_container
 
             self.page.update()
 
@@ -883,7 +883,8 @@ class SupaBase:
         )
 
 
-    def add_storage(self, numero, image):
+    def add_storage(self, numero, image, angle_image):
+
         
         headers = {
             'Authorization': f'Bearer {self.supabase_key}',
@@ -892,8 +893,23 @@ class SupaBase:
 
         storage_path = f'postes_images_points/postes/{numero}.jpg'
 
-        with open(image.src, 'rb') as file:
-            bytes = file.read()
+        if angle_image == 0 or angle_image == 180:
+            ajusted_angle = angle_image - 90
+        elif angle_image == 270:
+            ajusted_angle = 0
+        else:
+            ajusted_angle = 180
+
+
+        with Image.open(image.src) as img:
+            # Rotaciona a imagem para o ângulo desejado (em graus)
+            angle = float(ajusted_angle)  # Defina o ângulo que deseja
+            rotated_img = img.rotate(angle, expand=True)
+
+            # Converte a imagem rotacionada para bytes
+            img_byte_arr = io.BytesIO()
+            rotated_img.save(img_byte_arr, format='JPEG')  # ou 'JPEG' dependendo do formato da imagem original
+            bytes = img_byte_arr.getvalue()
 
 
         response = requests.post(
@@ -902,9 +918,8 @@ class SupaBase:
                 data=bytes
             )
         
-        if response.status_code == 200:
-                print("Imagem enviada com sucesso!")
-        else:
+        if response.status_code != 200:
+             
             print("Erro ao enviar imagem:", response.json())
             return None
         
@@ -914,7 +929,6 @@ class SupaBase:
         public_url = f"{self.supabase_url}/storage/v1/object/public/{storage_path}"
         response = requests.get(public_url)
         if response.status_code == 200:
-            print(f"Imagem encontrada: {public_url}")
             return public_url 
         else:
             print(f"Erro ao buscar a imagem: {response.status_code} - {response.text}")
@@ -1019,7 +1033,7 @@ class SupaBase:
 
             return response
 
-    def add_point(self, list_forms, image):
+    def add_point(self, list_forms, image, angle):
 
         numero = int(list_forms[2].split('-')[1])
 
@@ -1050,7 +1064,7 @@ class SupaBase:
 
             sp = SupaBase(self.page)
             try:
-                sp.add_storage(numero=numero, image=image)
+                sp.add_storage(numero=numero, image=image, angle_image=angle)
                 image_url = sp.get_storage(numero=numero)
             except:
                 self.page.snack_bar = ft.SnackBar(
@@ -1094,12 +1108,12 @@ class SupaBase:
         response = requests.get(
             f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
             headers=headers,
-            params={"select": "ordem", "ordem": f"eq.{list_add_os[5]}"}
+            params={"select": "order_id", "order_id": f"eq.{list_add_os[5]}"}
         )
 
         if response.status_code == 200 and response.json():
             self.page.snack_bar = ft.SnackBar(
-                content=ft.Text(f"{list_add_os[5]} já foi cadastrado, ordem não adicionada"),
+                content=ft.Text(f"{list_add_os[5]} já foi cadastrado, ordem {list_add_os[5]} não adicionada"),
                 bgcolor=ft.colors.RED
             )
             self.page.snack_bar.open = True
@@ -1113,7 +1127,7 @@ class SupaBase:
             "reclamante": list_add_os[2],
             "function": list_add_os[3],
             "celular": list_add_os[4],
-            "ordem": list_add_os[5],
+            "order_id": list_add_os[5],
             "origem": list_add_os[6],
             "observacao": list_add_os[7],
             "materiais": list_add_os[8],
@@ -1211,8 +1225,8 @@ class SupaBase:
         }
 
         params = {
-        "ordem": f"eq.{order}",
-        "select": "created_at, ip, reclamante, function, celular, ordem, origem, observacao, materiais, ponto, status, data_andamento, data_conclusao, equipe",
+        "order_id": f"eq.{order}",
+        "select": "created_at, ip, reclamante, function, celular, order_id, origem, observacao, materiais, ponto, status, data_andamento, data_conclusao, equipe",
         }
 
         response = requests.get(
@@ -1222,6 +1236,29 @@ class SupaBase:
         )
 
         return response
+
+    def get_os_id(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+        "select": "order_id", "order": "order_id.desc", "limit": 1,
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
+            headers=headers,
+            params=params,
+        )
+
+        next_id = response.json()[0]["order_id"] if response.json() else 0
+        new_id = int(next_id) + 1
+
+        return new_id
 
     def edit_os(self, list_edited_os_forms):
 
@@ -1241,7 +1278,7 @@ class SupaBase:
             "reclamante": list_edited_os_forms[2],
             "function": list_edited_os_forms[3],
             "celular": list_edited_os_forms[4],
-            "ordem": list_edited_os_forms[5],
+            "order_id": list_edited_os_forms[5],
             "origem": list_edited_os_forms[6],
             "observacao": list_edited_os_forms[7],
             "materiais": list_edited_os_forms[8],
@@ -1253,7 +1290,7 @@ class SupaBase:
         }
 
         response = requests.patch(
-            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto?ordem=eq.{list_edited_os_forms[5]}",
+            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto?order_id=eq.{list_edited_os_forms[5]}",
             headers=headers,
             json=data,
         )
@@ -1269,7 +1306,7 @@ class SupaBase:
         }
 
         response = requests.delete(
-            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto?ordem=eq.{order}",
+            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto?order_id=eq.{order}",
             headers=headers,
         )
 
@@ -1284,12 +1321,10 @@ class GeoPosition:
         self.point_location = point_location
 
 
-
         def handle_position_change(e):
-
-            self.point_location.coordinates = map.MapLatitudeLongitude(e.latitude, e.longitude)
-            self.page.update()
-
+            if self.page.route == "/home":
+                self.point_location.coordinates = map.MapLatitudeLongitude(e.latitude, e.longitude)
+                self.page.update_async()  
 
 
         self.gl = ft.Geolocator(
@@ -1300,6 +1335,7 @@ class GeoPosition:
                     data = 0,
                     )
         self.page.overlay.append(self.gl)
+
 
     async def get_permission(self, e=None):
 

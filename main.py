@@ -13,11 +13,11 @@ def main(page: ft.Page):
     page.padding=0  
 
     list_initial_coordinates = ["-23.3396", "-47.8238"]
-    name = "Carlos"
+    list_profile =["Carlos"]
 
     loading = LoadingPages(page)
     loading.first_loading_page(page=page, layout=create_page_login(page))
-#    loading.new_loading_page(page=page, layout=create_page_home(page, name, list_initial_coordinates), home=True)
+#    loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates), home=True)
 
 if __name__ == "__main__":
     ft.app(target=main, upload_dir="uploads")
