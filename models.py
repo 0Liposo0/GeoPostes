@@ -3,6 +3,8 @@ import requests
 import flet.map as map
 from PIL import Image
 import io
+from datetime import datetime
+import time
 
 
 
@@ -423,7 +425,7 @@ class Forms:
     def __init__(self, page):
         self.page = page
 
-    def create_forms(self, poste):
+    def create_post_form(self, list_post_form):
 
         textthemes = TextTheme()
         texttheme1 = textthemes.create_text_theme1()
@@ -440,51 +442,39 @@ class Forms:
                 ],
                 rows=[
                     ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Latitude", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=poste.lat, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Longitude", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=poste.long, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=ft.Text(value=poste.ip, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                            ft.Container(content=ft.Text(value=list_post_form[0], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
                         )
                     ]),
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Situação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=ft.Text(value=poste.situacao, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                            ft.Container(content=ft.Text(value=list_post_form[1], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
                         )
                     ]),
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Tipo de Lâmpada", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=ft.Text(value=poste.tipo, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                            ft.Container(content=ft.Text(value=list_post_form[2], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
                         )
                     ]),
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Pontos", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=ft.Text(value=poste.pontos, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                            ft.Container(content=ft.Text(value=list_post_form[3], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
                         )
                     ]),
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Bairro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=ft.Text(value=poste.bairro, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                            ft.Container(content=ft.Text(value=list_post_form[4], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
                         )
                     ]),
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Logradouro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=ft.Text(value=poste.logradouro, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                            ft.Container(content=ft.Text(value=list_post_form[5], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
                         )
                     ]),
                 ],
@@ -597,14 +587,12 @@ class Forms:
         )
 
 
-    def create_add_forms(self, lat, long, ip, situ, tipo, pontos, bairro, logra):
+    def create_add_forms(self, ip, situ, tipo, pontos, bairro, logra):
 
         textthemes = TextTheme()
         texttheme1 = textthemes.create_text_theme1()
 
         textfields = TextField(self.page)
-        latitude_field = textfields.create_textfield(value=lat, text=None, password=False)
-        longitude_field = textfields.create_textfield(value=long, text=None, password=False)
         ip_field = textfields.create_textfield(value=ip, text=None, password=False)
         situacao_field = textfields.create_textfield(value=situ, text=None, password=False)
         tipo_field = textfields.create_textfield(value=tipo, text=None, password=False)
@@ -623,18 +611,6 @@ class Forms:
                     ft.DataColumn(ft.Text(value="")),  # Segunda coluna
                 ],
                 rows=[
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Latitude", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=latitude_field, width=200)  # Ajuste da largura
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Longitude", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=longitude_field, width=200)
-                        )
-                    ]),
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
@@ -804,24 +780,24 @@ class LoadingPages:
 
     def new_loading_page(self, page, layout, home=False, anchor=False):
 
-        page.clean()
-
         page.go("/")
-
-        page.add(layout)
-
-        page.scroll_to(1)
 
         if home == False:
             page.floating_action_button.visible = False
             page.bottom_appbar.visible = False
             page.appbar.visible = False
+            page.update()
 
         else:
             page.go("/home")
             page.floating_action_button.visible = True
             page.bottom_appbar.visible = True
             page.appbar.visible = True
+            page.update()
+
+        page.add(layout)
+
+        page.scroll_to(1)
         
         page.update()
 
@@ -838,41 +814,6 @@ class LoadingPages:
         page.update()
  
 
-class GalleryPicker:
-
-    def __init__(self, page, image_temp):
-
-        self.page = page
-        self.image_temp = image_temp
-        self.fp = ft.FilePicker(on_result=self.on_image_selected) # cria o objeto de seleção de arquivos e adiciona uma chamada de função para quando arquivo for escolhido
-        self.page.overlay.append(self.fp) # adiciona o objeto a sebreposição da página
-
-
-    def open_gallery(self, e):   # e representa o clique do botão que disparou o evento
-   
-        self.fp.pick_files(               # chama a janela de seleção de arquivos
-            allow_multiple=False,
-            file_type=ft.FilePickerFileType.IMAGE
-        )
-
-    def on_image_selected(self, e: ft.FilePickerResultEvent):
-
-            self.page.snack_bar = ft.SnackBar(
-                content=ft.Text(value="Adicionando imagem...", color=ft.colors.BLACK),
-                duration=2000,
-                bgcolor=ft.colors.AMBER,
-            )
-            self.page.snack_bar.open = True
-
-            selected_image = e.files[0]
-
-            image_container = ft.Image(src=selected_image.path, col=8) 
-
-            self.image_temp.content = image_container
-
-            self.page.update()
-
-
 class SupaBase:
 
     def __init__(self, page):
@@ -882,16 +823,120 @@ class SupaBase:
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlweWhweGhzbXl6emt2dWNkb251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1NjQ3NDIsImV4cCI6MjA0MzE0MDc0Mn0.qA9H-UyAEx2OgihW1d_i2IjqQ5HTt1e4ITr52J5qRsA"
         )
 
+    def get_url(self):
+        return self.supabase_url
+    
+    def get_key(self):
+        return self.supabase_key
 
-    def add_storage(self, numero, image, angle_image):
+    def get_point_post(self):
 
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {"select": "name, x, y"}
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/point_post_capela",
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
+    def get_form_post(self, name):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+        "name": f"eq.{name}",
+        "select": "name, situation, type, point, hood, address",
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/form_post_capela",
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
+    def get_storage_post(self, name):
+        storage_path = f'capela/post/{name}.jpg'
+        public_url = f"{self.supabase_url}/storage/v1/object/public/{storage_path}"
+        response = requests.get(public_url)
+        if response.status_code == 200:
+            return public_url 
+        else:
+            url = "Nulo"
+            return url
+
+    def delete_point_post(self, name):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        response1 = requests.delete(
+            f"{self.supabase_url}/rest/v1/point_post_capela?name=eq.{name}",
+            headers=headers,
+        )
+
+        response2 = requests.delete(
+            f"{self.supabase_url}/rest/v1/form_post_capela?name=eq.{name}",
+            headers=headers,
+        )
+
+
+        storage_path = f'capela/post/{name}.jpg'
+        url = f"{self.supabase_url}/storage/v1/object/{storage_path}"
+        response3 = requests.delete(
+            url,
+            headers=headers,
+        )
+
+        list_response = [response1, response2, response3]
+
+        return list_response
+
+    def get_login(self, username):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+            "usuario": f"eq.{username}",
+            "select": "permission, numero"
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/login_geopostes",
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
+    def add_storage(self, name, image, angle_image):
         
         headers = {
             'Authorization': f'Bearer {self.supabase_key}',
             'Content-Type': 'image/jpeg'
         }
 
-        storage_path = f'postes_images_points/postes/{numero}.jpg'
+        storage_path = f'capela/post/{name}.jpg'
 
         if angle_image == 0 or angle_image == 180:
             ajusted_angle = angle_image - 90
@@ -922,43 +967,8 @@ class SupaBase:
              
             print("Erro ao enviar imagem:", response.json())
             return None
-        
-    def get_storage(self, numero):
-
-        storage_path = f'postes_images_points/postes/{numero}.jpg'
-        public_url = f"{self.supabase_url}/storage/v1/object/public/{storage_path}"
-        response = requests.get(public_url)
-        if response.status_code == 200:
-            return public_url 
-        else:
-            print(f"Erro ao buscar a imagem: {response.status_code} - {response.text}")
-            url = "Nulo"
-            return url
-        
-    def delete_storage(self, numero):
-
-        storage_path = f'postes_images_points/postes/{numero}.jpg'
-        url = f"{self.supabase_url}/storage/v1/object/{storage_path}"
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            'Content-Type': 'image/jpeg'
-        }
-        response = requests.delete(
-            url,
-            headers=headers,
-        )
-
-        if response.status_code != 200:
-            self.page.snack_bar = ft.SnackBar(
-                content=ft.Text("Imagem mantida"),
-                bgcolor=ft.colors.AMBER,
-                duration=4000,
-                behavior=ft.SnackBarBehavior.FLOATING,
-            )
-            self.page
-
-    def get_login(self, username, password):
+             
+    def check_login(self, username, password):
 
         headers = {
             "apikey": self.supabase_key,
@@ -996,11 +1006,12 @@ class SupaBase:
 
         if response.status_code == 200 and response.json():
             # Se o e-mail já existir, mostre a mensagem e retorne
-            self.page.snack_bar = ft.SnackBar(
+            snack_bar = ft.SnackBar(
                 content=ft.Text("E-mail já cadastrado"),
                 bgcolor=ft.colors.RED
             )
-            self.page.snack_bar.open = True
+            self.page.overlay.append(snack_bar)
+            snack_bar.open = True
             self.page.update()
 
             return 
@@ -1033,9 +1044,10 @@ class SupaBase:
 
             return response
 
-    def add_point(self, list_forms, image, angle):
+    def add_point(self, list_profile, list_forms, list_initial_coordinates, image, angle):
 
-        numero = int(list_forms[2].split('-')[1])
+        sp = SupaBase(self.page)
+        name = list_forms[0]
 
         headers = {
             "apikey": self.supabase_key,
@@ -1046,54 +1058,65 @@ class SupaBase:
         response = requests.get(
             f"{self.supabase_url}/rest/v1/points_capeladoalto",
             headers=headers,
-            params={"select": "name", "name": f"eq.{list_forms[2]}"}
+            params={"select": "name", "name": f"eq.{name}"}
         )
 
         if response.status_code == 200 and response.json():
             # Se o ponto já existir, mostre a mensagem e retorne
-            self.page.snack_bar = ft.SnackBar(
+            snack_bar = ft.SnackBar(
                 content=ft.Text(f"{list_forms[2]} já foi cadastrado, ponto não adicionado"),
                 bgcolor=ft.colors.RED
             )
-            self.page.snack_bar.open = True
-            self.page.update()
+            self.page.overlay.append(snack_bar)
+            snack_bar.open = True
             return
 
-        image_url = "Nulo"
         if image != None:
-
-            sp = SupaBase(self.page)
             try:
-                sp.add_storage(numero=numero, image=image, angle_image=angle)
-                image_url = sp.get_storage(numero=numero)
+                sp.add_storage(name, image, angle)
             except:
-                self.page.snack_bar = ft.SnackBar(
+                snack_bar = ft.SnackBar(
                         content=ft.Text(f"O dispositivo negou acesso a imagem"),
                         bgcolor=ft.colors.AMBER,
                         duration=1000,
                     )
-                self.page.snack_bar.open = True
+                self.page.overlay.append(snack_bar)
+                snack_bar.open = True
 
         data = {
-            "number": numero,
-            "coord_x": list_forms[0],
-            "coord_y": list_forms[1],
-            "name": list_forms[2],
-            "situacao": list_forms[3],
-            "tipo": list_forms[4],
-            "pontos": list_forms[5],
-            "bairro": list_forms[6],
-            "logradouro": list_forms[7],
-            "url": image_url
-        }
+                "name": list_forms[0],
+                "situation": list_forms[1],
+                "type": list_forms[2],
+                "point": list_forms[3],
+                "hood": list_forms[4],
+                "address": list_forms[5],
+            }
 
         response = requests.post(
-            f"{self.supabase_url}/rest/v1/points_capeladoalto",
+            f"{self.supabase_url}/rest/v1/form_post_capela",
             headers=headers,
             json=data,
         )
 
-        return response
+        data_atual = datetime.now()
+        data_formatada = data_atual.strftime("%d/%m/%Y")
+
+        data2 = {
+                "name": name,
+                "x": list_initial_coordinates[0],
+                "y": list_initial_coordinates[1],
+                "color": "yellow",
+                "changed_at": data_formatada,
+                "changed_by": list_profile[0],
+            }
+        
+        response2 = requests.post(
+            f"{self.supabase_url}/rest/v1/point_post_capela",
+            headers=headers,
+            json=data2,
+        )
+        
+        return response2
     
     def add_os(self, list_add_os):
 
@@ -1112,11 +1135,12 @@ class SupaBase:
         )
 
         if response.status_code == 200 and response.json():
-            self.page.snack_bar = ft.SnackBar(
+            snack_bar = ft.SnackBar(
                 content=ft.Text(f"{list_add_os[5]} já foi cadastrado, ordem {list_add_os[5]} não adicionada"),
                 bgcolor=ft.colors.RED
             )
-            self.page.snack_bar.open = True
+            self.page.overlay.append(snack_bar)
+            snack_bar.open = True
             self.page.update()
             return
 
@@ -1146,9 +1170,9 @@ class SupaBase:
 
         return response
     
-    def edit_point(self, image, list_forms, numero_ant):
+    def edit_point(self, image, list_forms, previous_name):
 
-        numero = int(list_forms[2].split('-')[1])
+        sp = SupaBase(self.page)
 
         headers = {
             "apikey": self.supabase_key,
@@ -1156,60 +1180,30 @@ class SupaBase:
             "Content-Type": "application/json",
         }
 
-        image_url = "Nulo"
-        sp = SupaBase(self.page)
-        if "supabase" in image.src:
-            data = {
-                "number": numero,
-                "coord_x": list_forms[0],
-                "coord_y": list_forms[1],
-                "name": list_forms[2],
-                "situacao": list_forms[3],
-                "tipo": list_forms[4],
-                "pontos": list_forms[5],
-                "bairro": list_forms[6],
-                "logradouro": list_forms[7],
+        data = {
+                "name": list_forms[0],
+                "situation": list_forms[1],
+                "type": list_forms[2],
+                "point": list_forms[3],
+                "hood": list_forms[4],
+                "address": list_forms[5],
             }
-        else:
+
+        if "supabase" not in image.src:
             try:
-                with open(image.src, 'rb') as file: #verificar com antecedencia se a imagem vai poder ser acessada
-                    bytes = file.read()
-                sp.delete_storage(numero=numero_ant)
-                sp.add_storage(numero=numero, image=image)
-                image_url = sp.get_storage(numero=numero)
-                data = {
-                    "number": numero,
-                    "coord_x": list_forms[0],
-                    "coord_y": list_forms[1],
-                    "name": list_forms[2],
-                    "situacao": list_forms[3],
-                    "tipo": list_forms[4],
-                    "pontos": list_forms[5],
-                    "bairro": list_forms[6],
-                    "logradouro": list_forms[7],
-                    "url": image_url
-                }
+                sp.delete_storage(previous_name)
+                sp.add_storage(list_forms[0], image, angle_image=0)    
             except:
-                self.page.snack_bar = ft.SnackBar(
+                snack_bar = ft.SnackBar(
                         content=ft.Text(f"O dispositivo negou acesso a imagem"),
                         bgcolor=ft.colors.AMBER,
                         duration=1000,
                     )
-                self.page.snack_bar.open = True
-                data = {
-                    "number": numero,
-                    "coord_x": list_forms[0],
-                    "coord_y": list_forms[1],
-                    "name": list_forms[2],
-                    "situacao": list_forms[3],
-                    "tipo": list_forms[4],
-                    "pontos": list_forms[5],
-                    "bairro": list_forms[6],
-                    "logradouro": list_forms[7],
-                }
-
+                self.page.overlay.append(snack_bar)
+                snack_bar.open = True
+               
         response = requests.patch(
-            f"{self.supabase_url}/rest/v1/points_capeladoalto?number=eq.{numero}",
+            f"{self.supabase_url}/rest/v1/form_post_capela?name=eq.{previous_name}",
             headers=headers,
             json=data,
         )
@@ -1313,41 +1307,6 @@ class SupaBase:
         return response
 
 
-
-class GeoPosition:
-
-    def __init__(self, page, point_location):
-        self.page = page
-        self.point_location = point_location
-
-
-        def handle_position_change(e):
-            if self.page.route == "/home":
-                self.point_location.coordinates = map.MapLatitudeLongitude(e.latitude, e.longitude)
-                self.page.update_async()  
-
-
-        self.gl = ft.Geolocator(
-                    location_settings=ft.GeolocatorAppleSettings(
-                        distance_filter=0,
-                    ),
-                    on_position_change=handle_position_change,
-                    data = 0,
-                    )
-        self.page.overlay.append(self.gl)
-
-
-    async def get_permission(self, e=None):
-
-        status = await self.gl.get_permission_status_async()
-        if str(status) == "GeolocatorPermissionStatus.DENIED":
-            await self.gl.request_permission_async(wait_timeout=60)
-            return status   
-        else:
-            return status
-            
-
-
 class NavigationDrawer:
 
     def __init__(self, page):
@@ -1373,7 +1332,9 @@ class NavigationDrawer:
                 width=150,
                 height=150,
                 alignment=ft.alignment.center,
-                image_src=url_imagem1,
+                image=ft.Image(
+                src=url_imagem1,  
+                ),
                 bgcolor=ft.colors.GREY,
                 border=ft.Border(
                     left=ft.BorderSide(2, ft.colors.BLACK),  
@@ -1389,6 +1350,7 @@ class NavigationDrawer:
         nome = ft.Text(
             value=name,
             text_align=ft.TextAlign.CENTER,
+            color=ft.colors.WHITE,
         )
 
 
@@ -1396,25 +1358,26 @@ class NavigationDrawer:
                 position=ft.NavigationDrawerPosition.END,
                 on_dismiss=None,
                 on_change=None,
+                bgcolor=ft.colors.BLUE_600,
                 controls=[
                     space,
                     perfil,
                     nome,
                     space,
                     ft.ListTile(
-                        title=ft.Text(f"Deslogar"),
-                        on_click=action1
+                        title=ft.Text(f"Deslogar", color=ft.colors.WHITE),
+                        on_click=action1,
                     ),
                     ft.ListTile(
-                        title=ft.Text(f"Atualizar"),
+                        title=ft.Text(f"Atualizar", color=ft.colors.WHITE),
                         on_click=action2
                     ),
                     ft.ListTile(
-                        title=ft.Text(f"Lista de Postes"),
+                        title=ft.Text(f"Lista de Postes", color=ft.colors.WHITE),
                         on_click=action3
                     ),
                     ft.ListTile(
-                        title=ft.Text(f"Lista de Ordens de serviço"),
+                        title=ft.Text(f"Lista de Ordens de serviço", color=ft.colors.WHITE),
                         on_click=action4
                     ),
                 ],
