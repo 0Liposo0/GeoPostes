@@ -780,24 +780,11 @@ class LoadingPages:
 
     def new_loading_page(self, page, layout):
 
-        page.go("/")
-
         page.add(layout)
 
         page.scroll_to(1)
         
         page.update()
-
-    def first_loading_page(self, page, layout):
-
-        page.go("/")
-
-        page.add(layout)
-
-        page.scroll_to(1)
-
-        page.update()
- 
 
 class SupaBase:
 
