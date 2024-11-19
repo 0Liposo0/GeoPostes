@@ -803,8 +803,6 @@ class LoadingPages:
 
     def first_loading_page(self, page, layout):
 
-        page.clean()
-
         page.go("/")
 
         page.add(layout)

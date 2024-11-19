@@ -1052,7 +1052,7 @@ def create_page_login(page):
                                       color=ft.colors.BLUE_700,
                                       col=7,
                                       padding=10,)
-    btn_register = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_register(page)),
+    btn_register = buttons.create_button(on_click=lambda e: loading.first_loading_page(page=page, layout=create_page_register(page)),
                                          text="Cadastrar",
                                          color=ft.colors.AMBER,
                                          col=7,
@@ -1111,7 +1111,7 @@ def create_page_register(page):
                                          color=ft.colors.BLUE_700,
                                          col=7,
                                          padding=10,)
-    btn_back = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_login(page)),
+    btn_back = buttons.create_button(on_click=lambda e: loading.first_loading_page(page=page, layout=create_page_login(page)),
                                      text="Voltar",
                                      color=ft.colors.AMBER,
                                      col=7,
