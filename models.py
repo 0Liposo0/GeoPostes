@@ -1005,6 +1005,7 @@ class SupaBase:
                 "email": email,
                 "numero": number,
                 "senha": password1,
+                "permission": "invited",
             }
 
             # Fazer a solicitação POST para inserir o novo registro
