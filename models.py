@@ -4,7 +4,7 @@ import flet.map as map
 from PIL import Image
 import io
 from datetime import datetime
-import time
+
 
 
 
@@ -778,22 +778,9 @@ class LoadingPages:
     def __init__(self, page):
         self.page = page
 
-    def new_loading_page(self, page, layout, home=False, anchor=False):
+    def new_loading_page(self, page, layout):
 
         page.go("/")
-
-        if home == False:
-            page.floating_action_button.visible = False
-            page.bottom_appbar.visible = False
-            page.appbar.visible = False
-            page.update()
-
-        else:
-            page.go("/home")
-            page.floating_action_button.visible = True
-            page.bottom_appbar.visible = True
-            page.appbar.visible = True
-            page.update()
 
         page.add(layout)
 
@@ -915,8 +902,8 @@ class SupaBase:
         }
 
         params = {
-            "usuario": f"eq.{username}",
-            "select": "permission, numero"
+            "or": f"(usuario.eq.{username},email.eq.{username})",
+            "select": "usuario, permission, numero"
         }
 
         response = requests.get(
@@ -1315,7 +1302,7 @@ class NavigationDrawer:
 
 
 
-    def create_navigation(self, name, action1, action2, action3, action4):
+    def create_navigation(self, list_profile, action1, action2, action3, action4):
 
         space = ft.Container(padding=10)
 
@@ -1346,10 +1333,37 @@ class NavigationDrawer:
         )
 
         nome = ft.Text(
-            value=name,
+            value=list_profile[0],
             text_align=ft.TextAlign.CENTER,
             color=ft.colors.WHITE,
         )
+
+        listtiles = [
+
+            ft.ListTile(
+                        title=ft.Text(f"Deslogar", color=ft.colors.WHITE),
+                        on_click=action1,
+                    ),
+            ft.ListTile(
+                title=ft.Text(f"Atualizar", color=ft.colors.WHITE),
+                on_click=action2
+            ),
+        ]
+
+        if list_profile[1] == "adm":
+
+            listtiles.append(
+                ft.ListTile(
+                        title=ft.Text(f"Lista de postes", color=ft.colors.WHITE),
+                        on_click=action3
+                    )
+            )
+            listtiles.append(
+                ft.ListTile(
+                        title=ft.Text(f"Lista de ordens de serviço", color=ft.colors.WHITE),
+                        on_click=action4
+                    )
+            )
 
 
         navigation =  ft.NavigationDrawer(
@@ -1362,22 +1376,7 @@ class NavigationDrawer:
                     perfil,
                     nome,
                     space,
-                    ft.ListTile(
-                        title=ft.Text(f"Deslogar", color=ft.colors.WHITE),
-                        on_click=action1,
-                    ),
-                    ft.ListTile(
-                        title=ft.Text(f"Atualizar", color=ft.colors.WHITE),
-                        on_click=action2
-                    ),
-                    ft.ListTile(
-                        title=ft.Text(f"Lista de Postes", color=ft.colors.WHITE),
-                        on_click=action3
-                    ),
-                    ft.ListTile(
-                        title=ft.Text(f"Lista de Ordens de serviço", color=ft.colors.WHITE),
-                        on_click=action4
-                    ),
+                    *listtiles,
                 ],
             )
 
