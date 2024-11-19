@@ -16,8 +16,8 @@ def main(page: ft.Page):
     list_profile =["Carlos", "administrador", "11982245028"]
 
     loading = LoadingPages(page)
-#    loading.first_loading_page(page=page, layout=create_page_login(page))
-    loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates), home=True)
+    loading.first_loading_page(page=page, layout=create_page_login(page))
+#    loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates), home=True)
 
 if __name__ == "__main__":
     ft.app(target=main, upload_dir="uploads")
