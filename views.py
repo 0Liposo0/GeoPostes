@@ -25,7 +25,8 @@ def create_page_home(page, list_profile, list_initial_coordinates, position=None
     action2 = lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_center_map_coordinates))
     action3 = lambda e: loading.new_loading_page(page=page, layout=create_view_postes_form(page, list_profile, list_initial_coordinates, menu=rightmenu)) 
     action4 = lambda e: loading.new_loading_page(page=page, layout=create_view_orders_form(page, list_profile, list_initial_coordinates, menu=rightmenu)) 
-    rightmenu = navigations.create_navigation(list_profile, action1, action2, action3, action4)
+    action5 = lambda e: loading.new_loading_page(page=page, layout=create_view_users_form(page, list_profile, list_initial_coordinates, menu=rightmenu)) 
+    rightmenu = navigations.create_navigation(list_profile, action1, action2, action3, action4, action5)
     menu = menus.create_settings_menu(color=ft.colors.WHITE, col=10, action=lambda e: page.open(rightmenu))
 
 
@@ -362,6 +363,59 @@ def create_page_os_forms(page, list_profile, list_initial_coordinates, name, ord
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
+def create_page_user_forms(page, list_profile, list_initial_coordinates, user):
+
+    page.floating_action_button = None
+    page.bottom_appbar = None
+    page.appbar = None
+    page.clean()
+    page.overlay.clear()
+
+    loading = LoadingPages(page)
+    forms = Forms(page)
+    sp = SupaBase(page)
+    buttons = Buttons(page)
+     
+    user_data = sp.get_form_user(user)
+    data = user_data.json()
+    row = data[0]
+    list_user_form = [
+        row["user_id"],
+        row["usuario"],
+        row["email"],
+        row["numero"],
+        row["senha"],
+        row["permission"]
+    ]
+
+    form = forms.create_user_form(list_user_form)
+
+
+    back_home_button = buttons.create_button(on_click= lambda e: loading.new_loading_page(page=page, layout=create_view_users_form(page, list_profile, list_initial_coordinates, menu=None)),
+                                            text="Voltar",
+                                            color=ft.colors.AMBER,
+                                            col=12,
+                                            padding=5,)
+    
+
+    edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_edit_user_forms(page, list_profile, list_initial_coordinates, user)),
+                                            text="Editar",
+                                            color=ft.colors.GREEN,
+                                            col=6,
+                                            padding=5,)    
+        
+
+    return ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            form,
+            edit_button,
+            back_home_button   
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
+
 
 
 def create_page_add_forms(page, list_profile, list_initial_coordinates):
@@ -582,6 +636,62 @@ def create_page_add_os_forms(page, list_profile, list_initial_coordinates, name)
                                             padding=15,)
     
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_adm_page_order(page, list_profile, list_initial_coordinates, name)),
+                                            text="Voltar",
+                                            color=ft.colors.AMBER,
+                                            col=6,
+                                            padding=15,)
+    
+    return ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            forms1,
+            add_button, 
+            back_home_button   
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+
+    )
+
+def create_page_add_user_forms(page, list_profile, list_initial_coordinates):
+
+    page.floating_action_button = None
+    page.bottom_appbar = None
+    page.appbar = None
+    page.clean()
+    page.overlay.clear()
+
+    loading = LoadingPages(page)
+    forms = Forms(page)
+    buttons = Buttons(page)
+    sp = SupaBase(page)
+
+    
+    def send_point(object, id):
+
+        list_add_user = [
+            object.content.rows[0].cells[1].content.content.value,
+            object.content.rows[1].cells[1].content.content.value,
+            object.content.rows[2].cells[1].content.content.value,
+            object.content.rows[3].cells[1].content.content.value,
+            object.content.rows[4].cells[1].content.content.value,
+        ]
+        
+        add_user(page, list_profile, list_initial_coordinates, list_add_user, id)
+
+    id = str(sp.get_user_id())
+
+    list_os_forms = [None, None, None, None, None]
+
+    forms1 = forms.create_add_user_forms(list_os_forms, new=True)
+
+    add_button = buttons.create_button(on_click=lambda e :send_point(forms1, id),
+                                            text="Adicionar",
+                                            color=ft.colors.GREEN,
+                                            col=6,
+                                            padding=15,)
+    
+    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_view_users_form(page, list_profile, list_initial_coordinates, menu=None)),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
                                             col=6,
@@ -840,6 +950,79 @@ def create_page_edit_os_forms(page, list_profile, list_initial_coordinates, name
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
+
+def create_page_edit_user_forms(page, list_profile, list_initial_coordinates, user):
+
+    page.floating_action_button = None
+    page.bottom_appbar = None
+    page.appbar = None
+    page.clean()
+    page.overlay.clear()
+
+    loading = LoadingPages(page)
+    forms = Forms(page)
+    buttons = Buttons(page)
+    sp = SupaBase(page)
+
+    def send_point(list_profile, list_initial_coordinates, object, previus_user):
+
+        list_edited_user_forms = [
+            object.content.rows[0].cells[1].content.content.value,
+            object.content.rows[1].cells[1].content.content.value,
+            object.content.rows[2].cells[1].content.content.value,
+            object.content.rows[3].cells[1].content.content.value,
+            object.content.rows[4].cells[1].content.content.value,
+        ]
+
+        edit_user(page, list_profile, list_initial_coordinates, list_edited_user_forms, previus_user)
+     
+
+    user_data = sp.get_form_user(user)
+
+    data = user_data.json()
+
+    row = data[0]
+
+    list_user_forms = [
+        row["usuario"],
+        row["email"],
+        row["numero"],
+        row["senha"],
+        row["permission"],
+    ]
+
+    forms1 = forms.create_add_user_forms(list_user_forms)
+
+
+    add_button = buttons.create_button(on_click=lambda e :send_point(list_profile, list_initial_coordinates, forms1, list_user_forms[0]),
+                                            text="Salvar",
+                                            color=ft.colors.GREEN,
+                                            col=6,
+                                            padding=5,)
+    delete_button = buttons.create_button(on_click=lambda e :delete_user(page, list_profile, list_initial_coordinates, user),
+                                            text="Excluir",
+                                            color=ft.colors.RED,
+                                            col=6,
+                                            padding=5,)
+    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page,layout=create_page_user_forms(page, list_profile, list_initial_coordinates, user)),
+                                            text="Voltar",
+                                            color=ft.colors.AMBER,
+                                            col=7,
+                                            padding=5,)
+    
+
+
+    return ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            forms1,
+            add_button,
+            delete_button,
+            back_home_button   
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
  
 
 
@@ -955,7 +1138,7 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
     all_checkboxes = [
         checkboxes.create_checkbox(text="Ponto apagado", size=25, on_change=checkbox_changed, col=12, data="Ponto apagado"),
         checkboxes.create_checkbox(text="Ponto piscando", size=25, on_change=checkbox_changed, col=12, data="Ponto piscando"),
-        checkboxes.create_checkbox(text="Ponto aceso durante o dia", size=25, on_change=checkbox_changed, col=12, data="Ponto piscando"),
+        checkboxes.create_checkbox(text="Ponto aceso durante o dia", size=25, on_change=checkbox_changed, col=12, data="Ponto aceso durante o dia"),
         checkboxes.create_checkbox(text="Rachadura", size=25, on_change=checkbox_changed, col=12, data="Rachadura"),
         checkboxes.create_checkbox(text="Queda", size=25, on_change=checkbox_changed, col=12, data="Queda"),
         checkboxes.create_checkbox(text="Incêndio elétrico", size=25, on_change=checkbox_changed, col=12, data="Incêndio elétrico"),
@@ -1679,6 +1862,206 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
+def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
+
+    page.floating_action_button = None
+    page.bottom_appbar = None
+    page.appbar = None
+    page.clean()
+    page.overlay.clear()
+
+    textthemes = TextTheme()
+    texttheme1 = textthemes.create_text_theme1() 
+    buttons = Buttons(page)
+    loading = LoadingPages(page)
+    sp = SupaBase(page)
+    
+    filter = "like.*"
+    dicio = {}
+
+    def changesearch(e, filter, dicio, forms1):
+
+        if e.control.value.strip() == "":
+            filter = "like.*"  # Retorna todos os resultados
+        else:
+            filter = f"ilike.%{e.control.value.strip().lower()}%"
+
+        # Atualiza o filtro nos parâmetros
+        params["usuario"] = filter
+
+        # Faz uma nova requisição com o filtro atualizado
+        response = requests.get(
+            f"{url}/rest/v1/login_geopostes",
+            headers=headers,
+            params=params,
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+
+            # Reconstrói as linhas da tabela
+            dicio.clear()
+            for row in data:
+
+                user_id = row["user_id"]
+                user_name = row["usuario"]
+                user_permission = row["permission"]
+
+                def forms(user_name):
+
+                    return lambda e: loading.new_loading_page(
+                        page=page,
+                        layout=create_page_user_forms(page, list_profile, list_initial_coordinates, user=user_name)
+                    )
+            
+
+                linha = ft.DataRow(cells=[
+                            ft.DataCell(ft.Text(value=user_id, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
+                            ft.DataCell(ft.Text(value=user_name, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
+                            ft.DataCell(ft.Text(value=user_permission, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
+                            ft.DataCell(
+                                ft.Container(content=
+                                            buttons.create_icon_button(
+                                                            icon=ft.icons.SEARCH,
+                                                            on_click=forms(user_name),
+                                                            color=ft.colors.BLUE,
+                                                            col=2,
+                                                            padding=0,
+                                                            icon_color=ft.colors.WHITE,
+                                                            ))
+                            ),
+                        ])
+
+                dicio[user_id] = linha
+
+            # Atualiza as linhas no DataTable
+            forms1.content.rows = list(dicio.values())
+            page.update()
+        else:
+            print(f"Erro ao buscar dados: {response.text}")
+
+    if menu != None:
+        page.close(menu)
+
+    url = sp.get_url()
+    key = sp.get_key()
+
+    headers = {
+        "apikey": key,
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json",
+    }
+
+
+    params = {
+        "select": "user_id, usuario, permission",
+        "usuario": f"{filter}",
+        "order": "user_id.desc",
+    }
+
+    # Requisição à API
+    response = requests.get(
+        f"{url}/rest/v1/login_geopostes",
+        headers=headers,
+        params=params,
+    )
+
+    data = response.json()
+
+    for row in data:
+
+            user_id = row["user_id"]
+            user_name = row["usuario"]
+            user_permission = row["permission"]
+
+            def forms(user_name):
+
+                return lambda e: loading.new_loading_page(
+                    page=page,
+                    layout=create_page_user_forms(page, list_profile, list_initial_coordinates, user=user_name)
+                )
+         
+
+            linha = ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value=user_id, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
+                        ft.DataCell(ft.Text(value=user_name, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
+                        ft.DataCell(ft.Text(value=user_permission, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
+                        ft.DataCell(
+                            ft.Container(content=
+                                         buttons.create_icon_button(
+                                                        icon=ft.icons.SEARCH,
+                                                        on_click=forms(user_name),
+                                                        color=ft.colors.BLUE,
+                                                        col=2,
+                                                        padding=0,
+                                                        icon_color=ft.colors.WHITE,
+                                                        ))
+                        ),
+                    ])
+
+            dicio[user_id] = linha
+
+    lista = list(dicio.values())
+
+
+    forms1 = ft.Container(
+            padding=0,
+            col=12,
+            theme=texttheme1,  
+            content=ft.DataTable(
+                data_row_max_height=50,
+                width=50,
+                column_spacing=10,
+                columns=[
+                    ft.DataColumn(ft.Text(value="")),  
+                    ft.DataColumn(ft.Text(value="")),  
+                    ft.DataColumn(ft.Text(value="")),  
+                    ft.DataColumn(ft.Text(value="")),  
+                ],
+                rows=lista,
+            ),
+        )
+
+    list_initial_coordinates = ["-23.3396", "-47.8238"]
+
+    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates)),
+                                            text="Voltar",
+                                            color=ft.colors.AMBER,
+                                            col=12,
+                                            padding=5,)
+    
+    searchfild = ft.TextField(label="Procurar",  # caixa de texto
+                                col=8,
+                                on_change=lambda e: changesearch(e, filter, dicio, forms1),
+                                label_style= ft.TextStyle(color=ft.colors.BLACK),
+                                text_style= ft.TextStyle(color=ft.colors.BLACK),
+                                text_align=ft.TextAlign.CENTER,
+                                border_radius=20,
+                                border_color=ft.colors.BLACK,
+                                bgcolor=ft.colors.WHITE
+
+            )
+
+    add_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_add_user_forms(page, list_profile, list_initial_coordinates)),
+                                                text="Adicionar",
+                                                color=ft.colors.GREEN,
+                                                col=6,
+                                                padding=5,)
+
+    return ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            ft.Container(height=10),
+            searchfild,
+            add_button,
+            forms1,
+            back_home_button
+         
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
+
 
 
 
@@ -1708,7 +2091,6 @@ def verificar(username, password, page):
 
         if response.status_code == 200 and len(response.json()) > 0:
 
-            response = sp.get_login(username)
             data = response.json()
             row = data[0]
             name = row["usuario"]
@@ -1844,7 +2226,7 @@ def add_os(page, list_profile, list_initial_coordinates, list_add_os, name):
     # Verificar se a inserção foi bem-sucedida
     if response.status_code == 201:
         snack_bar = ft.SnackBar(
-            content=ft.Text("order adicionada com sucesso"),
+            content=ft.Text("ordem adicionada com sucesso"),
             bgcolor=ft.colors.GREEN,
             duration=2500,
         )
@@ -1852,10 +2234,50 @@ def add_os(page, list_profile, list_initial_coordinates, list_add_os, name):
         loading.new_loading_page(page=page, layout=create_adm_page_order(page, list_profile, list_initial_coordinates, name))
       
     else:
-        print(f"Erro ao adicionar order: {response.status_code}")
+        print(f"Erro ao adicionar ordem: {response.status_code}")
         print(f"Resposta do erro: {response.text}")
         snack_bar = ft.SnackBar(
-            content=ft.Text(f"Erro ao adicionar order: {response.text}"),
+            content=ft.Text(f"Erro ao adicionar ordem: {response.text}"),
+            bgcolor=ft.colors.RED,
+            duration=4000,
+        )
+ 
+    page.overlay.append(snack_bar)
+    snack_bar.open = True
+    page.update()
+
+def add_user(page, list_profile, list_initial_coordinates, list_add_user, id):
+
+    sp = SupaBase(page)
+    loading = LoadingPages(page)
+   
+    if any(field == "" or field is None for field in list_add_user):
+        snack_bar = ft.SnackBar(
+            content=ft.Text("Alguns campos não foram preenchidos"),
+            bgcolor=ft.colors.RED
+        )
+        page.overlay.append(snack_bar)
+        snack_bar.open = True
+        page.update()
+        return  # Interrompe a execução da função
+    
+    response = sp.add_user(list_add_user, id)
+
+    # Verificar se a inserção foi bem-sucedida
+    if response.status_code == 201:
+        snack_bar = ft.SnackBar(
+            content=ft.Text("Usuario adicionado com sucesso"),
+            bgcolor=ft.colors.GREEN,
+            duration=2500,
+        )
+
+        loading.new_loading_page(page=page, layout=create_view_users_form(page, list_profile, list_initial_coordinates, menu=None))
+      
+    else:
+        print(f"Erro ao adicionar usuário: {response.status_code}")
+        print(f"Resposta do erro: {response.text}")
+        snack_bar = ft.SnackBar(
+            content=ft.Text(f"Erro ao adicionar usuario: {response.text}"),
             bgcolor=ft.colors.RED,
             duration=4000,
         )
@@ -1960,6 +2382,55 @@ def edit_os(page, list_profile, list_initial_coordinates, list_edited_os_forms, 
     snack_bar.open = True
     page.update()
 
+def edit_user(page, list_profile, list_initial_coordinates, list_edited_user_forms, previus_name):
+
+    sp = SupaBase(page)
+    loading = LoadingPages(page)
+
+    snack_bar = ft.SnackBar(
+        content=ft.Text("Alterando..."),
+        bgcolor=ft.colors.ORANGE,
+        duration=1000,
+    )
+    page.overlay.append(snack_bar)
+    snack_bar.open = True
+    page.update()
+
+
+    if any(field == "" or field is None for field in list_edited_user_forms):
+        snack_bar = ft.SnackBar(
+            content=ft.Text("Alguns campos não foram preenchidos"),
+            bgcolor=ft.colors.RED
+        )
+        page.overlay.append(snack_bar)
+        snack_bar.open = True
+        page.update()
+        return  # Interrompe a execução da função
+
+    response = sp.edit_user(list_edited_user_forms, previus_name)
+    
+    if response.status_code in [200, 204]:  # 204 indica sucesso sem conteúdo
+        snack_bar = ft.SnackBar(
+            content=ft.Text("Alterações Salvas"),
+            bgcolor=ft.colors.GREEN,
+            duration=2000,
+        )
+        loading.new_loading_page(page=page,
+        layout=create_page_user_forms(page, list_profile, list_initial_coordinates, list_edited_user_forms[0]))
+
+    else:
+        print(f"Erro ao editar perfil: {response.status_code}")
+        print(f"Resposta do erro: {response.text}")
+        snack_bar = ft.SnackBar(
+            content=ft.Text(f"Erro ao editar perfil: {response.text}"),
+            bgcolor=ft.colors.RED
+        )
+
+
+    page.overlay.append(snack_bar)
+    snack_bar.open = True
+    page.update()
+
 
 
 def delete_point(page, list_profile, list_initial_coordinates, name):
@@ -2041,6 +2512,44 @@ def delete_os(page, list_profile, list_initial_coordinates, name, order):
         print(f"Resposta do erro: {response.text}")
         snack_bar = ft.SnackBar(
             content=ft.Text(f"Erro ao excluir order: {response.text}"),
+            bgcolor=ft.colors.RED
+        )
+
+    # Exibir a mensagem e atualizar a página
+    page.overlay.append(snack_bar)
+    snack_bar.open = True
+    page.update()
+
+def delete_user(page, list_profile, list_initial_coordinates, user):
+
+    loading = LoadingPages(page)
+
+    snack_bar = ft.SnackBar(
+        content=ft.Text("Excluindo..."),
+        bgcolor=ft.colors.ORANGE,
+        duration=1000,
+    )
+    page.overlay.append(snack_bar)
+    snack_bar.open = True
+    page.update()
+
+    sp = SupaBase(page)
+
+    response = sp.delete_user(user)
+
+    if response.status_code == 204:
+
+        snack_bar = ft.SnackBar(
+                content=ft.Text("Usuario excluido"),
+                bgcolor=ft.colors.GREEN,
+                duration=2500,
+            )
+
+        loading.new_loading_page(page=page, layout=create_view_users_form(page, list_profile, list_initial_coordinates, menu=None))
+
+    else:
+        snack_bar = ft.SnackBar(
+            content=ft.Text(f"Erro ao excluir usuario: {response.text}"),
             bgcolor=ft.colors.RED
         )
 

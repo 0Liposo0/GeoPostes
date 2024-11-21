@@ -39,6 +39,11 @@ class TextTheme:
                 color=ft.colors.BLACK,
                 weight=ft.FontWeight.W_400,
             ),
+            title_small=ft.TextStyle(
+                size=13,
+                color=ft.colors.BLACK,
+                weight=ft.FontWeight.W_400,
+            ),
             )
         )
 
@@ -348,7 +353,7 @@ class TextField:
         self.page = page
 
 
-    def create_textfield(self,value, text, password):
+    def create_textfield(self,value, text, password, read=False):
 
         return  ft.TextField(
             value=value,
@@ -356,7 +361,8 @@ class TextField:
             password=password,
             label_style= ft.TextStyle(color=ft.colors.BLACK),
             text_style= ft.TextStyle(color=ft.colors.BLACK),
-            col=8
+            col=8,
+            read_only=read,
             )
     
     def create_description_textfield(self, text):
@@ -479,7 +485,62 @@ class Forms:
             ),
         )
     
+    def create_user_form(self, list_user_form):
 
+        textthemes = TextTheme()
+        texttheme1 = textthemes.create_text_theme1()
+
+        return ft.Container(
+            padding=0,
+            col=12,
+            theme=texttheme1,  
+            content=ft.DataTable(
+                data_row_max_height=50,
+                columns=[
+                    ft.DataColumn(ft.Text(value="")),  
+                    ft.DataColumn(ft.Text(value="")),  
+                ],
+                rows=[
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="ID", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=list_user_form[0], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=list_user_form[1], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="E-mail", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=list_user_form[2], theme_style=ft.TextThemeStyle.TITLE_SMALL), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Numero", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=list_user_form[3], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Senha", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=list_user_form[4], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Permissão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=ft.Text(value=list_user_form[5], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        )
+                    ]),
+                ],
+            ),
+        )
+    
     def create_os_forms(self, data_criacao, ip, reclamante, function, celular, order, origem, obser, materiais, ponto, status, data_andamen, data_conclu, equipe):
 
         textthemes = TextTheme()
@@ -584,7 +645,6 @@ class Forms:
             ),
         )
 
-
     def create_add_forms(self, ip, situ, tipo, pontos, bairro, logra):
 
         textthemes = TextTheme()
@@ -648,7 +708,6 @@ class Forms:
                 ],
             ),
         )
-
 
     def create_add_os_forms(self, list_os_forms):
 
@@ -769,6 +828,66 @@ class Forms:
                 ],
             ),
         )
+    
+    def create_add_user_forms(self, list_user_forms, new=False):
+
+        textthemes = TextTheme()
+        texttheme1 = textthemes.create_text_theme1()
+        textfields = TextField(self.page)
+
+        user_name_field = textfields.create_textfield(value=list_user_forms[0], text=None, password=False)
+        user_email_field = textfields.create_textfield(value=list_user_forms[1], text=None, password=False, read=True)
+        if new == True:
+            user_email_field = textfields.create_textfield(value=list_user_forms[1], text=None, password=False, read=False)
+        user_phone_field = textfields.create_textfield(value=list_user_forms[2], text=None, password=False)
+        user_password_field = textfields.create_textfield(value=list_user_forms[3], text=None, password=False)
+        user_permission_field = textfields.create_textfield(value=list_user_forms[4], text=None, password=False)
+       
+        return ft.Container(
+            padding=0,
+            col=12,
+            theme=texttheme1,
+            content=ft.DataTable(
+                data_row_max_height=50,
+                columns=[
+                    ft.DataColumn(ft.Text(value="")),  
+                    ft.DataColumn(ft.Text(value="")), 
+                ],
+                rows=[
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=user_name_field, width=200)  
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="E-mail", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=user_email_field, width=200)  
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Numero", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=user_phone_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Senha", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=user_password_field, width=200)
+                        )
+                    ]),
+                    ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value="Permissão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(
+                            ft.Container(content=user_permission_field, width=200)
+                        )
+                    ]),
+                   
+                ],
+            ),
+        )
 
 
 class LoadingPages:
@@ -784,6 +903,7 @@ class LoadingPages:
         
         page.update()
 
+
 class SupaBase:
 
     def __init__(self, page):
@@ -798,6 +918,8 @@ class SupaBase:
     
     def get_key(self):
         return self.supabase_key
+
+
 
     def get_point_post(self):
 
@@ -817,6 +939,27 @@ class SupaBase:
 
         return response
 
+    def get_form_user(self, user):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+        "usuario": f"eq.{user}",
+        "select": "user_id, usuario, email, numero, senha, permission",
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/login_geopostes",
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
     def get_form_post(self, name):
 
         headers = {
@@ -847,6 +990,73 @@ class SupaBase:
         else:
             url = "Nulo"
             return url
+
+    def get_os_id(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+        "select": "order_id", "order": "order_id.desc", "limit": 1,
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
+            headers=headers,
+            params=params,
+        )
+
+        next_id = response.json()[0]["order_id"] if response.json() else 0
+        new_id = int(next_id) + 1
+
+        return new_id
+    
+    def get_user_id(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+        "select": "user_id", "order": "user_id.desc", "limit": 1,
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/login_geopostes",
+            headers=headers,
+            params=params,
+        )
+
+        next_id = response.json()[0]["user_id"] if response.json() else 0
+        new_id = int(next_id) + 1
+
+        return new_id
+
+    def get_os(self, order):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+        "order_id": f"eq.{order}",
+        "select": "created_at, ip, reclamante, function, celular, order_id, origem, observacao, materiais, ponto, status, data_andamento, data_conclusao, equipe",
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
+            headers=headers,
+            params=params,
+        )
+
+        return response
 
     def delete_point_post(self, name):
 
@@ -883,26 +1093,7 @@ class SupaBase:
 
         return list_response
 
-    def get_login(self, username):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = {
-            "or": f"(usuario.eq.{username},email.eq.{username})",
-            "select": "usuario, permission, numero"
-        }
-
-        response = requests.get(
-            f"{self.supabase_url}/rest/v1/login_geopostes",
-            headers=headers,
-            params=params,
-        )
-
-        return response
+    
 
     def add_storage(self, name, image, angle_image, new=True):
         
@@ -928,83 +1119,6 @@ class SupaBase:
         if response.status_code != 200: 
             print("Erro ao enviar imagem:", response.json())
             return None
-             
-    def check_login(self, username, password):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = {
-            "or": f"(usuario.eq.{username},email.eq.{username})",
-            "senha": f"eq.{password}",
-            "select": "*"
-        }
-
-        response = requests.get(
-            f"{self.supabase_url}/rest/v1/login_geopostes",
-            headers=headers,
-            params=params,
-        )
-
-        return response
-    
-    def register(self, username, email, number, password1, password2):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        response = requests.get(
-            f"{self.supabase_url}/rest/v1/login_geopostes",
-            headers=headers,
-            params={"select": "email", "email": f"eq.{email}"}
-        )
-
-        if response.status_code == 200 and response.json():
-            # Se o e-mail já existir, mostre a mensagem e retorne
-            snack_bar = ft.SnackBar(
-                content=ft.Text("E-mail já cadastrado"),
-                bgcolor=ft.colors.RED
-            )
-            self.page.overlay.append(snack_bar)
-            snack_bar.open = True
-            self.page.update()
-
-            return 
-
-        response = requests.get(
-            f"{self.supabase_url}/rest/v1/login_geopostes",
-            headers=headers,
-            params={"select": "user_id", "order": "user_id.desc", "limit": 1},
-        )
-
-        if response.status_code == 200:
-            max_user_id = response.json()[0]["user_id"] if response.json() else 0
-            new_user_id = max_user_id + 1
-
-            # Dados para inserir no Supabase
-            data = {
-                "user_id": new_user_id,
-                "usuario": username,
-                "email": email,
-                "numero": number,
-                "senha": password1,
-                "permission": "invited",
-            }
-
-            # Fazer a solicitação POST para inserir o novo registro
-            response = requests.post(
-                f"{self.supabase_url}/rest/v1/login_geopostes",
-                headers=headers,
-                json=data,
-            )
-
-            return response
 
     def add_point(self, list_profile, list_forms, list_initial_coordinates, image, angle):
 
@@ -1132,24 +1246,68 @@ class SupaBase:
 
         return response
     
-    def delete_storage(self, name):
+    def add_user(self, list_add_user, id):
 
         headers = {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "image/jpeg",
+            "Content-Type": "application/json",
         }
 
-        storage_path = f'capela/post/{name}.jpg'
-        
-        url = f"{self.supabase_url}/storage/v1/object/{storage_path}"
-
-        response = requests.delete(
-            url,
+        response1 = requests.get(
+            f"{self.supabase_url}/rest/v1/login_geopostes",
             headers=headers,
+            params={"select": "email", "email": f"eq.{list_add_user[0]}"}
         )
 
-        return response
+        if response1.status_code == 200 and response1.json():
+            # Se o e-mail já existir, mostre a mensagem e retorne
+            snack_bar = ft.SnackBar(
+                content=ft.Text("E-mail já cadastrado"),
+                bgcolor=ft.colors.RED
+            )
+            self.page.overlay.append(snack_bar)
+            snack_bar.open = True
+            self.page.update()
+
+            return
+         
+        response2 = requests.get(
+            f"{self.supabase_url}/rest/v1/login_geopostes",
+            headers=headers,
+            params={"select": "usuario", "usuario": f"eq.{list_add_user[1]}"}
+        )
+
+        if response2.status_code == 200 and response2.json():
+            # Se o usuario já existir, mostre a mensagem e retorne
+            snack_bar = ft.SnackBar(
+                content=ft.Text("Nome de usuario já cadastrado"),
+                bgcolor=ft.colors.RED
+            )
+            self.page.overlay.append(snack_bar)
+            snack_bar.open = True
+            self.page.update()
+
+            return 
+
+        data = {
+            "user_id": id,
+            "usuario": list_add_user[0],
+            "email": list_add_user[1],
+            "numero": list_add_user[2],
+            "senha": list_add_user[3],
+            "permission": list_add_user[4],  
+        }
+
+        response3 = requests.post(
+            f"{self.supabase_url}/rest/v1/login_geopostes",
+            headers=headers,
+            json=data,
+        )
+
+        return response3
+
+
 
     def edit_point(self, image, list_forms, previous_name):
 
@@ -1232,50 +1390,6 @@ class SupaBase:
 
         return response
 
-    def get_os(self, order):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = {
-        "order_id": f"eq.{order}",
-        "select": "created_at, ip, reclamante, function, celular, order_id, origem, observacao, materiais, ponto, status, data_andamento, data_conclusao, equipe",
-        }
-
-        response = requests.get(
-            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
-            headers=headers,
-            params=params,
-        )
-
-        return response
-
-    def get_os_id(self):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = {
-        "select": "order_id", "order": "order_id.desc", "limit": 1,
-        }
-
-        response = requests.get(
-            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
-            headers=headers,
-            params=params,
-        )
-
-        next_id = response.json()[0]["order_id"] if response.json() else 0
-        new_id = int(next_id) + 1
-
-        return new_id
-
     def edit_os(self, list_edited_os_forms):
 
         numero = int(list_edited_os_forms[1].split('-')[1])
@@ -1312,6 +1426,71 @@ class SupaBase:
         )
 
         return response
+    
+    def edit_user(self, list_edited_user_forms, previus_name):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+      
+        if list_edited_user_forms[0] != previus_name:
+
+            response1 = requests.get(
+                f"{self.supabase_url}/rest/v1/login_geopostes",
+                headers=headers,
+                params={"select": "usuario", "usuario": f"eq.{list_edited_user_forms[0]}"}
+            )
+
+            if response1.status_code == 200 and response1.json():
+                # Se o usuario já existir, mostre a mensagem e retorne
+                snack_bar = ft.SnackBar(
+                    content=ft.Text("Nome de usuario já cadastrado"),
+                    bgcolor=ft.colors.RED
+                )
+                self.page.overlay.append(snack_bar)
+                snack_bar.open = True
+                self.page.update()
+
+                return
+
+        data = {
+            "usuario": list_edited_user_forms[0],
+            "numero": list_edited_user_forms[2],
+            "senha": list_edited_user_forms[3],
+            "permission": list_edited_user_forms[4],
+        }
+
+        response = requests.patch(
+            f"{self.supabase_url}/rest/v1/login_geopostes?usuario=eq.{previus_name}",
+            headers=headers,
+            json=data,
+        )
+
+        return response
+
+
+
+
+    def delete_storage(self, name):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "image/jpeg",
+        }
+
+        storage_path = f'capela/post/{name}.jpg'
+        
+        url = f"{self.supabase_url}/storage/v1/object/{storage_path}"
+
+        response = requests.delete(
+            url,
+            headers=headers,
+        )
+
+        return response
 
     def delete_os(self, order):
 
@@ -1327,6 +1506,120 @@ class SupaBase:
         )
 
         return response
+    
+    def delete_user(self, user):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        response = requests.delete(
+            f"{self.supabase_url}/rest/v1/login_geopostes?usuario=eq.{user}",
+            headers=headers,
+        )
+
+        return response
+
+
+
+    def check_login(self, username, password):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+            "or": f"(usuario.eq.{username},email.eq.{username})",
+            "senha": f"eq.{password}",
+            "select": "*"
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/login_geopostes",
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
+    def register(self, username, email, number, password1, password2):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        response1 = requests.get(
+            f"{self.supabase_url}/rest/v1/login_geopostes",
+            headers=headers,
+            params={"select": "email", "email": f"eq.{email}"}
+        )
+
+        if response1.status_code == 200 and response1.json():
+            # Se o e-mail já existir, mostre a mensagem e retorne
+            snack_bar = ft.SnackBar(
+                content=ft.Text("E-mail já cadastrado"),
+                bgcolor=ft.colors.RED
+            )
+            self.page.overlay.append(snack_bar)
+            snack_bar.open = True
+            self.page.update()
+
+            return
+         
+        response2 = requests.get(
+            f"{self.supabase_url}/rest/v1/login_geopostes",
+            headers=headers,
+            params={"select": "usuario", "usuario": f"eq.{username}"}
+        )
+
+        if response2.status_code == 200 and response2.json():
+            # Se o usuario já existir, mostre a mensagem e retorne
+            snack_bar = ft.SnackBar(
+                content=ft.Text("Nome de usuario já cadastrado"),
+                bgcolor=ft.colors.RED
+            )
+            self.page.overlay.append(snack_bar)
+            snack_bar.open = True
+            self.page.update()
+
+            return 
+
+        response3 = requests.get(
+            f"{self.supabase_url}/rest/v1/login_geopostes",
+            headers=headers,
+            params={"select": "user_id", "order": "user_id.desc", "limit": 1},
+        )
+
+        if response3.status_code == 200:
+            max_user_id = response3.json()[0]["user_id"] if response3.json() else 0
+            new_user_id = max_user_id + 1
+
+            # Dados para inserir no Supabase
+            data = {
+                "user_id": new_user_id,
+                "usuario": username,
+                "email": email,
+                "numero": number,
+                "senha": password1,
+                "permission": "invited",
+            }
+
+            # Fazer a solicitação POST para inserir o novo registro
+            response4 = requests.post(
+                f"{self.supabase_url}/rest/v1/login_geopostes",
+                headers=headers,
+                json=data,
+            )
+
+            return response4
+   
+    
 
 
 class NavigationDrawer:
@@ -1339,7 +1632,7 @@ class NavigationDrawer:
 
 
 
-    def create_navigation(self, list_profile, action1, action2, action3, action4):
+    def create_navigation(self, list_profile, action1, action2, action3, action4, action5):
 
         space = ft.Container(padding=10)
 
@@ -1399,6 +1692,12 @@ class NavigationDrawer:
                 ft.ListTile(
                         title=ft.Text(f"Lista de ordens de serviço", color=ft.colors.WHITE),
                         on_click=action4
+                    )
+            )
+            listtiles.append(
+                ft.ListTile(
+                        title=ft.Text(f"Gestão de usuários", color=ft.colors.WHITE),
+                        on_click=action5
                     )
             )
 
