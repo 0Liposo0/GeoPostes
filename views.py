@@ -76,7 +76,7 @@ def create_page_home(page, list_profile, list_initial_coordinates, position=None
         page.update() 
 
     gl = ft.Geolocator(
-                    location_settings=ft.GeolocatorAppleSettings(
+                    location_settings=ft.GeolocatorSettings(
                         distance_filter=0,
                     ),
                     on_position_change=handle_position_change,
@@ -655,9 +655,9 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
     
     url_imagem1 = sp.get_storage_post(name)
     if url_imagem1 == "Nulo":
-        initial_image = ft.Text(value="Sem Foto", color=ft.colors.BLACK)
+        initial_image = ft.Text(value="Sem Foto", color=ft.colors.BLACK, data= "semfoto")
     else:
-        initial_image = ft.Image(src=url_imagem1, repeat=None)
+        initial_image = ft.Image(src=url_imagem1, repeat=None, data="foto")
     image_temp = ft.Container(col=8,
                             height=400,
                             expand=True,
@@ -669,7 +669,7 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
                                 right=ft.BorderSide(2, ft.colors.BLACK),
                                 bottom=ft.BorderSide(2, ft.colors.BLACK),
                                 ),
-                            content=initial_image
+                            content=initial_image,
                             )  
 
     def on_image_selected(e: ft.FilePickerResultEvent):
@@ -686,7 +686,7 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
 
             selected_image = e.files[0]
 
-            image_container = ft.Image(src=selected_image.path, col=8) 
+            image_container = ft.Image(src=selected_image.path, col=8, data="foto") 
 
             image_temp.content = image_container
 
@@ -1538,7 +1538,6 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
                         layout=create_page_os_forms(page, list_profile, list_initial_coordinates, name=None, order=order)
                     )
 
-
                 linha = ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value=ip, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
                         ft.DataCell(ft.Text(value=order, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
@@ -1599,8 +1598,6 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
             function = row["function"]
 
             def forms(order):
-
-
 
                 return lambda e: loading.new_loading_page(
                     page=page,
@@ -1999,7 +1996,6 @@ def delete_point(page, list_profile, list_initial_coordinates, name):
     page.overlay.append(snack_bar)
     snack_bar.open = True
     page.update()
-
 
 def delete_os(page, list_profile, list_initial_coordinates, name, order):
 

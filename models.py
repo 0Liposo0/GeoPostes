@@ -1,8 +1,6 @@
 import flet as ft
 import requests
 import flet.map as map
-from PIL import Image
-import io
 from datetime import datetime
 
 
@@ -870,10 +868,15 @@ class SupaBase:
 
 
         storage_path = f'capela/post/{name}.jpg'
+        headers2 = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "image/jpeg",
+        }
         url = f"{self.supabase_url}/storage/v1/object/{storage_path}"
         response3 = requests.delete(
             url,
-            headers=headers,
+            headers=headers2,
         )
 
         list_response = [response1, response2, response3]
@@ -901,7 +904,7 @@ class SupaBase:
 
         return response
 
-    def add_storage(self, name, image, angle_image):
+    def add_storage(self, name, image, angle_image, new=True):
         
         headers = {
             'Authorization': f'Bearer {self.supabase_key}',
@@ -910,24 +913,11 @@ class SupaBase:
 
         storage_path = f'capela/post/{name}.jpg'
 
-        if angle_image == 0 or angle_image == 180:
-            ajusted_angle = angle_image - 90
-        elif angle_image == 270:
-            ajusted_angle = 0
+        if new == True:
+            with open(image, 'rb') as file:
+                bytes = file.read() 
         else:
-            ajusted_angle = 180
-
-
-        with Image.open(image.src) as img:
-            # Rotaciona a imagem para o ângulo desejado (em graus)
-            angle = float(ajusted_angle)  # Defina o ângulo que deseja
-            rotated_img = img.rotate(angle, expand=True)
-
-            # Converte a imagem rotacionada para bytes
-            img_byte_arr = io.BytesIO()
-            rotated_img.save(img_byte_arr, format='JPEG')  # ou 'JPEG' dependendo do formato da imagem original
-            bytes = img_byte_arr.getvalue()
-
+            bytes = image
 
         response = requests.post(
                 f'{self.supabase_url}/storage/v1/object/{storage_path}',
@@ -935,8 +925,7 @@ class SupaBase:
                 data=bytes
             )
         
-        if response.status_code != 200:
-             
+        if response.status_code != 200: 
             print("Erro ao enviar imagem:", response.json())
             return None
              
@@ -1046,7 +1035,7 @@ class SupaBase:
 
         if image != None:
             try:
-                sp.add_storage(name, image, angle)
+                sp.add_storage(name, image.src, angle)
             except:
                 snack_bar = ft.SnackBar(
                         content=ft.Text(f"O dispositivo negou acesso a imagem"),
@@ -1143,6 +1132,25 @@ class SupaBase:
 
         return response
     
+    def delete_storage(self, name):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "image/jpeg",
+        }
+
+        storage_path = f'capela/post/{name}.jpg'
+        
+        url = f"{self.supabase_url}/storage/v1/object/{storage_path}"
+
+        response = requests.delete(
+            url,
+            headers=headers,
+        )
+
+        return response
+
     def edit_point(self, image, list_forms, previous_name):
 
         sp = SupaBase(self.page)
@@ -1162,19 +1170,60 @@ class SupaBase:
                 "address": list_forms[5],
             }
 
-        if "supabase" not in image.src:
-            try:
-                sp.delete_storage(previous_name)
-                sp.add_storage(list_forms[0], image, angle_image=0)    
-            except:
-                snack_bar = ft.SnackBar(
-                        content=ft.Text(f"O dispositivo negou acesso a imagem"),
-                        bgcolor=ft.colors.AMBER,
-                        duration=1000,
-                    )
-                self.page.overlay.append(snack_bar)
-                snack_bar.open = True
-               
+        changed = False
+
+        if previous_name != list_forms[0]:
+
+            data = { "name": list_forms[0]}
+
+            response = requests.patch(
+            f"{self.supabase_url}/rest/v1/point_post_capela?name=eq.{previous_name}",
+            headers=headers,
+            json=data,
+            )
+
+            if image.data == "foto":
+                changed = True
+                try:
+                    headers2 = {
+                        "apikey": self.supabase_key,
+                        "Authorization": f"Bearer {self.supabase_key}",
+                    }
+                    url = sp.get_storage_post(previous_name)
+                    get_bytes = requests.get(url, headers=headers2)
+                    bytes = get_bytes.content
+                    if url != "Nulo":
+                        sp.delete_storage(previous_name)
+                    if "supabase" not in image.src:
+                        sp.add_storage(list_forms[0], image.src, angle_image=0)
+                    else:
+                        sp.add_storage(list_forms[0], bytes, angle_image=0, new=False)
+
+                except:
+                    snack_bar = ft.SnackBar(
+                            content=ft.Text(f"O dispositivo negou acesso a imagem"),
+                            bgcolor=ft.colors.AMBER,
+                            duration=1000,
+                        )
+                    self.page.overlay.append(snack_bar)
+                    snack_bar.open = True
+
+        if image.data == "foto" and changed == False:
+            if "supabase" not in image.src:
+                try:
+                    url = sp.get_storage_post(previous_name)
+                    if url != "Nulo":
+                        sp.delete_storage(previous_name)
+                    sp.add_storage(list_forms[0], image.src, angle_image=0, new=True)    
+                except:
+                    snack_bar = ft.SnackBar(
+                            content=ft.Text(f"O dispositivo negou acesso a imagem"),
+                            bgcolor=ft.colors.AMBER,
+                            duration=1000,
+                        )
+                    self.page.overlay.append(snack_bar)
+                    snack_bar.open = True
+
         response = requests.patch(
             f"{self.supabase_url}/rest/v1/form_post_capela?name=eq.{previous_name}",
             headers=headers,
