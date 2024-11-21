@@ -77,6 +77,7 @@ def create_page_home(page, list_profile, list_initial_coordinates, position=None
 
     gl = ft.Geolocator(
                     location_settings=ft.GeolocatorSettings(
+                        accuracy=ft.GeolocatorPositionAccuracy.BEST,
                         distance_filter=0,
                     ),
                     on_position_change=handle_position_change,
