@@ -2192,10 +2192,11 @@ def add_point(page, list_profile, list_initial_coordinates, list_forms, image, a
             duration=3000,
         )
         loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
-        
+
+    elif  response.status_code == 199:
+        return  
+
     else:
-        print(f"Erro ao inserir ponto: {response.status_code}")
-        print(f"Resposta do erro: {response.text}")
         snack_bar = ft.SnackBar(
             content=ft.Text(f"Erro ao inserir ponto: {response.text}"),
             bgcolor=ft.colors.RED,
@@ -2321,6 +2322,9 @@ def edit_point(page, list_profile, list_initial_coordinates, list_forms, image, 
         )
         loading = LoadingPages(page)
         loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
+
+    elif response.status_code == 199:
+        return
 
     else:
         print(f"Erro ao editar ponto: {response.status_code}")

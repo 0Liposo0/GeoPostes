@@ -125,6 +125,7 @@ class Buttons:
     def create_point_button(self, on_click, text):
         return ft.Column(
                 spacing=0,
+                wrap=True,
                 controls=[
                     ft.ElevatedButton(
                         on_click=on_click,
@@ -1131,21 +1132,22 @@ class SupaBase:
             "Content-Type": "application/json",
         }
 
-        response = requests.get(
-            f"{self.supabase_url}/rest/v1/points_capeladoalto",
+        response1 = requests.get(
+            f"{self.supabase_url}/rest/v1/point_post_capela",
             headers=headers,
             params={"select": "name", "name": f"eq.{name}"}
         )
 
-        if response.status_code == 200 and response.json():
+        if response1.status_code == 200 and response1.json():
             # Se o ponto já existir, mostre a mensagem e retorne
             snack_bar = ft.SnackBar(
-                content=ft.Text(f"{list_forms[2]} já foi cadastrado, ponto não adicionado"),
+                content=ft.Text(f"{list_forms[0]} já foi cadastrado, ponto não adicionado"),
                 bgcolor=ft.colors.RED
             )
             self.page.overlay.append(snack_bar)
             snack_bar.open = True
-            return
+            response1.status_code = 199
+            return response1
 
         if image != None:
             try:
@@ -1168,7 +1170,7 @@ class SupaBase:
                 "address": list_forms[5],
             }
 
-        response = requests.post(
+        response2 = requests.post(
             f"{self.supabase_url}/rest/v1/form_post_capela",
             headers=headers,
             json=data,
@@ -1186,13 +1188,13 @@ class SupaBase:
                 "changed_by": list_profile[0],
             }
         
-        response2 = requests.post(
+        response3 = requests.post(
             f"{self.supabase_url}/rest/v1/point_post_capela",
             headers=headers,
             json=data2,
         )
         
-        return response2
+        return response3
     
     def add_os(self, list_add_os):
 
@@ -1269,8 +1271,8 @@ class SupaBase:
             self.page.overlay.append(snack_bar)
             snack_bar.open = True
             self.page.update()
-
-            return
+            response1.status_code == 199
+            return response1
          
         response2 = requests.get(
             f"{self.supabase_url}/rest/v1/login_geopostes",
@@ -1332,12 +1334,28 @@ class SupaBase:
 
         if previous_name != list_forms[0]:
 
+            response1 = requests.get(
+                f"{self.supabase_url}/rest/v1/point_post_capela",
+                headers=headers,
+                params={"select": "name", "name": f"eq.{list_forms[0]}"}
+            )
+
+            if response1.status_code == 200 and response1.json():
+                snack_bar = ft.SnackBar(
+                    content=ft.Text(f"{list_forms[0]} já foi cadastrado, ponto não editado"),
+                    bgcolor=ft.colors.RED
+                )
+                self.page.overlay.append(snack_bar)
+                snack_bar.open = True
+                response1.status_code = 199
+                return response1
+
             data = { "name": list_forms[0]}
 
-            response = requests.patch(
-            f"{self.supabase_url}/rest/v1/point_post_capela?name=eq.{previous_name}",
-            headers=headers,
-            json=data,
+            response2 = requests.patch(
+                f"{self.supabase_url}/rest/v1/point_post_capela?name=eq.{previous_name}",
+                headers=headers,
+                json=data,
             )
 
             if image.data == "foto":
@@ -1382,13 +1400,13 @@ class SupaBase:
                     self.page.overlay.append(snack_bar)
                     snack_bar.open = True
 
-        response = requests.patch(
+        response3 = requests.patch(
             f"{self.supabase_url}/rest/v1/form_post_capela?name=eq.{previous_name}",
             headers=headers,
             json=data,
         )
 
-        return response
+        return response3
 
     def edit_os(self, list_edited_os_forms):
 
