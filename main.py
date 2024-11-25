@@ -12,8 +12,10 @@ def main(page: ft.Page):
     page.scroll = "auto"
     page.padding=0  
 
-    list_initial_coordinates = ["-23.3396", "-47.8238"]
+    map_layer = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+    list_initial_coordinates = ["-23.3396", "-47.8238", map_layer, None]
     list_profile =["Carlos", "adm", "11982245028"]
+ 
 
     loading = LoadingPages(page)
     loading.new_loading_page(page=page, layout=create_page_login(page))

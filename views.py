@@ -8,24 +8,26 @@ import time
 import asyncio
 
 
-def create_page_home(page, list_profile, list_initial_coordinates, position=None):
+def create_page_home(page, list_profile, list_initial_coordinates):
 
+    page.go("/home")
     page.clean()
     page.overlay.clear()
+    page.controls.clear()
 
     loading = LoadingPages(page)
     buttons = Buttons(page)
     menus = SettingsMenu(page)
     navigations = NavigationDrawer(page)
 
-    list_center_map_coordinates = [list_initial_coordinates[0], list_initial_coordinates[1]]
+    list_center_map_coordinates = [list_initial_coordinates[0], list_initial_coordinates[1], list_initial_coordinates[2], list_initial_coordinates[3]]
 
     navigations = NavigationDrawer(page)
     action1 = lambda e: loading.new_loading_page(page=page, layout=create_page_login(page)) 
     action2 = lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_center_map_coordinates))
-    action3 = lambda e: loading.new_loading_page(page=page, layout=create_view_postes_form(page, list_profile, list_initial_coordinates, menu=rightmenu)) 
-    action4 = lambda e: loading.new_loading_page(page=page, layout=create_view_orders_form(page, list_profile, list_initial_coordinates, menu=rightmenu)) 
-    action5 = lambda e: loading.new_loading_page(page=page, layout=create_view_users_form(page, list_profile, list_initial_coordinates, menu=rightmenu)) 
+    action3 = lambda e: loading.new_loading_page(page=page, layout=create_view_postes_form(page, list_profile, list_center_map_coordinates, menu=rightmenu)) 
+    action4 = lambda e: loading.new_loading_page(page=page, layout=create_view_orders_form(page, list_profile, list_center_map_coordinates, menu=rightmenu)) 
+    action5 = lambda e: loading.new_loading_page(page=page, layout=create_view_users_form(page, list_profile, list_center_map_coordinates, menu=rightmenu)) 
     rightmenu = navigations.create_navigation(list_profile, action1, action2, action3, action4, action5)
     menu = menus.create_settings_menu(color=ft.colors.WHITE, col=10, action=lambda e: page.open(rightmenu))
 
@@ -62,7 +64,7 @@ def create_page_home(page, list_profile, list_initial_coordinates, position=None
                                  ),    
                             ]
                         ),
-                coordinates=position,
+                coordinates=list_initial_coordinates[3],
                 rotate=True, 
                 )
 
@@ -72,14 +74,18 @@ def create_page_home(page, list_profile, list_initial_coordinates, position=None
     
 
 
+
+
     def handle_position_change(e):
         point_location.coordinates = map.MapLatitudeLongitude(e.latitude, e.longitude)
+        list_initial_coordinates[3] =  map.MapLatitudeLongitude(e.latitude, e.longitude)
+        list_center_map_coordinates[3] = map.MapLatitudeLongitude(e.latitude, e.longitude)
         page.update() 
 
     gl = ft.Geolocator(
                     location_settings=ft.GeolocatorSettings(
                         accuracy=ft.GeolocatorPositionAccuracy.BEST,
-                        distance_filter=0,
+                        distance_filter=1,
                     ),
                     on_position_change=handle_position_change,
                     data = 0,
@@ -90,8 +96,8 @@ def create_page_home(page, list_profile, list_initial_coordinates, position=None
         if point_location.coordinates is not None:
             lat = str(point_location.coordinates.latitude)
             long = str(point_location.coordinates.longitude)
-            list_initial_coordinates = [lat, long]
-            loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates, position=map.MapLatitudeLongitude(list_initial_coordinates[0],list_initial_coordinates[1])))
+            list_initial_coordinates = [lat, long, list_center_map_coordinates[2], list_center_map_coordinates[3]]
+            loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
 
     async def location(e=None):
 
@@ -133,12 +139,34 @@ def create_page_home(page, list_profile, list_initial_coordinates, position=None
 
 
 
-    searchs = Search(page, list_profile)
+
+
+    searchs = Search(page, list_profile, list_initial_coordinates)
     search_text_fild = searchs.create_search_text()
     search_container = searchs.create_search_container()
     search_container.visible = False
 
-    
+    containers = Container(page, list_profile, list_center_map_coordinates)
+    map_layer_container= containers.create_maps_container()
+    page.overlay.append(map_layer_container)
+    map_layer_container.visible = False
+
+    def show_map_layer_container(e):
+        if not map_layer_container in page.overlay:
+            page.overlay.append(map_layer_container)    
+            map_layer_container.visible = not map_layer_container.visible
+        else:
+            map_layer_container.visible = not map_layer_container.visible
+        page.update()
+
+    button_map_layer = buttons.create_call_location_button(
+                                                        icon=ft.icons.LAYERS,
+                                                        on_click=show_map_layer_container,
+                                                        color=ft.colors.WHITE,
+                                                        col=2,
+                                                        padding=0,
+                                                        icon_color=ft.colors.BLUE
+                                                        )
 
 
 
@@ -171,6 +199,7 @@ def create_page_home(page, list_profile, list_initial_coordinates, position=None
             controls=[
                 button_location,
                 ft.Container(expand=True),
+                button_map_layer
             ]
         ),
     )
@@ -191,10 +220,12 @@ def create_page_home(page, list_profile, list_initial_coordinates, position=None
 
 def create_page_forms(page, list_profile, list_initial_coordinates, name, local=False):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     loading = LoadingPages(page)
@@ -296,10 +327,12 @@ def create_page_forms(page, list_profile, list_initial_coordinates, name, local=
 
 def create_page_os_forms(page, list_profile, list_initial_coordinates, name, order):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     loading = LoadingPages(page)
@@ -365,10 +398,12 @@ def create_page_os_forms(page, list_profile, list_initial_coordinates, name, ord
 
 def create_page_user_forms(page, list_profile, list_initial_coordinates, user):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     loading = LoadingPages(page)
@@ -420,10 +455,12 @@ def create_page_user_forms(page, list_profile, list_initial_coordinates, user):
 
 def create_page_add_forms(page, list_profile, list_initial_coordinates):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     loading = LoadingPages(page)
@@ -584,10 +621,12 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
 
 def create_page_add_os_forms(page, list_profile, list_initial_coordinates, name):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     loading = LoadingPages(page)
@@ -655,10 +694,12 @@ def create_page_add_os_forms(page, list_profile, list_initial_coordinates, name)
 
 def create_page_add_user_forms(page, list_profile, list_initial_coordinates):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     loading = LoadingPages(page)
@@ -713,10 +754,12 @@ def create_page_add_user_forms(page, list_profile, list_initial_coordinates):
 
 def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, local=False):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     forms = Forms(page)
@@ -862,10 +905,12 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
 
 def create_page_edit_os_forms(page, list_profile, list_initial_coordinates, name, order):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     loading = LoadingPages(page)
@@ -953,10 +998,12 @@ def create_page_edit_os_forms(page, list_profile, list_initial_coordinates, name
 
 def create_page_edit_user_forms(page, list_profile, list_initial_coordinates, user):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     loading = LoadingPages(page)
@@ -1028,10 +1075,12 @@ def create_page_edit_user_forms(page, list_profile, list_initial_coordinates, us
 
 def create_invited_page_order(page, list_profile, list_initial_coordinates, name):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     loading = LoadingPages(page)
@@ -1176,10 +1225,12 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
 
 def create_adm_page_order(page, list_profile, list_initial_coordinates, name):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     loading = LoadingPages(page)
@@ -1306,10 +1357,12 @@ def create_adm_page_order(page, list_profile, list_initial_coordinates, name):
 
 def create_page_login(page):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     web_images = Web_Image(page)
@@ -1371,10 +1424,12 @@ def create_page_login(page):
 
 def create_page_register(page):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     web_images = Web_Image(page)
@@ -1432,10 +1487,12 @@ def create_page_register(page):
 
 def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     textthemes = TextTheme()
@@ -1638,8 +1695,6 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
             ),
         )
 
-    list_initial_coordinates = ["-23.3396", "-47.8238"]
-
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates)),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
@@ -1674,10 +1729,12 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
 
 def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     textthemes = TextTheme()
@@ -1829,8 +1886,6 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
             ),
         )
 
-    list_initial_coordinates = ["-23.3396", "-47.8238"]
-
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates)),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
@@ -1864,10 +1919,12 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
 
 def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
 
+    page.go("/")
     page.floating_action_button = None
     page.bottom_appbar = None
     page.appbar = None
     page.clean()
+    page.controls.clear()
     page.overlay.clear()
 
     textthemes = TextTheme()
@@ -2022,7 +2079,6 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
             ),
         )
 
-    list_initial_coordinates = ["-23.3396", "-47.8238"]
 
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates)),
                                             text="Voltar",
@@ -2081,7 +2137,8 @@ def verificar(username, password, page):
         )
         page.overlay.append(snack_bar)
         snack_bar.open = True
-        list_initial_coordinates = ["-23.3396", "-47.8238"]
+        map_layer = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        list_initial_coordinates = ["-23.3396", "-47.8238", map_layer, None]
         list_profile = ["Carlos", "adm", "11982245028"]
         loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
 
@@ -2102,7 +2159,8 @@ def verificar(username, password, page):
             bgcolor=ft.colors.GREEN,
             duration= 1000,
             )
-            list_initial_coordinates = ["-23.3396", "-47.8238"]
+            map_layer = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            list_initial_coordinates = ["-23.3396", "-47.8238", map_layer, None]
             list_profile = [name, permission, number]
             loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
             
@@ -2582,7 +2640,7 @@ class Map:
 
     def create_map(self):
 
-        markers = Marker(self.page)
+        markers = Marker(self.page, self.initial_coordinates)
         mappoints = markers.create_points(self.name)
         self.MarkerLayer = mappoints
 
@@ -2592,17 +2650,28 @@ class Map:
 
             self.page.update()
 
+        def tap_event(e: map.MapEvent):
+            try:
+                self.page.overlay[1].visible = False
+                self.page.overlay.pop(1)
+                self.page.update()
+            except:
+                None
+
+
+
 
         self.google = map.Map(
                     expand=True,  
                     configuration=map.MapConfiguration(
                         initial_center=map.MapLatitudeLongitude(self.initial_coordinates[0], self.initial_coordinates[1]),  
-                        initial_zoom=19,
+                        initial_zoom=18.4,
                         on_event=handle_event,
+                        on_tap=tap_event,
                     ),
                     layers=[
                         map.TileLayer(
-                            url_template="https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                            url_template=self.initial_coordinates[2],
                         ),
                         map.MarkerLayer(self.MarkerLayer),
                         map.RichAttribution(
@@ -2619,7 +2688,7 @@ class Map:
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=[
                         ft.Container(
-                            width=420,
+                            width=430,
                             height=800,
                             alignment=ft.alignment.center,
                             bgcolor=ft.colors.GREY,
@@ -2669,8 +2738,9 @@ class Map:
 
 class Marker:
 
-    def __init__(self, page):
+    def __init__(self, page, list_initial_coordinates):
         self.page = page
+        self.list_initial_coordinates = list_initial_coordinates
 
 
     def create_points(self, list_profile):
@@ -2699,7 +2769,7 @@ class Marker:
             x = row["x"]
             y = row["y"]
 
-            list_initial_coordinates = [x, y]
+            list_initial_coordinates = [x, y, self.list_initial_coordinates[2], self.list_initial_coordinates[3]]
 
             loading = LoadingPages(self.page)
       
@@ -2734,12 +2804,13 @@ class Marker:
 
 class Search:
 
-    def __init__(self, page, list_profile):
+    def __init__(self, page, list_profile, list_initial_coordinates):
         self.page = page
+        self.list_initial_coordinates = list_initial_coordinates
         self.sp = SupaBase(self.page)
 
         self.resultdata = ft.ListView()
- 
+
         self.resultcon = ft.Container(
             bgcolor=ft.colors.BLUE,
             padding=10,
@@ -2750,7 +2821,7 @@ class Search:
             animate_offset = ft.animation.Animation(600,curve="easeIn"),
             content=ft.Column([
                 self.resultdata
-    
+
                 ])
             )
 
@@ -2795,7 +2866,7 @@ class Search:
             def create_on_click(lat=Latitude, long=Longitude):
                 return lambda e: loading.new_loading_page(
                     page=self.page,
-                    layout=create_page_home(self.page, list_profile, list_initial_coordinates=[lat, long]),
+                    layout=create_page_home(self.page, list_profile, list_initial_coordinates=[lat, long, self.list_initial_coordinates[2],self.list_initial_coordinates[3]]),
                 )
 
             # Adiciona o botão à lista de itens
@@ -2833,12 +2904,12 @@ class Search:
                 self.page.update()
 
         self.txtsearch = ft.TextField(label="Procurar",  # caixa de texto
-                                     on_change=searchnow,
-                                     label_style= ft.TextStyle(color=ft.colors.BLACK),
-                                     text_style= ft.TextStyle(color=ft.colors.BLACK),
-                                     border_radius=20,
-                                     border_color=ft.colors.WHITE,
-                                     bgcolor=ft.colors.WHITE
+                                        on_change=searchnow,
+                                        label_style= ft.TextStyle(color=ft.colors.BLACK),
+                                        text_style= ft.TextStyle(color=ft.colors.BLACK),
+                                        border_radius=20,
+                                        border_color=ft.colors.WHITE,
+                                        bgcolor=ft.colors.WHITE
 
             )
 
@@ -2851,6 +2922,72 @@ class Search:
         self.resultcon.offset = ft.transform.Offset(0, 0)  # Centralizado
         self.resultcon.animate_offset = ft.animation.Animation(600, curve="easeIn")
         return self.resultcon
+
+
+class Container:
+
+    def __init__(self, page, list_profile, list_initial_coordinates):
+        self.page = page
+        self.sp = SupaBase(self.page)
+        loading = LoadingPages(page)
+        web_images = Web_Image(page)
+
+        url_imagem1 = web_images.get_image_url(name="map_aerial")
+        map_aerial = web_images.create_web_image(src=url_imagem1) 
+        url_imagem2 = web_images.get_image_url(name="map_road")
+        map_road = web_images.create_web_image(src=url_imagem2)
+
+        def create_map_aerial(e):
+            layer_aerial = "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            list_initial_coordinates[2]=layer_aerial
+            loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
+
+        def create_map_road(e):
+            layer_aerial = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            list_initial_coordinates[2]=layer_aerial
+            loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
+
+        self.map_container = ft.Row([
+                                ft.Container(
+                                    bgcolor=ft.colors.BLUE,
+                                    padding=10,
+                                    margin=10,
+                                    height=120,
+                                    width=250,
+                                    border_radius=20,
+                                    alignment=ft.alignment.center,
+                                    content=ft.Column([
+                                            ft.Row([
+                                                ft.Container(
+                                                    bgcolor=ft.colors.WHITE,
+                                                    width=100,
+                                                    height=100,
+                                                    content=(map_road),
+                                                    on_click=create_map_road,
+                                                    border_radius=10,   
+                                                ),
+                                                ft.Container(
+                                                    bgcolor=ft.colors.WHITE,
+                                                    width=100,
+                                                    height=100,
+                                                    content=(map_aerial),
+                                                    on_click=create_map_aerial,
+                                                    border_radius=10,   
+                                                ),
+                                            ],
+                                            spacing=25)
+                                        ])
+                                    )
+                                ],
+                                vertical_alignment=ft.CrossAxisAlignment.END,
+                                alignment=ft.MainAxisAlignment.CENTER,
+                                )
+
+
+    def create_maps_container(self):
+        self.map_container.offset = ft.transform.Offset(0, 0)  # Centralizado
+        self.map_container.animate_offset = ft.animation.Animation(600, curve="easeIn")
+        return self.map_container
 
 
 
