@@ -354,7 +354,7 @@ class TextField:
         self.page = page
 
 
-    def create_textfield(self,value, text, password, read=False):
+    def create_textfield(self,value, text, password, read=False, input_filter=None, keyboard_type=None):
 
         return  ft.TextField(
             value=value,
@@ -364,6 +364,8 @@ class TextField:
             text_style= ft.TextStyle(color=ft.colors.BLACK),
             col=8,
             read_only=read,
+            input_filter=input_filter,
+            keyboard_type=keyboard_type
             )
     
     def create_description_textfield(self, text):
@@ -652,7 +654,7 @@ class Forms:
         texttheme1 = textthemes.create_text_theme1()
 
         textfields = TextField(self.page)
-        ip_field = textfields.create_textfield(value=ip, text=None, password=False)
+        ip_field = textfields.create_textfield(value=ip, text=None, password=False, read=None, input_filter=ft.NumbersOnlyInputFilter(), keyboard_type=ft.KeyboardType.NUMBER)
         situacao_field = textfields.create_textfield(value=situ, text=None, password=False)
         tipo_field = textfields.create_textfield(value=tipo, text=None, password=False)
         pontos_field = textfields.create_textfield(value=pontos, text=None, password=False)
@@ -1124,7 +1126,9 @@ class SupaBase:
     def add_point(self, list_profile, list_forms, list_initial_coordinates, image, angle):
 
         sp = SupaBase(self.page)
-        name = list_forms[0]
+        number = str(list_forms[0])
+        new_number = number.zfill(4)
+        ip = f"IP SOR-{new_number}"
 
         headers = {
             "apikey": self.supabase_key,
@@ -1135,13 +1139,13 @@ class SupaBase:
         response1 = requests.get(
             f"{self.supabase_url}/rest/v1/point_post_capela",
             headers=headers,
-            params={"select": "name", "name": f"eq.{name}"}
+            params={"select": "name", "name": f"eq.{ip}"}
         )
 
         if response1.status_code == 200 and response1.json():
             # Se o ponto já existir, mostre a mensagem e retorne
             snack_bar = ft.SnackBar(
-                content=ft.Text(f"{list_forms[0]} já foi cadastrado, ponto não adicionado"),
+                content=ft.Text(f"{ip} já foi cadastrado, ponto não adicionado"),
                 bgcolor=ft.colors.RED
             )
             self.page.overlay.append(snack_bar)
@@ -1151,7 +1155,7 @@ class SupaBase:
 
         if image != None:
             try:
-                sp.add_storage(name, image.src, angle)
+                sp.add_storage(ip, image.src, angle)
             except:
                 snack_bar = ft.SnackBar(
                         content=ft.Text(f"O dispositivo negou acesso a imagem"),
@@ -1162,7 +1166,7 @@ class SupaBase:
                 snack_bar.open = True
 
         data = {
-                "name": list_forms[0],
+                "name": ip,
                 "situation": list_forms[1],
                 "type": list_forms[2],
                 "point": list_forms[3],
@@ -1180,7 +1184,7 @@ class SupaBase:
         data_formatada = data_atual.strftime("%d/%m/%Y")
 
         data2 = {
-                "name": name,
+                "name": ip,
                 "x": list_initial_coordinates[0],
                 "y": list_initial_coordinates[1],
                 "color": "yellow",
@@ -1314,6 +1318,9 @@ class SupaBase:
     def edit_point(self, image, list_forms, previous_name):
 
         sp = SupaBase(self.page)
+        number = str(list_forms[0])
+        new_number = number.zfill(4)
+        ip = f"IP SOR-{new_number}"
 
         headers = {
             "apikey": self.supabase_key,
@@ -1322,7 +1329,7 @@ class SupaBase:
         }
 
         data = {
-                "name": list_forms[0],
+                "name": ip,
                 "situation": list_forms[1],
                 "type": list_forms[2],
                 "point": list_forms[3],
@@ -1332,17 +1339,17 @@ class SupaBase:
 
         changed = False
 
-        if previous_name != list_forms[0]:
+        if previous_name != ip:
 
             response1 = requests.get(
                 f"{self.supabase_url}/rest/v1/point_post_capela",
                 headers=headers,
-                params={"select": "name", "name": f"eq.{list_forms[0]}"}
+                params={"select": "name", "name": f"eq.{ip}"}
             )
 
             if response1.status_code == 200 and response1.json():
                 snack_bar = ft.SnackBar(
-                    content=ft.Text(f"{list_forms[0]} já foi cadastrado, ponto não editado"),
+                    content=ft.Text(f"{ip} já foi cadastrado, ponto não editado"),
                     bgcolor=ft.colors.RED
                 )
                 self.page.overlay.append(snack_bar)
@@ -1350,7 +1357,7 @@ class SupaBase:
                 response1.status_code = 199
                 return response1
 
-            data = { "name": list_forms[0]}
+            data = { "name": ip}
 
             response2 = requests.patch(
                 f"{self.supabase_url}/rest/v1/point_post_capela?name=eq.{previous_name}",
@@ -1371,9 +1378,9 @@ class SupaBase:
                     if url != "Nulo":
                         sp.delete_storage(previous_name)
                     if "supabase" not in image.src:
-                        sp.add_storage(list_forms[0], image.src, angle_image=0)
+                        sp.add_storage(ip, image.src, angle_image=0)
                     else:
-                        sp.add_storage(list_forms[0], bytes, angle_image=0, new=False)
+                        sp.add_storage(ip, bytes, angle_image=0, new=False)
 
                 except:
                     snack_bar = ft.SnackBar(
@@ -1390,7 +1397,7 @@ class SupaBase:
                     url = sp.get_storage_post(previous_name)
                     if url != "Nulo":
                         sp.delete_storage(previous_name)
-                    sp.add_storage(list_forms[0], image.src, angle_image=0, new=True)    
+                    sp.add_storage(ip, image.src, angle_image=0, new=True)    
                 except:
                     snack_bar = ft.SnackBar(
                             content=ft.Text(f"O dispositivo negou acesso a imagem"),
@@ -1638,8 +1645,6 @@ class SupaBase:
             return response4
    
     
-
-
 class NavigationDrawer:
 
     def __init__(self, page):

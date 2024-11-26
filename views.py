@@ -148,14 +148,18 @@ def create_page_home(page, list_profile, list_initial_coordinates):
 
     containers = Container(page, list_profile, list_center_map_coordinates)
     map_layer_container= containers.create_maps_container()
-    page.overlay.append(map_layer_container)
     map_layer_container.visible = False
 
     def show_map_layer_container(e):
+        try:
+            page.overlay.pop(1)
+        except:
+            None
         if not map_layer_container in page.overlay:
             page.overlay.append(map_layer_container)    
             map_layer_container.visible = not map_layer_container.visible
         else:
+            page.overlay.remove(map_layer_container)
             map_layer_container.visible = not map_layer_container.visible
         page.update()
 
@@ -187,7 +191,9 @@ def create_page_home(page, list_profile, list_initial_coordinates):
                             content=ft.Icon(name=ft.icons.ADD_LOCATION_ROUNDED, color=ft.colors.BLUE, scale=2),
                             bgcolor=ft.colors.WHITE,
                             shape=ft.RoundedRectangleBorder(radius=50),
-                            on_click= lambda e: loading.new_loading_page(page=page, layout=create_page_add_forms(page, list_profile, list_initial_coordinates=[list_center_map_coordinates[0], list_center_map_coordinates[1]])) 
+                            on_click= lambda e: loading.new_loading_page(page=page,
+                            layout=create_page_add_forms(page, list_profile,
+                            list_initial_coordinates=[list_center_map_coordinates[0], list_center_map_coordinates[1], list_center_map_coordinates[2],list_center_map_coordinates[3]])) 
                         )
     
     page.floating_action_button_location = ft.FloatingActionButtonLocation.MINI_CENTER_DOCKED
@@ -500,7 +506,7 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
      
 
 
-    forms1 = forms.create_add_forms(ip="IP SOR-", situ=None, tipo=None, pontos=None, bairro=None, logra=None)
+    forms1 = forms.create_add_forms(ip=None, situ=None, tipo=None, pontos=None, bairro=None, logra=None)
 
     add_button = buttons.create_button(on_click=lambda e :send_point(forms1, image_temp.content),
                                             text="Adicionar",
@@ -783,7 +789,8 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
     form = sp.get_form_post(name)
     data = form.json()
     row = data[0]
-    forms1 = forms.create_add_forms(row["name"], row["situation"], row["type"], row["point"], row["hood"], row["address"])
+    numero = int(row["name"].split('-')[1])
+    forms1 = forms.create_add_forms(numero, row["situation"], row["type"], row["point"], row["hood"], row["address"])
 
     def go_back(e=None):
         if local ==False:
@@ -2883,6 +2890,10 @@ class Search:
             result = []  # cria outra lista
 
             if mysearch.strip():  # Se houver texto digitado
+                try:
+                    self.page.overlay.pop(1)
+                except:
+                    None
                 if self.resultcon not in self.page.overlay:
                     self.resultcon.visible = True
                     self.page.overlay.insert(1, self.resultcon)  # Adiciona ao overlay
