@@ -472,6 +472,7 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
     loading = LoadingPages(page)
     forms = Forms(page)
     buttons = Buttons(page)
+    sp = SupaBase(page)
 
     def send_point(object, image):
 
@@ -504,9 +505,9 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
 
         add_point(page, list_profile, list_initial_coordinates, list_forms, image=image, angle=angle)
      
+    new_number = sp.get_last_form_post()
 
-
-    forms1 = forms.create_add_forms(ip=None, situ=None, tipo=None, pontos=None, bairro=None, logra=None)
+    forms1 = forms.create_add_forms(ip=new_number, situ=None, tipo=None, pontos=None, bairro=".", logra=".")
 
     add_button = buttons.create_button(on_click=lambda e :send_point(forms1, image_temp.content),
                                             text="Adicionar",
@@ -1507,23 +1508,34 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
     buttons = Buttons(page)
     loading = LoadingPages(page)
     sp = SupaBase(page)
+    chk = CheckBox(page)
 
-    filter = "like.*"
+    dicio_filter = {
+        "name_filter" : "like.*",
+        "situation_filter" : "like.*",
+        "type_filter" : "like.*"
+    }
     dicio = {}
 
     def changesearch(e, filter, dicio, forms1):
 
-        if e.control.value.strip() == "":
-            filter = "like.*"  # Retorna todos os resultados
-        else:
-            filter = f"like.%{e.control.value}%"
 
-        # Atualiza o filtro nos parâmetros
-        params["name"] = filter
+        try:
+            if e.control.value.strip() == "":
+                dicio_filter["name_filter"] = "like.*"  
+            else:
+                dicio_filter["name_filter"] = f"ilike.%{e.control.value.strip().lower()}%"
+        except:
+            dicio_filter["name_filter"] = "like.*"
+
+   
+        params["name"] = dicio_filter["name_filter"]
+        params["situation"] = dicio_filter["situation_filter"]
+        params["type"] = dicio_filter["type_filter"]
 
         # Faz uma nova requisição com o filtro atualizado
         response = requests.get(
-            f"{url}/rest/v1/point_post_capela",
+            f"{url}/rest/v1/form_post_capela",
             headers=headers,
             params=params,
         )
@@ -1607,14 +1619,17 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
         "Content-Type": "application/json",
     }
 
+
     params = {
-        "select": "name",
-        "name": f"{filter}",
+        "select": "name, situation, type",
+        "name": dicio_filter["name_filter"],
+        "situation": dicio_filter["situation_filter"],
+        "type": dicio_filter["type_filter"],
         "order": "name.asc",
     }
 
     response = requests.get(
-        f"{url}/rest/v1/point_post_capela",
+        f"{url}/rest/v1/form_post_capela",
         headers=headers,
         params=params,
     )
@@ -1701,6 +1716,57 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                 rows=lista,
             ),
         )
+    
+    def show_filter_container(e):
+        filter_container.visible = not filter_container.visible
+        page.update()
+
+    def get_permission_filter(e):
+        led_type = filter_container.content.controls[0].controls[0].value
+        led_type_data = filter_container.content.controls[0].controls[0].data
+        sodium_type = filter_container.content.controls[1].controls[0].value
+        sodium_type_data = filter_container.content.controls[1].controls[0].data
+        null_type = filter_container.content.controls[2].controls[0].value
+        null_type_data = filter_container.content.controls[2].controls[0].data
+        if led_type:
+            dicio_filter["type_filter"] = f"eq.{led_type_data}"
+        if sodium_type:
+            dicio_filter["type_filter"] = f"eq.{sodium_type_data}"
+        if led_type and sodium_type:
+            dicio_filter["type_filter"] = f"neq.{null_type_data}"
+        if null_type:
+            dicio_filter["type_filter"] = f"eq.{null_type_data}"
+        if null_type and led_type:
+            dicio_filter["type_filter"] = f"neq.{sodium_type_data}"
+        if null_type and sodium_type:
+            dicio_filter["type_filter"] = f"neq.{led_type_data}"
+        if led_type and sodium_type and null_type:
+            dicio_filter["type_filter"] = f"like.*"
+        filter_container.visible = not filter_container.visible
+        page.update()
+        changesearch(e, dicio_filter, dicio, forms1),
+
+
+
+    filter_container = ft.Container(
+            bgcolor=ft.colors.BLUE,
+            padding=10,
+            margin=10,
+            height=200,
+            border_radius=20,
+            col=10,
+            visible=False,
+            content=ft.Column([
+                chk.create_checkbox2("Lâmpada LED", 15, None, 8,"Lâmpada LED", True),
+                chk.create_checkbox2("Lâmpada de vapor de sódio", 15, None, 8,"Lâmpada de vapor de sódio", True),
+                chk.create_checkbox2("Sem iluminação", 15, None, 8,".", True),
+                buttons.create_button(on_click=lambda e: get_permission_filter(e),
+                                            text="Aplicar",
+                                            color=ft.colors.AMBER,
+                                            col=12,
+                                            padding=5,)
+                ])
+            )
 
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates)),
                                             text="Voltar",
@@ -1719,13 +1785,23 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                                 bgcolor=ft.colors.WHITE
 
             )
-
+    
+    filter_button = buttons.create_icon_button(
+                                                icon=ft.icons.FILTER_ALT_OUTLINED,
+                                                on_click=show_filter_container,
+                                                color=ft.colors.BLUE,
+                                                col=2,
+                                                padding=0,
+                                                icon_color=ft.colors.WHITE,
+                                                )
 
     return ft.ResponsiveRow(
         columns=12,
         controls=[
             ft.Container(height=10),
             searchfild,
+            filter_button,
+            filter_container,
             forms1,
             back_home_button
          
@@ -1749,19 +1825,27 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
     buttons = Buttons(page)
     loading = LoadingPages(page)
     sp = SupaBase(page)
+    chk = CheckBox(page)
     
-    filter = "like.*"
+    dicio_filter = {
+        "order_filter" : "like.*",
+        "permission_filter" : "like.*"
+    }
     dicio = {}
 
-    def changesearch(e, filter, dicio, forms1):
+    def changesearch(e, dicio_filter, dicio, forms1):
 
-        if e.control.value.strip() == "":
-            filter = "like.*"  # Retorna todos os resultados
-        else:
-            filter = f"like.%{e.control.value}%"
+        try:
+            if e.control.value.strip() == "":
+                dicio_filter["order_filter"] = "like.*"  
+            else:
+                dicio_filter["order_filter"] = f"like.%{e.control.value}%"
+        except:
+            dicio_filter["order_filter"] = "like.*"
 
         # Atualiza o filtro nos parâmetros
-        params["order_id"] = filter
+        params["order_id"] = dicio_filter["order_filter"]
+        params["function"] = dicio_filter["permission_filter"]
 
         # Faz uma nova requisição com o filtro atualizado
         response = requests.get(
@@ -1811,6 +1895,9 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
         else:
             print(f"Erro ao buscar dados: {response.text}")
 
+
+
+
     if menu != None:
         page.close(menu)
 
@@ -1826,7 +1913,8 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
 
     params = {
         "select": "ip, order_id, function",
-        "order_id": f"{filter}",
+        "order_id": dicio_filter["order_filter"],
+        "function": dicio_filter["permission_filter"],
         "order": "order_id.desc",
     }
 
@@ -1892,7 +1980,47 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
                 rows=lista,
             ),
         )
+    
+    def show_filter_container(e):
+        filter_container.visible = not filter_container.visible
+        page.update()
 
+    def get_permission_filter(e):
+        adm_permission = filter_container.content.controls[0].controls[0].value
+        adm_permission_data = filter_container.content.controls[0].controls[0].data
+        invited_permission = filter_container.content.controls[1].controls[0].value
+        invited_permission_data = filter_container.content.controls[1].controls[0].data
+        if adm_permission:
+            dicio_filter["permission_filter"] = f"eq.{adm_permission_data}"
+        if invited_permission:
+            dicio_filter["permission_filter"] = f"eq.{invited_permission_data}"
+        if invited_permission and adm_permission:
+            dicio_filter["permission_filter"] = f"like.*"
+        filter_container.visible = not filter_container.visible
+        page.update()
+        changesearch(e, dicio_filter, dicio, forms1),
+
+
+
+    filter_container = ft.Container(
+            bgcolor=ft.colors.BLUE,
+            padding=10,
+            margin=10,
+            height=150,
+            border_radius=20,
+            col=10,
+            visible=False,
+            content=ft.Column([
+                chk.create_checkbox2("Administrador", 15, None, 8,"ADM", True),
+                chk.create_checkbox2("Convidado", 15, None, 8,"Convidado", True),
+                buttons.create_button(on_click=lambda e: get_permission_filter(e),
+                                            text="Aplicar",
+                                            color=ft.colors.AMBER,
+                                            col=12,
+                                            padding=5,)
+                ])
+            )
+    
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates)),
                                             text="Voltar",
                                             color=ft.colors.AMBER,
@@ -1901,7 +2029,7 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
     
     searchfild = ft.TextField(label="Procurar",  # caixa de texto
                                 col=8,
-                                on_change=lambda e: changesearch(e, filter, dicio, forms1),
+                                on_change=lambda e: changesearch(e, dicio_filter, dicio, forms1),
                                 label_style= ft.TextStyle(color=ft.colors.BLACK),
                                 text_style= ft.TextStyle(color=ft.colors.BLACK),
                                 text_align=ft.TextAlign.CENTER,
@@ -1910,12 +2038,23 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
                                 bgcolor=ft.colors.WHITE
 
             )
+    
+    filter_button = buttons.create_icon_button(
+                                                icon=ft.icons.FILTER_ALT_OUTLINED,
+                                                on_click=show_filter_container,
+                                                color=ft.colors.BLUE,
+                                                col=2,
+                                                padding=0,
+                                                icon_color=ft.colors.WHITE,
+                                                )
 
     return ft.ResponsiveRow(
         columns=12,
         controls=[
             ft.Container(height=10),
             searchfild,
+            filter_button,
+            filter_container,
             forms1,
             back_home_button
          
@@ -1939,19 +2078,27 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
     buttons = Buttons(page)
     loading = LoadingPages(page)
     sp = SupaBase(page)
+    chk = CheckBox(page)
     
-    filter = "like.*"
+    dicio_filter = {
+        "user_filter" : "like.*",
+        "permission_filter" : "like.*"
+    }
     dicio = {}
 
-    def changesearch(e, filter, dicio, forms1):
+    def changesearch(e, dicio_filter, dicio, forms1):
 
-        if e.control.value.strip() == "":
-            filter = "like.*"  # Retorna todos os resultados
-        else:
-            filter = f"ilike.%{e.control.value.strip().lower()}%"
+        try:
+            if e.control.value.strip() == "":
+                dicio_filter["user_filter"] = "like.*"  
+            else:
+                dicio_filter["user_filter"] = f"ilike.%{e.control.value.strip().lower()}%"
+        except:
+            dicio_filter["user_filter"] = "like.*"
 
         # Atualiza o filtro nos parâmetros
-        params["usuario"] = filter
+        params["usuario"] = dicio_filter["user_filter"]
+        params["permission"] = dicio_filter["permission_filter"]
 
         # Faz uma nova requisição com o filtro atualizado
         response = requests.get(
@@ -2019,7 +2166,8 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
 
     params = {
         "select": "user_id, usuario, permission",
-        "usuario": f"{filter}",
+        "usuario": dicio_filter["user_filter"],
+        "permission": dicio_filter["permission_filter"],
         "order": "user_id.desc",
     }
 
@@ -2085,6 +2233,46 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
                 rows=lista,
             ),
         )
+    
+    def show_filter_container(e):
+        filter_container.visible = not filter_container.visible
+        page.update()
+
+    def get_permission_filter(e):
+        adm_permission = filter_container.content.controls[0].controls[0].value
+        adm_permission_data = filter_container.content.controls[0].controls[0].data
+        invited_permission = filter_container.content.controls[1].controls[0].value
+        invited_permission_data = filter_container.content.controls[1].controls[0].data
+        if adm_permission:
+            dicio_filter["permission_filter"] = f"eq.{adm_permission_data}"
+        if invited_permission:
+            dicio_filter["permission_filter"] = f"eq.{invited_permission_data}"
+        if invited_permission and adm_permission:
+            dicio_filter["permission_filter"] = f"like.*"
+        filter_container.visible = not filter_container.visible
+        page.update()
+        changesearch(e, dicio_filter, dicio, forms1),
+
+
+
+    filter_container = ft.Container(
+            bgcolor=ft.colors.BLUE,
+            padding=10,
+            margin=10,
+            height=150,
+            border_radius=20,
+            col=10,
+            visible=False,
+            content=ft.Column([
+                chk.create_checkbox2("Administrador", 15, None, 8,"adm", True),
+                chk.create_checkbox2("Convidado", 15, None, 8,"invited", True),
+                buttons.create_button(on_click=lambda e: get_permission_filter(e),
+                                            text="Aplicar",
+                                            color=ft.colors.AMBER,
+                                            col=12,
+                                            padding=5,)
+                ])
+            )
 
 
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates)),
@@ -2095,7 +2283,7 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
     
     searchfild = ft.TextField(label="Procurar",  # caixa de texto
                                 col=8,
-                                on_change=lambda e: changesearch(e, filter, dicio, forms1),
+                                on_change=lambda e: changesearch(e, dicio_filter, dicio, forms1),
                                 label_style= ft.TextStyle(color=ft.colors.BLACK),
                                 text_style= ft.TextStyle(color=ft.colors.BLACK),
                                 text_align=ft.TextAlign.CENTER,
@@ -2104,6 +2292,15 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
                                 bgcolor=ft.colors.WHITE
 
             )
+    
+    filter_button = buttons.create_icon_button(
+                                                icon=ft.icons.FILTER_ALT_OUTLINED,
+                                                on_click=show_filter_container,
+                                                color=ft.colors.BLUE,
+                                                col=2,
+                                                padding=0,
+                                                icon_color=ft.colors.WHITE,
+                                                )
 
     add_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_add_user_forms(page, list_profile, list_initial_coordinates)),
                                                 text="Adicionar",
@@ -2116,7 +2313,9 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
         controls=[
             ft.Container(height=10),
             searchfild,
+            filter_button,
             add_button,
+            filter_container,
             forms1,
             back_home_button
          

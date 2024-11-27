@@ -30,12 +30,12 @@ class TextTheme:
         return ft.Theme(
         text_theme=ft.TextTheme(
             title_large=ft.TextStyle(
-                size=15,
+                size=12,
                 color=ft.colors.BLACK,
                 weight=ft.FontWeight.W_900,
             ),
             title_medium=ft.TextStyle(
-                size=15,
+                size=12,
                 color=ft.colors.BLACK,
                 weight=ft.FontWeight.W_400,
             ),
@@ -329,18 +329,38 @@ class CheckBox:
         self.page = page
 
 
-    def create_checkbox(self, text, size, on_change, col, data=None):
+    def create_checkbox(self, text, size, on_change, col, data=None, value=False):
 
         return ft.Column(
             horizontal_alignment = ft.CrossAxisAlignment.START,
             col=col,
             controls=[
                 ft.Checkbox(
+                    value=value,
                     label=text,
                     data = data,
                     on_change=on_change,
                     label_style=ft.TextStyle(
                         color=ft.colors.BLACK,
+                        size=size,    
+                        )
+                    )
+            ]
+        )
+
+    def create_checkbox2(self, text, size, on_change, col, data=None, value=False):
+
+        return ft.Column(
+            horizontal_alignment = ft.CrossAxisAlignment.START,
+            col=col,
+            controls=[
+                ft.Checkbox(
+                    value=value,
+                    label=text,
+                    data = data,
+                    on_change=on_change,
+                    label_style=ft.TextStyle(
+                        color=ft.colors.WHITE,
                         size=size,    
                         )
                     )
@@ -360,8 +380,8 @@ class TextField:
             value=value,
             label= text,
             password=password,
-            label_style= ft.TextStyle(color=ft.colors.BLACK),
-            text_style= ft.TextStyle(color=ft.colors.BLACK),
+            label_style= ft.TextStyle(color=ft.colors.BLACK, size=12),
+            text_style= ft.TextStyle(color=ft.colors.BLACK, size=12),
             col=8,
             read_only=read,
             input_filter=input_filter,
@@ -442,7 +462,8 @@ class Forms:
             col=12,
             theme=texttheme1,  
             content=ft.DataTable(
-                data_row_max_height=50,
+                data_row_max_height=60,
+                column_spacing=10,
                 columns=[
                     ft.DataColumn(ft.Text(value="")),  
                     ft.DataColumn(ft.Text(value="")),  
@@ -554,7 +575,8 @@ class Forms:
             col=12,
             theme=texttheme1,  
             content=ft.DataTable(
-                data_row_max_height=50,
+                data_row_max_height=60,
+                column_spacing=10,
                 columns=[
                     ft.DataColumn(ft.Text(value="")),  
                     ft.DataColumn(ft.Text(value="")),  
@@ -655,18 +677,35 @@ class Forms:
 
         textfields = TextField(self.page)
         ip_field = textfields.create_textfield(value=ip, text=None, password=False, read=None, input_filter=ft.NumbersOnlyInputFilter(), keyboard_type=ft.KeyboardType.NUMBER)
-        situacao_field = textfields.create_textfield(value=situ, text=None, password=False)
-        tipo_field = textfields.create_textfield(value=tipo, text=None, password=False)
-        pontos_field = textfields.create_textfield(value=pontos, text=None, password=False)
         bairro_field = textfields.create_textfield(value=bairro, text=None, password=False)
         logradouro_field = textfields.create_textfield(value=logra, text=None, password=False)
+
+        def drop_down_menu(value=None, opt1=None, opt2=None, opt3=None, opt4=None, opt5=None, opt6=None):
+
+            list = [opt1, opt2, opt3, opt4, opt5, opt6]
+            list_option = []
+            for opt in list:
+                if opt != None:
+                    list_option.append(ft.dropdown.Option(opt))
+
+            menu = ft.Dropdown(
+                options=list_option,
+                value=value,
+                label_style=ft.TextStyle(color=ft.colors.BLACK, size=12),
+                bgcolor=ft.colors.WHITE,
+                options_fill_horizontally=True,
+                text_style= ft.TextStyle(size=12, color=ft.colors.BLACK)
+            )
+            return menu
+    
 
         return ft.Container(
             padding=0,
             col=12,
             theme=texttheme1,
             content=ft.DataTable(
-                data_row_max_height=50,
+                data_row_max_height=60,
+                column_spacing=10,
                 columns=[
                     ft.DataColumn(ft.Text(value="")),  # Primeira coluna
                     ft.DataColumn(ft.Text(value="")),  # Segunda coluna
@@ -675,37 +714,37 @@ class Forms:
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=ip_field, width=200)
+                            ft.Container(content=ip_field, width=240)
                         )
                     ]),
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Situação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=situacao_field, width=200)
+                            ft.Container(content=drop_down_menu(situ, "Com iluminação", "Sem iluminação"), width=240)
                         )
                     ]),
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Tipo de Lâmpada", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=tipo_field, width=200)
+                            ft.Container(content=drop_down_menu(tipo, ".", "Lâmpada LED", "Lâmpada de vapor de sódio"), width=240)
                         )
                     ]),
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Pontos", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=pontos_field, width=200)
+                            ft.Container(content=drop_down_menu(pontos, "0","1", "2", "3", "4", "5"), width=240)
                         )
                     ]),
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Bairro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=bairro_field, width=200)
+                            ft.Container(content=bairro_field, width=240)
                         )
                     ]),
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Logradouro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=logradouro_field, width=200)
+                            ft.Container(content=logradouro_field, width=240)
                         )
                     ]),
                 ],
@@ -738,7 +777,8 @@ class Forms:
             col=12,
             theme=texttheme1,
             content=ft.DataTable(
-                data_row_max_height=50,
+                data_row_max_height=60,
+                column_spacing=10,
                 columns=[
                     ft.DataColumn(ft.Text(value="")),  
                     ft.DataColumn(ft.Text(value="")), 
@@ -994,6 +1034,27 @@ class SupaBase:
             url = "Nulo"
             return url
 
+    def get_os(self, order):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+        "order_id": f"eq.{order}",
+        "select": "created_at, ip, reclamante, function, celular, order_id, origem, observacao, materiais, ponto, status, data_andamento, data_conclusao, equipe",
+        }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
     def get_os_id(self):
 
         headers = {
@@ -1016,6 +1077,44 @@ class SupaBase:
         new_id = int(next_id) + 1
 
         return new_id
+    
+    def get_last_form_post(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+        "select": "name", 
+        }
+    
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/form_post_capela",
+            headers=headers,
+            params=params,
+        )
+
+        data = response.json()
+
+        if not data:
+            return "1"
+
+        numbers = []
+        for item in data:
+            try:
+                # Extrai o número após o hífen
+                numero = int(item["name"].split('-')[1])
+                numbers.append(numero)
+            except (IndexError, ValueError):
+                # Ignora entradas inválidas
+                continue
+
+        max_number = max(numbers) if numbers else 0
+        new_number = str(max_number+1)
+
+        return new_number
     
     def get_user_id(self):
 
@@ -1040,63 +1139,7 @@ class SupaBase:
 
         return new_id
 
-    def get_os(self, order):
 
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = {
-        "order_id": f"eq.{order}",
-        "select": "created_at, ip, reclamante, function, celular, order_id, origem, observacao, materiais, ponto, status, data_andamento, data_conclusao, equipe",
-        }
-
-        response = requests.get(
-            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
-            headers=headers,
-            params=params,
-        )
-
-        return response
-
-    def delete_point_post(self, name):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        response1 = requests.delete(
-            f"{self.supabase_url}/rest/v1/point_post_capela?name=eq.{name}",
-            headers=headers,
-        )
-
-        response2 = requests.delete(
-            f"{self.supabase_url}/rest/v1/form_post_capela?name=eq.{name}",
-            headers=headers,
-        )
-
-
-        storage_path = f'capela/post/{name}.jpg'
-        headers2 = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "image/jpeg",
-        }
-        url = f"{self.supabase_url}/storage/v1/object/{storage_path}"
-        response3 = requests.delete(
-            url,
-            headers=headers2,
-        )
-
-        list_response = [response1, response2, response3]
-
-        return list_response
-
-    
 
     def add_storage(self, name, image, angle_image, new=True):
         
@@ -1497,6 +1540,40 @@ class SupaBase:
 
 
 
+    def delete_point_post(self, name):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        response1 = requests.delete(
+            f"{self.supabase_url}/rest/v1/point_post_capela?name=eq.{name}",
+            headers=headers,
+        )
+
+        response2 = requests.delete(
+            f"{self.supabase_url}/rest/v1/form_post_capela?name=eq.{name}",
+            headers=headers,
+        )
+
+
+        storage_path = f'capela/post/{name}.jpg'
+        headers2 = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "image/jpeg",
+        }
+        url = f"{self.supabase_url}/storage/v1/object/{storage_path}"
+        response3 = requests.delete(
+            url,
+            headers=headers2,
+        )
+
+        list_response = [response1, response2, response3]
+
+        return list_response
 
     def delete_storage(self, name):
 
