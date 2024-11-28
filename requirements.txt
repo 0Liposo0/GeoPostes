@@ -1,2 +1,2 @@
-flet==0.25.0.dev3526
+flet==0.24.1
 requests
