@@ -1752,7 +1752,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
             bgcolor=ft.colors.BLUE,
             padding=10,
             margin=10,
-            height=200,
+            height=250,
             border_radius=20,
             col=10,
             visible=False,
@@ -1798,7 +1798,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
     return ft.ResponsiveRow(
         columns=12,
         controls=[
-            ft.Container(height=10),
+            ft.Container(height=50),
             searchfild,
             filter_button,
             filter_container,
@@ -2006,7 +2006,7 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
             bgcolor=ft.colors.BLUE,
             padding=10,
             margin=10,
-            height=150,
+            height=200,
             border_radius=20,
             col=10,
             visible=False,
@@ -2051,7 +2051,7 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
     return ft.ResponsiveRow(
         columns=12,
         controls=[
-            ft.Container(height=10),
+            ft.Container(height=50),
             searchfild,
             filter_button,
             filter_container,
@@ -2259,7 +2259,7 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
             bgcolor=ft.colors.BLUE,
             padding=10,
             margin=10,
-            height=150,
+            height=200,
             border_radius=20,
             col=10,
             visible=False,
@@ -2311,7 +2311,7 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
     return ft.ResponsiveRow(
         columns=12,
         controls=[
-            ft.Container(height=10),
+            ft.Container(height=50),
             searchfild,
             filter_button,
             add_button,
