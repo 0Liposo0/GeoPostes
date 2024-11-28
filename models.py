@@ -1420,13 +1420,13 @@ class SupaBase:
             response1 = requests.get(
                 f"{self.supabase_url}/rest/v1/point_post_capela",
                 headers=headers,
-                params={"select": "name", "name": f"eq.{previous_data["name"]}"}
+                params={"select": "name", "name": f'eq.{previous_data["name"]}'}
             )
 
             data2 = { "color": point_color}
 
             response2 = requests.patch(
-                f"{self.supabase_url}/rest/v1/point_post_capela?name=eq.{previous_data["name"]}",
+                f'{self.supabase_url}/rest/v1/point_post_capela?name=eq.{previous_data["name"]}',
                 headers=headers,
                 json=data2,
             )
@@ -1452,7 +1452,7 @@ class SupaBase:
             data3 = { "name": ip}
 
             response2 = requests.patch(
-                f"{self.supabase_url}/rest/v1/point_post_capela?name=eq.{previous_data["name"]}",
+                f'{self.supabase_url}/rest/v1/point_post_capela?name=eq.{previous_data["name"]}',
                 headers=headers,
                 json=data3,
             )
@@ -1500,7 +1500,7 @@ class SupaBase:
                     snack_bar.open = True
 
         response3 = requests.patch(
-            f"{self.supabase_url}/rest/v1/form_post_capela?name=eq.{previous_data["name"]}",
+            f'{self.supabase_url}/rest/v1/form_post_capela?name=eq.{previous_data["name"]}',
             headers=headers,
             json=data,
         )
