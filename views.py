@@ -19,8 +19,9 @@ def create_page_home(page, list_profile, list_initial_coordinates):
     buttons = Buttons(page)
     menus = SettingsMenu(page)
     navigations = NavigationDrawer(page)
+    chk = CheckBox(page)
 
-    list_center_map_coordinates = [list_initial_coordinates[0], list_initial_coordinates[1], list_initial_coordinates[2], list_initial_coordinates[3]]
+    list_center_map_coordinates = [list_initial_coordinates[0], list_initial_coordinates[1], list_initial_coordinates[2], list_initial_coordinates[3], list_initial_coordinates[4], list_initial_coordinates[5]]
 
     navigations = NavigationDrawer(page)
     action1 = lambda e: loading.new_loading_page(page=page, layout=create_page_login(page)) 
@@ -96,7 +97,7 @@ def create_page_home(page, list_profile, list_initial_coordinates):
         if point_location.coordinates is not None:
             lat = str(point_location.coordinates.latitude)
             long = str(point_location.coordinates.longitude)
-            list_initial_coordinates = [lat, long, list_center_map_coordinates[2], list_center_map_coordinates[3]]
+            list_initial_coordinates = [lat, long, list_center_map_coordinates[2], list_center_map_coordinates[3], list_center_map_coordinates[4], 18.4]
             loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
 
     async def location(e=None):
@@ -147,8 +148,10 @@ def create_page_home(page, list_profile, list_initial_coordinates):
     search_container.visible = False
 
     containers = Container(page, list_profile, list_center_map_coordinates)
-    map_layer_container= containers.create_maps_container()
+    map_layer_container = containers.create_maps_container()
+    map_filter_container = containers.create_filter_container()
     map_layer_container.visible = False
+    map_filter_container.visible = False
 
     def show_map_layer_container(e):
         try:
@@ -163,6 +166,19 @@ def create_page_home(page, list_profile, list_initial_coordinates):
             map_layer_container.visible = not map_layer_container.visible
         page.update()
 
+    def show_filter_container(e):
+        try:
+            page.overlay.pop(1)
+        except:
+            None
+        if not map_filter_container in page.overlay:
+            page.overlay.append(map_filter_container)    
+            map_filter_container.visible = not map_filter_container.visible
+        else:
+            page.overlay.remove(map_filter_container)
+            map_filter_container.visible = not map_filter_container.visible
+        page.update()
+
     button_map_layer = buttons.create_call_location_button(
                                                         icon=ft.icons.LAYERS,
                                                         on_click=show_map_layer_container,
@@ -171,7 +187,24 @@ def create_page_home(page, list_profile, list_initial_coordinates):
                                                         padding=0,
                                                         icon_color=ft.colors.BLUE
                                                         )
+    
+    button_map_filter = buttons.create_call_location_button(
+                                                        icon=ft.icons.FILTER_ALT_OUTLINED,
+                                                        on_click=show_filter_container,
+                                                        color=ft.colors.WHITE,
+                                                        col=2,
+                                                        padding=0,
+                                                        icon_color=ft.colors.BLUE
+                                                        )
 
+    button_map_rotate = buttons.create_call_location_button(
+                                                        icon=ft.icons.ROTATE_RIGHT_OUTLINED,
+                                                        on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_center_map_coordinates)),
+                                                        color=ft.colors.WHITE,
+                                                        col=2,
+                                                        padding=0,
+                                                        icon_color=ft.colors.BLUE
+                                                        )
 
 
     page.appbar = ft.AppBar(
@@ -193,7 +226,7 @@ def create_page_home(page, list_profile, list_initial_coordinates):
                             shape=ft.RoundedRectangleBorder(radius=50),
                             on_click= lambda e: loading.new_loading_page(page=page,
                             layout=create_page_add_forms(page, list_profile,
-                            list_initial_coordinates=[list_center_map_coordinates[0], list_center_map_coordinates[1], list_center_map_coordinates[2],list_center_map_coordinates[3]])) 
+                            list_initial_coordinates=[list_center_map_coordinates[0], list_center_map_coordinates[1], list_center_map_coordinates[2],list_center_map_coordinates[3], list_center_map_coordinates[4], list_center_map_coordinates[5]])) 
                         )
     
     page.floating_action_button_location = ft.FloatingActionButtonLocation.MINI_CENTER_DOCKED
@@ -204,6 +237,14 @@ def create_page_home(page, list_profile, list_initial_coordinates):
         content=ft.Row(
             controls=[
                 button_location,
+                ft.Container(expand=True),
+                button_map_rotate,
+                ft.Container(expand=True),
+                ft.Container(expand=True),
+                ft.Container(expand=True),
+                ft.Container(expand=True),
+                ft.Container(expand=True),
+                button_map_filter,
                 ft.Container(expand=True),
                 button_map_layer
             ]
@@ -785,7 +826,7 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
             object.content.rows[5].cells[1].content.content.value,
         ]
 
-        edit_point(page, list_profile, list_initial_coordinates, list_forms, image, name)
+        edit_point(page, list_profile, list_initial_coordinates, list_forms, image, row)
 
     form = sp.get_form_post(name)
     data = form.json()
@@ -2335,51 +2376,38 @@ def verificar(username, password, page):
     loading = LoadingPages(page)
     sp = SupaBase(page)
 
-    if username == "Carlos" and password == "63607120":
-        snack_bar = ft.SnackBar(
-            content=ft.Text("Administrador reconhecido"),
-            bgcolor=ft.colors.GREEN,
-            duration= 1000,
-        )
-        page.overlay.append(snack_bar)
-        snack_bar.open = True
-        map_layer = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        list_initial_coordinates = ["-23.3396", "-47.8238", map_layer, None]
-        list_profile = ["Carlos", "adm", "11982245028"]
-        loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
+    response = sp.check_login(username=username, password=password)
 
-    else:
+    if response.status_code == 200 and len(response.json()) > 0:
 
-        response = sp.check_login(username=username, password=password)
-
-        if response.status_code == 200 and len(response.json()) > 0:
-
-            data = response.json()
-            row = data[0]
-            name = row["usuario"]
-            permission = row["permission"]
-            number = row["numero"]
-                
-            snack_bar = ft.SnackBar(
-            content=ft.Text("Login realizado"),
-            bgcolor=ft.colors.GREEN,
-            duration= 1000,
-            )
-            map_layer = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-            list_initial_coordinates = ["-23.3396", "-47.8238", map_layer, None]
-            list_profile = [name, permission, number]
-            loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
+        data = response.json()
+        row = data[0]
+        name = row["usuario"]
+        permission = row["permission"]
+        number = row["numero"]
             
-        else:
-            # Exibe mensagem de erro se as credenciais não forem encontradas
-            snack_bar = ft.SnackBar(
-                content=ft.Text("Login ou senha incorretos"),
-                bgcolor=ft.colors.RED
-            )
+        snack_bar = ft.SnackBar(
+        content=ft.Text("Login realizado"),
+        bgcolor=ft.colors.GREEN,
+        duration= 1000,
+        )
+        map_layer = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        map_filter = ["Lâmpada LED", "Lâmpada de vapor de sódio", "." ]
+        zoom = 18.4
+        list_initial_coordinates = ["-23.3396", "-47.8238", map_layer, None, map_filter, zoom]
+        list_profile = [name, permission, number]
+        loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
+        
+    else:
+        # Exibe mensagem de erro se as credenciais não forem encontradas
+        snack_bar = ft.SnackBar(
+            content=ft.Text("Login ou senha incorretos"),
+            bgcolor=ft.colors.RED
+        )
 
-        page.overlay.append(snack_bar)
-        snack_bar.open = True
-        page.update()
+    page.overlay.append(snack_bar)
+    snack_bar.open = True
+    page.update()
 
 def register(username, email, number, password1, password2, page):
 
@@ -2553,7 +2581,7 @@ def add_user(page, list_profile, list_initial_coordinates, list_add_user, id):
 
 
 
-def edit_point(page, list_profile, list_initial_coordinates, list_forms, image, previous_name):
+def edit_point(page, list_profile, list_initial_coordinates, list_forms, image, previous_data):
 
     sp = SupaBase(page)
 
@@ -2576,7 +2604,7 @@ def edit_point(page, list_profile, list_initial_coordinates, list_forms, image, 
         page.update()
         return  # Interrompe a execução da função
 
-    response = sp.edit_point(image, list_forms, previous_name)
+    response = sp.edit_point(image, list_forms, previous_data)
     
     if response.status_code in [200, 204]:  # 204 indica sucesso sem conteúdo
         snack_bar = ft.SnackBar(
@@ -2838,21 +2866,25 @@ class Map:
         self.point_location = point_location
         self.initial_coordinates = list_initial_coordinates
         self.center_map_coordinates = list_center_map_coordinates 
+        self.markers = Marker(self.page, self.initial_coordinates)
+        self.mappoints = self.markers.create_points(self.name, 20, True)
+        self.current_zoom = None
+        self.zoom_zone = "above_17"
+
 
         self.google = None
 
-        self.MarkerLayer = None
-
+        self.MarkerLayer = []
 
     def create_map(self):
 
-        markers = Marker(self.page, self.initial_coordinates)
-        mappoints = markers.create_points(self.name)
-        self.MarkerLayer = mappoints
+        self.MarkerLayer.append(self.mappoints)
 
         def handle_event(e: map.MapEvent):
             self.center_map_coordinates[0] = f"{e.center.latitude:.6f}"
             self.center_map_coordinates[1] = f"{e.center.longitude:.6f}"
+            self.center_map_coordinates[5] = e.zoom
+            self.current_zoom = e.zoom
 
             self.page.update()
 
@@ -2864,14 +2896,20 @@ class Map:
             except:
                 None
 
-
-
+        max_zoom = 20.9
+        initial_zoom = self.initial_coordinates[5]
+        if self.initial_coordinates[2] == "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}":
+            max_zoom = 18.44
+            if self.initial_coordinates[5] > 18.44:
+                initial_zoom = 18.44
 
         self.google = map.Map(
                     expand=True,  
                     configuration=map.MapConfiguration(
                         initial_center=map.MapLatitudeLongitude(self.initial_coordinates[0], self.initial_coordinates[1]),  
-                        initial_zoom=18.4,
+                        initial_zoom = initial_zoom,
+                        min_zoom=15.5,
+                        max_zoom=max_zoom,
                         on_event=handle_event,
                         on_tap=tap_event,
                     ),
@@ -2879,7 +2917,7 @@ class Map:
                         map.TileLayer(
                             url_template=self.initial_coordinates[2],
                         ),
-                        map.MarkerLayer(self.MarkerLayer),
+                        map.MarkerLayer(*self.MarkerLayer),
                         map.RichAttribution(
                             attributions=[map.TextSourceAttribution(text="Teste")]
                         )
@@ -2924,21 +2962,55 @@ class Map:
 
     def update_position(self):
 
-        if self.point_location.coordinates is not None:
+        try:
+            if self.current_zoom is not None:
+                if self.current_zoom > 17:
+                    new_zoom_zone = "above_17"
+                if self.current_zoom < 17:
+                    new_zoom_zone = "below_17"
+                if self.current_zoom < 16:
+                    new_zoom_zone = "below_16"
 
-            # Remover marcador antigo se ele já existir na camada
-            if self.point_location in self.MarkerLayer:
-                self.MarkerLayer.remove(self.point_location)
-                self.page.update()
+                if new_zoom_zone != self.zoom_zone:
+                    self.zoom_zone = new_zoom_zone
+                    if new_zoom_zone == "above_17":
+                        self.update_size_point(20, True)
+                    if new_zoom_zone == "below_17":
+                        self.update_size_point(10, True)
+                    if new_zoom_zone == "below_16":
+                        self.update_size_point(5, False)
+        except:
+            None
 
-            # Adicionar o marcador atualizado
-            else:      
-                self.MarkerLayer.append(self.point_location)
-                self.page.update()
+        try:
 
-            self.page.update() 
+            if self.point_location.coordinates is not None:
+                if self.point_location in self.MarkerLayer[0]:
+                    self.MarkerLayer[0].remove(self.point_location)
+                    self.page.update()
+
+                # Adicionar o marcador atualizado
+                else:      
+                    self.MarkerLayer[0].append(self.point_location)
+                    self.page.update()
+
+            self.page.update()
+
+        except:
+            None
         
-        else:
+  
+
+    def update_size_point(self, size, visible):
+
+        try:
+            self.MarkerLayer[0].clear()
+            self.page.update()
+            if self.MarkerLayer[0] == []:
+                new_mappoints = self.markers.create_points(self.name, size, visible)
+                self.MarkerLayer[0].extend(new_mappoints)
+            self.page.update()
+        except:
             None
 
 
@@ -2949,7 +3021,7 @@ class Marker:
         self.list_initial_coordinates = list_initial_coordinates
 
 
-    def create_points(self, list_profile):
+    def create_points(self, list_profile, size, visible):
         
         sp = SupaBase(self.page)
 
@@ -2974,8 +3046,29 @@ class Marker:
             name = row["name"]
             x = row["x"]
             y = row["y"]
+            data_color = row["color"]
 
-            list_initial_coordinates = [x, y, self.list_initial_coordinates[2], self.list_initial_coordinates[3]]
+            point = sp.get_form_post(name)
+            data = point.json()
+            row = data[0]
+            list_post_form= [
+                row["name"],
+                row["situation"],
+                row["type"],
+                row["point"],
+                row["hood"],
+                row["address"]
+            ]
+
+            if data_color == "yellow":
+                point_color = ft.colors.AMBER
+            if data_color == "white":
+                point_color = ft.colors.PINK_200
+            if data_color == "blue":
+                point_color = ft.colors.BLUE
+                
+
+            list_initial_coordinates = [x, y, self.list_initial_coordinates[2], self.list_initial_coordinates[3], self.list_initial_coordinates[4], self.list_initial_coordinates[5]]
 
             loading = LoadingPages(self.page)
       
@@ -2986,14 +3079,20 @@ class Marker:
                 )
 
             number = int(name.split('-')[1])
-            InitialButtons[number] = {
-                "element": buttons.create_point_button(
-                    on_click=create_on_click(),  # Usa a função auxiliar
-                    text=str(number)
-                ),
-                "x": x,
-                "y": y,
-            }
+
+            if list_post_form[2] in list_initial_coordinates[4]:
+
+                InitialButtons[number] = {
+                    "element": buttons.create_point_button(
+                        on_click=create_on_click(),  # Usa a função auxiliar
+                        text=str(number),
+                        color=point_color,
+                        size=size,
+                        visible=visible,
+                    ),
+                    "x": x,
+                    "y": y,
+                }
 
         # Cria marcadores com base nos botões criados
         for number, button_data in InitialButtons.items():
@@ -3072,7 +3171,7 @@ class Search:
             def create_on_click(lat=Latitude, long=Longitude):
                 return lambda e: loading.new_loading_page(
                     page=self.page,
-                    layout=create_page_home(self.page, list_profile, list_initial_coordinates=[lat, long, self.list_initial_coordinates[2],self.list_initial_coordinates[3]]),
+                    layout=create_page_home(self.page, list_profile, list_initial_coordinates=[lat, long, self.list_initial_coordinates[2],self.list_initial_coordinates[3], self.list_initial_coordinates[4], 18.4]),
                 )
 
             # Adiciona o botão à lista de itens
@@ -3138,9 +3237,11 @@ class Container:
 
     def __init__(self, page, list_profile, list_initial_coordinates):
         self.page = page
-        self.sp = SupaBase(self.page)
+        self.sp = SupaBase(page)
         loading = LoadingPages(page)
         web_images = Web_Image(page)
+        chk =CheckBox(page)
+        buttons = Buttons(page)
 
         url_imagem1 = web_images.get_image_url(name="map_aerial")
         map_aerial = web_images.create_web_image(src=url_imagem1) 
@@ -3155,6 +3256,23 @@ class Container:
         def create_map_road(e):
             layer_aerial = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
             list_initial_coordinates[2]=layer_aerial
+            loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
+
+        def get_permission_filter(e):
+
+            led_type = self.filter_container.content.controls[0].controls[0].value
+            sodium_type = self.filter_container.content.controls[1].controls[0].value
+            null_type = self.filter_container.content.controls[2].controls[0].value
+            list_map_filter = []
+
+            if led_type:
+                list_map_filter.append("Lâmpada LED")
+            if sodium_type:
+                list_map_filter.append("Lâmpada de vapor de sódio")
+            if null_type:
+                list_map_filter.append(".")
+
+            list_initial_coordinates[4] = list_map_filter
             loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
 
         self.map_container = ft.Row([
@@ -3193,11 +3311,35 @@ class Container:
                                 alignment=ft.MainAxisAlignment.CENTER,
                                 )
 
+        self.filter_container = ft.Container(
+            bgcolor=ft.colors.BLUE,
+            padding=10,
+            margin=10,
+            height=250,
+            border_radius=20,
+            col=10,
+            content=ft.Column([
+                chk.create_checkbox2("Lâmpada LED", 15, None, 8,"Lâmpada LED", True),
+                chk.create_checkbox2("Lâmpada de vapor de sódio", 15, None, 8,"Lâmpada de vapor de sódio", True),
+                chk.create_checkbox2("Sem iluminação", 15, None, 8,".", True),
+                buttons.create_button(on_click=lambda e: get_permission_filter(e),
+                                            text="Aplicar",
+                                            color=ft.colors.AMBER,
+                                            col=12,
+                                            padding=5,)
+                ])
+            )
+
 
     def create_maps_container(self):
         self.map_container.offset = ft.transform.Offset(0, 0)  # Centralizado
         self.map_container.animate_offset = ft.animation.Animation(600, curve="easeIn")
         return self.map_container
+
+    def create_filter_container(self):
+        self.filter_container.offset = ft.transform.Offset(0, 0)  # Centralizado
+        self.filter_container.animate_offset = ft.animation.Animation(600, curve="easeIn")
+        return self.filter_container
 
 
 

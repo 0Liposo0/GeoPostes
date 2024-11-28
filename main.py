@@ -13,7 +13,9 @@ def main(page: ft.Page):
     page.padding=0  
 
     map_layer = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-    list_initial_coordinates = ["-23.3396", "-47.8238", map_layer, None]
+    map_filter = ["Lâmpada LED", "Lâmpada de vapor de sódio", "." ]
+    zoom = 18.4
+    list_initial_coordinates = ["-23.3396", "-47.8238", map_layer, None, map_filter, zoom]
     list_profile =["Carlos", "adm", "11982245028"]
  
 

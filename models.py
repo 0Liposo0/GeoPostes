@@ -122,16 +122,16 @@ class Buttons:
     
           
     
-    def create_point_button(self, on_click, text):
-        return ft.Column(
+    def create_point_button(self, on_click, text, color, size, visible):
+        return ft.Column( 
                 spacing=0,
                 wrap=True,
                 controls=[
                     ft.ElevatedButton(
                         on_click=on_click,
-                        width=20,
-                        height=20,
-                        bgcolor=ft.colors.AMBER,
+                        width=size,
+                        height=size,
+                        bgcolor=color,
                         text=" ",
                         style=ft.ButtonStyle(
                             shape=ft.RoundedRectangleBorder(radius=10),
@@ -141,10 +141,10 @@ class Buttons:
                         value=text,
                         no_wrap=True,
                         color=ft.colors.BLACK,
-                        size=20,
+                        size=size,
                         text_align=ft.TextAlign.START,
                         weight=ft.FontWeight.BOLD,
-                        visible=True,
+                        visible=visible,
                         )
                 ]
             )
@@ -885,6 +885,23 @@ class Forms:
         user_phone_field = textfields.create_textfield(value=list_user_forms[2], text=None, password=False)
         user_password_field = textfields.create_textfield(value=list_user_forms[3], text=None, password=False)
         user_permission_field = textfields.create_textfield(value=list_user_forms[4], text=None, password=False)
+
+        def drop_down_menu(value=None, opt1=None, opt2=None, opt3=None, opt4=None, opt5=None, opt6=None):
+            list = [opt1, opt2, opt3, opt4, opt5, opt6]
+            list_option = []
+            for opt in list:
+                if opt != None:
+                    list_option.append(ft.dropdown.Option(opt))
+
+            menu = ft.Dropdown(
+                options=list_option,
+                value=value,
+                label_style=ft.TextStyle(color=ft.colors.BLACK, size=12),
+                bgcolor=ft.colors.WHITE,
+                options_fill_horizontally=True,
+                text_style= ft.TextStyle(size=12, color=ft.colors.BLACK)
+            )
+            return menu
        
         return ft.Container(
             padding=0,
@@ -924,7 +941,7 @@ class Forms:
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Permissão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=user_permission_field, width=200)
+                            ft.Container(content=drop_down_menu(list_user_forms[4], "adm", "invited"), width=200)
                         )
                     ]),
                    
@@ -972,7 +989,7 @@ class SupaBase:
             "Content-Type": "application/json",
         }
 
-        params = {"select": "name, x, y"}
+        params = {"select": "name, x, y, color"}
 
         response = requests.get(
             f"{self.supabase_url}/rest/v1/point_post_capela",
@@ -1173,6 +1190,15 @@ class SupaBase:
         new_number = number.zfill(4)
         ip = f"IP SOR-{new_number}"
 
+        point_color = None
+        if list_forms[2] == "Lâmpada LED":
+            point_color = "white"
+        if list_forms[2] == "Lâmpada de vapor de sódio":
+            point_color = "yellow"
+        if list_forms[2] == ".":
+            point_color = "blue"
+
+
         headers = {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
@@ -1230,7 +1256,7 @@ class SupaBase:
                 "name": ip,
                 "x": list_initial_coordinates[0],
                 "y": list_initial_coordinates[1],
-                "color": "yellow",
+                "color": point_color,
                 "changed_at": data_formatada,
                 "changed_by": list_profile[0],
             }
@@ -1358,7 +1384,7 @@ class SupaBase:
 
 
 
-    def edit_point(self, image, list_forms, previous_name):
+    def edit_point(self, image, list_forms, previous_data):
 
         sp = SupaBase(self.page)
         number = str(list_forms[0])
@@ -1382,7 +1408,30 @@ class SupaBase:
 
         changed = False
 
-        if previous_name != ip:
+        if list_forms[2] != previous_data["type"]:
+
+            if list_forms[2] == "Lâmpada LED":
+                point_color = "white"
+            if list_forms[2] == "Lâmpada de vapor de sódio":
+                point_color = "yellow"
+            if list_forms[2] == ".":
+                point_color = "blue"
+
+            response1 = requests.get(
+                f"{self.supabase_url}/rest/v1/point_post_capela",
+                headers=headers,
+                params={"select": "name", "name": f"eq.{previous_data["name"]}"}
+            )
+
+            data2 = { "color": point_color}
+
+            response2 = requests.patch(
+                f"{self.supabase_url}/rest/v1/point_post_capela?name=eq.{previous_data["name"]}",
+                headers=headers,
+                json=data2,
+            )
+
+        if previous_data["name"] != ip:
 
             response1 = requests.get(
                 f"{self.supabase_url}/rest/v1/point_post_capela",
@@ -1400,12 +1449,12 @@ class SupaBase:
                 response1.status_code = 199
                 return response1
 
-            data = { "name": ip}
+            data3 = { "name": ip}
 
             response2 = requests.patch(
-                f"{self.supabase_url}/rest/v1/point_post_capela?name=eq.{previous_name}",
+                f"{self.supabase_url}/rest/v1/point_post_capela?name=eq.{previous_data["name"]}",
                 headers=headers,
-                json=data,
+                json=data3,
             )
 
             if image.data == "foto":
@@ -1415,11 +1464,11 @@ class SupaBase:
                         "apikey": self.supabase_key,
                         "Authorization": f"Bearer {self.supabase_key}",
                     }
-                    url = sp.get_storage_post(previous_name)
+                    url = sp.get_storage_post(previous_data["name"])
                     get_bytes = requests.get(url, headers=headers2)
                     bytes = get_bytes.content
                     if url != "Nulo":
-                        sp.delete_storage(previous_name)
+                        sp.delete_storage(previous_data["name"])
                     if "supabase" not in image.src:
                         sp.add_storage(ip, image.src, angle_image=0)
                     else:
@@ -1437,9 +1486,9 @@ class SupaBase:
         if image.data == "foto" and changed == False:
             if "supabase" not in image.src:
                 try:
-                    url = sp.get_storage_post(previous_name)
+                    url = sp.get_storage_post(previous_data["name"])
                     if url != "Nulo":
-                        sp.delete_storage(previous_name)
+                        sp.delete_storage(previous_data["name"])
                     sp.add_storage(ip, image.src, angle_image=0, new=True)    
                 except:
                     snack_bar = ft.SnackBar(
@@ -1451,7 +1500,7 @@ class SupaBase:
                     snack_bar.open = True
 
         response3 = requests.patch(
-            f"{self.supabase_url}/rest/v1/form_post_capela?name=eq.{previous_name}",
+            f"{self.supabase_url}/rest/v1/form_post_capela?name=eq.{previous_data["name"]}",
             headers=headers,
             json=data,
         )
