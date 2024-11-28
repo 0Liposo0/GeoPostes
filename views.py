@@ -2904,15 +2904,13 @@ class Map:
                 initial_zoom = 18.44
 
         self.google = map.Map(
-                    expand=True,  
-                    configuration=map.MapConfiguration(
-                        initial_center=map.MapLatitudeLongitude(self.initial_coordinates[0], self.initial_coordinates[1]),  
-                        initial_zoom = initial_zoom,
-                        min_zoom=15.5,
-                        max_zoom=max_zoom,
-                        on_event=handle_event,
-                        on_tap=tap_event,
-                    ),
+                    expand=True,
+                    initial_zoom=initial_zoom,
+                    min_zoom=15.5,
+                    max_zoom=max_zoom,
+                    on_event=handle_event,
+                    on_tap=tap_event,
+                    initial_center=map.MapLatitudeLongitude(self.initial_coordinates[0], self.initial_coordinates[1]),    
                     layers=[
                         map.TileLayer(
                             url_template=self.initial_coordinates[2],
