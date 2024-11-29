@@ -31,17 +31,17 @@ class TextTheme:
         text_theme=ft.TextTheme(
             title_large=ft.TextStyle(
                 size=12,
-                color=ft.colors.BLACK,
+                color=ft.Colors.BLACK,
                 weight=ft.FontWeight.W_900,
             ),
             title_medium=ft.TextStyle(
                 size=12,
-                color=ft.colors.BLACK,
+                color=ft.Colors.BLACK,
                 weight=ft.FontWeight.W_400,
             ),
             title_small=ft.TextStyle(
                 size=13,
-                color=ft.colors.BLACK,
+                color=ft.Colors.BLACK,
                 weight=ft.FontWeight.W_400,
             ),
             )
@@ -67,7 +67,7 @@ class Buttons:
                             content=ft.ElevatedButton(
                                 text=text,
                                 bgcolor=color,
-                                color=ft.colors.WHITE,
+                                color=ft.Colors.WHITE,
                                 on_click=on_click,
                                 width=width,
                             )
@@ -76,7 +76,7 @@ class Buttons:
                  )
 
     
-    def create_call_location_button(self, icon, on_click, color, col, padding, icon_color=ft.colors.RED):
+    def create_call_location_button(self, icon, on_click, color, col, padding, icon_color=ft.Colors.RED):
         return ft.Column(
             col=col,
             alignment=ft.MainAxisAlignment.CENTER,
@@ -140,7 +140,7 @@ class Buttons:
                     ft.Text(
                         value=text,
                         no_wrap=True,
-                        color=ft.colors.BLACK,
+                        color=ft.Colors.BLACK,
                         size=size,
                         text_align=ft.TextAlign.START,
                         weight=ft.FontWeight.BOLD,
@@ -157,7 +157,7 @@ class Buttons:
                         on_click=None,
                         width=20,
                         height=20,
-                        bgcolor=ft.colors.BLUE,
+                        bgcolor=ft.Colors.BLUE,
                         text="",
                         style=ft.ButtonStyle(
                             shape=ft.RoundedRectangleBorder(radius=10),
@@ -268,7 +268,7 @@ class CallText:
                             visible=True,
                             padding=10,
                             col=7,
-                            bgcolor=ft.colors.BLUE_900,
+                            bgcolor=ft.Colors.BLUE_900,
                             border_radius=10,
                             content=ft.Column(    
                             horizontal_alignment=ft.CrossAxisAlignment.CENTER, 
@@ -280,7 +280,7 @@ class CallText:
                             ft.Text(
                                     text_align=ft.TextAlign.CENTER,
                                     value="No mapa acima, clique em um",
-                                    color=ft.colors.WHITE,
+                                    color=ft.Colors.WHITE,
                                     size=15,
                                     weight=ft.FontWeight.W_600,
                                     font_family="Tahoma",
@@ -291,7 +291,7 @@ class CallText:
                             ft.Text(
                                     text_align=ft.TextAlign.CENTER,
                                     value="Ponto de poste:",
-                                    color=ft.colors.WHITE,
+                                    color=ft.Colors.WHITE,
                                     size=15,
                                     weight=ft.FontWeight.W_600,
                                     font_family="Tahoma",
@@ -310,11 +310,11 @@ class CallText:
                     visible=True,
                     padding=10,
                     col=12,
-                    bgcolor=ft.colors.BLUE_700,
+                    bgcolor=ft.Colors.BLUE_700,
                     border_radius=10,
                     content= ft.Text(
                             value=text,
-                            color=ft.colors.WHITE,
+                            color=ft.Colors.WHITE,
                             size=40,
                             weight=ft.FontWeight.W_600,
                             font_family="Tahoma",
@@ -341,7 +341,7 @@ class CheckBox:
                     data = data,
                     on_change=on_change,
                     label_style=ft.TextStyle(
-                        color=ft.colors.BLACK,
+                        color=ft.Colors.BLACK,
                         size=size,    
                         )
                     )
@@ -360,7 +360,7 @@ class CheckBox:
                     data = data,
                     on_change=on_change,
                     label_style=ft.TextStyle(
-                        color=ft.colors.WHITE,
+                        color=ft.Colors.WHITE,
                         size=size,    
                         )
                     )
@@ -380,8 +380,8 @@ class TextField:
             value=value,
             label= text,
             password=password,
-            label_style= ft.TextStyle(color=ft.colors.BLACK, size=12),
-            text_style= ft.TextStyle(color=ft.colors.BLACK, size=12),
+            label_style= ft.TextStyle(color=ft.Colors.BLACK, size=12),
+            text_style= ft.TextStyle(color=ft.Colors.BLACK, size=12),
             col=8,
             read_only=read,
             input_filter=input_filter,
@@ -400,7 +400,7 @@ class TextField:
                             text_align=ft.TextAlign.CENTER,
                             min_lines=3,
                             label_style=ft.TextStyle(size=20),
-                            text_style=ft.TextStyle(color=ft.colors.BLACK),
+                            text_style=ft.TextStyle(color=ft.Colors.BLACK),
                             )
                         )
                     ]
@@ -436,9 +436,9 @@ class SettingsMenu:
                         padding=0,
                         content=(
                             ft.IconButton(
-                                icon=ft.icons.MENU,
-                                icon_color=ft.colors.BLUE,
-                                bgcolor=ft.colors.WHITE,
+                                icon=ft.Icons.MENU,
+                                icon_color=ft.Colors.BLUE,
+                                bgcolor=ft.Colors.WHITE,
                                 on_click=action,
                             )
                         )
@@ -691,10 +691,10 @@ class Forms:
             menu = ft.Dropdown(
                 options=list_option,
                 value=value,
-                label_style=ft.TextStyle(color=ft.colors.BLACK, size=12),
-                bgcolor=ft.colors.WHITE,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK, size=12),
+                bgcolor=ft.Colors.WHITE,
                 options_fill_horizontally=True,
-                text_style= ft.TextStyle(size=12, color=ft.colors.BLACK)
+                text_style= ft.TextStyle(size=12, color=ft.Colors.BLACK)
             )
             return menu
     
@@ -896,10 +896,10 @@ class Forms:
             menu = ft.Dropdown(
                 options=list_option,
                 value=value,
-                label_style=ft.TextStyle(color=ft.colors.BLACK, size=12),
-                bgcolor=ft.colors.WHITE,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK, size=12),
+                bgcolor=ft.Colors.WHITE,
                 options_fill_horizontally=True,
-                text_style= ft.TextStyle(size=12, color=ft.colors.BLACK)
+                text_style= ft.TextStyle(size=12, color=ft.Colors.BLACK)
             )
             return menu
        
@@ -1215,7 +1215,7 @@ class SupaBase:
             # Se o ponto já existir, mostre a mensagem e retorne
             snack_bar = ft.SnackBar(
                 content=ft.Text(f"{ip} já foi cadastrado, ponto não adicionado"),
-                bgcolor=ft.colors.RED
+                bgcolor=ft.Colors.RED
             )
             self.page.overlay.append(snack_bar)
             snack_bar.open = True
@@ -1228,7 +1228,7 @@ class SupaBase:
             except:
                 snack_bar = ft.SnackBar(
                         content=ft.Text(f"O dispositivo negou acesso a imagem"),
-                        bgcolor=ft.colors.AMBER,
+                        bgcolor=ft.Colors.AMBER,
                         duration=1000,
                     )
                 self.page.overlay.append(snack_bar)
@@ -1288,7 +1288,7 @@ class SupaBase:
         if response.status_code == 200 and response.json():
             snack_bar = ft.SnackBar(
                 content=ft.Text(f"{list_add_os[5]} já foi cadastrado, ordem {list_add_os[5]} não adicionada"),
-                bgcolor=ft.colors.RED
+                bgcolor=ft.Colors.RED
             )
             self.page.overlay.append(snack_bar)
             snack_bar.open = True
@@ -1339,7 +1339,7 @@ class SupaBase:
             # Se o e-mail já existir, mostre a mensagem e retorne
             snack_bar = ft.SnackBar(
                 content=ft.Text("E-mail já cadastrado"),
-                bgcolor=ft.colors.RED
+                bgcolor=ft.Colors.RED
             )
             self.page.overlay.append(snack_bar)
             snack_bar.open = True
@@ -1357,7 +1357,7 @@ class SupaBase:
             # Se o usuario já existir, mostre a mensagem e retorne
             snack_bar = ft.SnackBar(
                 content=ft.Text("Nome de usuario já cadastrado"),
-                bgcolor=ft.colors.RED
+                bgcolor=ft.Colors.RED
             )
             self.page.overlay.append(snack_bar)
             snack_bar.open = True
@@ -1442,7 +1442,7 @@ class SupaBase:
             if response1.status_code == 200 and response1.json():
                 snack_bar = ft.SnackBar(
                     content=ft.Text(f"{ip} já foi cadastrado, ponto não editado"),
-                    bgcolor=ft.colors.RED
+                    bgcolor=ft.Colors.RED
                 )
                 self.page.overlay.append(snack_bar)
                 snack_bar.open = True
@@ -1477,7 +1477,7 @@ class SupaBase:
                 except:
                     snack_bar = ft.SnackBar(
                             content=ft.Text(f"O dispositivo negou acesso a imagem"),
-                            bgcolor=ft.colors.AMBER,
+                            bgcolor=ft.Colors.AMBER,
                             duration=1000,
                         )
                     self.page.overlay.append(snack_bar)
@@ -1493,7 +1493,7 @@ class SupaBase:
                 except:
                     snack_bar = ft.SnackBar(
                             content=ft.Text(f"O dispositivo negou acesso a imagem"),
-                            bgcolor=ft.colors.AMBER,
+                            bgcolor=ft.Colors.AMBER,
                             duration=1000,
                         )
                     self.page.overlay.append(snack_bar)
@@ -1564,7 +1564,7 @@ class SupaBase:
                 # Se o usuario já existir, mostre a mensagem e retorne
                 snack_bar = ft.SnackBar(
                     content=ft.Text("Nome de usuario já cadastrado"),
-                    bgcolor=ft.colors.RED
+                    bgcolor=ft.Colors.RED
                 )
                 self.page.overlay.append(snack_bar)
                 snack_bar.open = True
@@ -1715,7 +1715,7 @@ class SupaBase:
             # Se o e-mail já existir, mostre a mensagem e retorne
             snack_bar = ft.SnackBar(
                 content=ft.Text("E-mail já cadastrado"),
-                bgcolor=ft.colors.RED
+                bgcolor=ft.Colors.RED
             )
             self.page.overlay.append(snack_bar)
             snack_bar.open = True
@@ -1733,7 +1733,7 @@ class SupaBase:
             # Se o usuario já existir, mostre a mensagem e retorne
             snack_bar = ft.SnackBar(
                 content=ft.Text("Nome de usuario já cadastrado"),
-                bgcolor=ft.colors.RED
+                bgcolor=ft.Colors.RED
             )
             self.page.overlay.append(snack_bar)
             snack_bar.open = True
@@ -1799,12 +1799,12 @@ class NavigationDrawer:
                 image=ft.Image(
                 src=url_imagem1,  
                 ),
-                bgcolor=ft.colors.GREY,
+                bgcolor=ft.Colors.GREY,
                 border=ft.Border(
-                    left=ft.BorderSide(2, ft.colors.BLACK),  
-                    top=ft.BorderSide(2, ft.colors.BLACK),    
-                    right=ft.BorderSide(2, ft.colors.BLACK), 
-                    bottom=ft.BorderSide(2, ft.colors.BLACK) 
+                    left=ft.BorderSide(2, ft.Colors.BLACK),  
+                    top=ft.BorderSide(2, ft.Colors.BLACK),    
+                    right=ft.BorderSide(2, ft.Colors.BLACK), 
+                    bottom=ft.BorderSide(2, ft.Colors.BLACK) 
                 ),
                 border_radius=ft.border_radius.all(75),
             )
@@ -1814,18 +1814,20 @@ class NavigationDrawer:
         nome = ft.Text(
             value=list_profile[0],
             text_align=ft.TextAlign.CENTER,
-            color=ft.colors.WHITE,
+            color=ft.Colors.WHITE,
         )
 
         listtiles = [
 
             ft.ListTile(
-                        title=ft.Text(f"Deslogar", color=ft.colors.WHITE),
+                        title=ft.Text(f"Deslogar", color=ft.Colors.WHITE),
                         on_click=action1,
+                        bgcolor=ft.Colors.BLUE_600,
                     ),
             ft.ListTile(
-                title=ft.Text(f"Atualizar", color=ft.colors.WHITE),
-                on_click=action2
+                title=ft.Text(f"Atualizar", color=ft.Colors.WHITE),
+                on_click=action2,
+                bgcolor=ft.Colors.BLUE_600,
             ),
         ]
 
@@ -1833,20 +1835,23 @@ class NavigationDrawer:
 
             listtiles.append(
                 ft.ListTile(
-                        title=ft.Text(f"Lista de postes", color=ft.colors.WHITE),
-                        on_click=action3
+                        title=ft.Text(f"Lista de postes", color=ft.Colors.WHITE),
+                        on_click=action3,
+                        bgcolor=ft.Colors.BLUE_600,
                     )
             )
             listtiles.append(
                 ft.ListTile(
-                        title=ft.Text(f"Lista de ordens de serviço", color=ft.colors.WHITE),
-                        on_click=action4
+                        title=ft.Text(f"Lista de ordens de serviço", color=ft.Colors.WHITE),
+                        on_click=action4,
+                        bgcolor=ft.Colors.BLUE_600,
                     )
             )
             listtiles.append(
                 ft.ListTile(
-                        title=ft.Text(f"Gestão de usuários", color=ft.colors.WHITE),
-                        on_click=action5
+                        title=ft.Text(f"Gestão de usuários", color=ft.Colors.WHITE),
+                        on_click=action5,
+                        bgcolor=ft.Colors.BLUE_600,
                     )
             )
 
@@ -1855,7 +1860,7 @@ class NavigationDrawer:
                 position=ft.NavigationDrawerPosition.END,
                 on_dismiss=None,
                 on_change=None,
-                bgcolor=ft.colors.BLUE_600,
+                bgcolor=ft.Colors.BLUE_600,
                 controls=[
                     space,
                     perfil,

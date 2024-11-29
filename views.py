@@ -19,7 +19,7 @@ def create_page_home(page, list_profile, list_initial_coordinates):
     buttons = Buttons(page)
     menus = SettingsMenu(page)
     navigations = NavigationDrawer(page)
-    chk = CheckBox(page)
+
 
     list_center_map_coordinates = [list_initial_coordinates[0], list_initial_coordinates[1], list_initial_coordinates[2], list_initial_coordinates[3], list_initial_coordinates[4], list_initial_coordinates[5]]
 
@@ -30,7 +30,7 @@ def create_page_home(page, list_profile, list_initial_coordinates):
     action4 = lambda e: loading.new_loading_page(page=page, layout=create_view_orders_form(page, list_profile, list_center_map_coordinates, menu=rightmenu)) 
     action5 = lambda e: loading.new_loading_page(page=page, layout=create_view_users_form(page, list_profile, list_center_map_coordinates, menu=rightmenu)) 
     rightmenu = navigations.create_navigation(list_profile, action1, action2, action3, action4, action5)
-    menu = menus.create_settings_menu(color=ft.colors.WHITE, col=10, action=lambda e: page.open(rightmenu))
+    menu = menus.create_settings_menu(color=ft.Colors.WHITE, col=10, action=lambda e: page.open(rightmenu))
 
 
     point_location = map.Marker(
@@ -45,7 +45,7 @@ def create_page_home(page, list_profile, list_initial_coordinates):
                                             on_click=None,
                                             width=20,
                                             height=20,
-                                            bgcolor=ft.colors.BLUE,
+                                            bgcolor=ft.Colors.BLUE,
                                             text=" ",
                                             style=ft.ButtonStyle(
                                                 shape=ft.RoundedRectangleBorder(radius=10),
@@ -55,7 +55,7 @@ def create_page_home(page, list_profile, list_initial_coordinates):
                                             on_click=None,
                                             width=10,
                                             height=10,
-                                            bgcolor=ft.colors.WHITE,
+                                            bgcolor=ft.Colors.WHITE,
                                             text=" ",
                                             style=ft.ButtonStyle(
                                                 shape=ft.RoundedRectangleBorder(radius=10),
@@ -73,9 +73,9 @@ def create_page_home(page, list_profile, list_initial_coordinates):
     maps = Map(page, list_profile, point_location, list_initial_coordinates, list_center_map_coordinates)
     mapa1 = maps.create_map()
     
-
-
-
+    
+    
+    
 
     def handle_position_change(e):
         point_location.coordinates = map.MapLatitudeLongitude(e.latitude, e.longitude)
@@ -97,15 +97,14 @@ def create_page_home(page, list_profile, list_initial_coordinates):
         if point_location.coordinates is not None:
             lat = str(point_location.coordinates.latitude)
             long = str(point_location.coordinates.longitude)
-            list_initial_coordinates = [lat, long, list_center_map_coordinates[2], list_center_map_coordinates[3], list_center_map_coordinates[4], 18.4]
-            loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
+            maps.move_map(lat, long, 18.4)
 
     async def location(e=None):
 
         snack_bar = ft.SnackBar(
-                content=ft.Text(value="Buscando...", color=ft.colors.BLACK),
+                content=ft.Text(value="Buscando...", color=ft.Colors.BLACK),
                 duration=1000,
-                bgcolor=ft.colors.AMBER,
+                bgcolor=ft.Colors.AMBER,
             )
         page.overlay.append(snack_bar)
         snack_bar.open = True
@@ -118,9 +117,9 @@ def create_page_home(page, list_profile, list_initial_coordinates):
             go_to_location()
 
     button_location = buttons.create_call_location_button(
-                                                        icon=ft.icons.MY_LOCATION,
+                                                        icon=ft.Icons.MY_LOCATION,
                                                         on_click=location,
-                                                        color=ft.colors.WHITE,
+                                                        color=ft.Colors.WHITE,
                                                         col=2,
                                                         padding=0,
                                                         )
@@ -129,9 +128,9 @@ def create_page_home(page, list_profile, list_initial_coordinates):
 
         while True:
             if point_location.coordinates is not None:
-                button_location.controls[0].content.icon_color = ft.colors.GREEN
+                button_location.controls[0].content.icon_color = ft.Colors.GREEN
             else:
-                button_location.controls[0].content.icon_color = ft.colors.RED
+                button_location.controls[0].content.icon_color = ft.Colors.RED
             maps.update_position()
             page.update()
             await asyncio.sleep(1)  
@@ -142,12 +141,12 @@ def create_page_home(page, list_profile, list_initial_coordinates):
 
 
 
-    searchs = Search(page, list_profile, list_initial_coordinates)
+    searchs = Search(page, list_profile, list_initial_coordinates, maps)
     search_text_fild = searchs.create_search_text()
     search_container = searchs.create_search_container()
     search_container.visible = False
 
-    containers = Container(page, list_profile, list_center_map_coordinates)
+    containers = Container(page, list_profile, list_center_map_coordinates, maps)
     map_layer_container = containers.create_maps_container()
     map_filter_container = containers.create_filter_container()
     map_layer_container.visible = False
@@ -180,35 +179,35 @@ def create_page_home(page, list_profile, list_initial_coordinates):
         page.update()
 
     button_map_layer = buttons.create_call_location_button(
-                                                        icon=ft.icons.LAYERS,
+                                                        icon=ft.Icons.LAYERS,
                                                         on_click=show_map_layer_container,
-                                                        color=ft.colors.WHITE,
+                                                        color=ft.Colors.WHITE,
                                                         col=2,
                                                         padding=0,
-                                                        icon_color=ft.colors.BLUE
+                                                        icon_color=ft.Colors.BLUE
                                                         )
     
     button_map_filter = buttons.create_call_location_button(
-                                                        icon=ft.icons.FILTER_ALT_OUTLINED,
+                                                        icon=ft.Icons.FILTER_ALT_OUTLINED,
                                                         on_click=show_filter_container,
-                                                        color=ft.colors.WHITE,
+                                                        color=ft.Colors.WHITE,
                                                         col=2,
                                                         padding=0,
-                                                        icon_color=ft.colors.BLUE
+                                                        icon_color=ft.Colors.BLUE
                                                         )
 
     button_map_rotate = buttons.create_call_location_button(
-                                                        icon=ft.icons.ROTATE_RIGHT_OUTLINED,
-                                                        on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_center_map_coordinates)),
-                                                        color=ft.colors.WHITE,
+                                                        icon=ft.Icons.ROTATE_RIGHT_OUTLINED,
+                                                        on_click=lambda e: maps.reset_map_rotation(),
+                                                        color=ft.Colors.WHITE,
                                                         col=2,
                                                         padding=0,
-                                                        icon_color=ft.colors.BLUE
+                                                        icon_color=ft.Colors.BLUE
                                                         )
 
 
     page.appbar = ft.AppBar(
-        bgcolor=ft.colors.BLUE,
+        bgcolor=ft.Colors.BLUE,
         toolbar_height=80,
         actions=[
             ft.Column(controls=[ft.Container(width=15)]),
@@ -221,8 +220,8 @@ def create_page_home(page, list_profile, list_initial_coordinates):
 
     if list_profile[1] == "adm":
         page.floating_action_button = ft.FloatingActionButton(
-                            content=ft.Icon(name=ft.icons.ADD_LOCATION_ROUNDED, color=ft.colors.BLUE, scale=2),
-                            bgcolor=ft.colors.WHITE,
+                            content=ft.Icon(name=ft.Icons.ADD_LOCATION_ROUNDED, color=ft.Colors.BLUE, scale=2),
+                            bgcolor=ft.Colors.WHITE,
                             shape=ft.RoundedRectangleBorder(radius=50),
                             on_click= lambda e: loading.new_loading_page(page=page,
                             layout=create_page_add_forms(page, list_profile,
@@ -231,7 +230,7 @@ def create_page_home(page, list_profile, list_initial_coordinates):
     
     page.floating_action_button_location = ft.FloatingActionButtonLocation.MINI_CENTER_DOCKED
     page.bottom_appbar = ft.BottomAppBar(
-        bgcolor=ft.colors.BLUE,
+        bgcolor=ft.Colors.BLUE,
         shape=ft.NotchShape.CIRCULAR,
         height=80,
         content=ft.Row(
@@ -302,7 +301,7 @@ def create_page_forms(page, list_profile, list_initial_coordinates, name, local=
         text1 = texts.create_calltext(
                                     visible=True,
                                     text="Sem foto",
-                                    color=ft.colors.BLACK,
+                                    color=ft.Colors.BLACK,
                                     size=15,
                                     font=ft.FontWeight.W_400,
                                     col=12,
@@ -320,10 +319,10 @@ def create_page_forms(page, list_profile, list_initial_coordinates, name, local=
                             clip_behavior=ft.ClipBehavior.HARD_EDGE,
                             alignment=ft.alignment.center,
                             border=ft.Border(
-                                left=ft.BorderSide(2, ft.colors.BLACK),
-                                top=ft.BorderSide(2, ft.colors.BLACK),
-                                right=ft.BorderSide(2, ft.colors.BLACK),
-                                bottom=ft.BorderSide(2, ft.colors.BLACK),
+                                left=ft.BorderSide(2, ft.Colors.BLACK),
+                                top=ft.BorderSide(2, ft.Colors.BLACK),
+                                right=ft.BorderSide(2, ft.Colors.BLACK),
+                                bottom=ft.BorderSide(2, ft.Colors.BLACK),
                                 ),
                             content=foto
                             )  
@@ -340,13 +339,13 @@ def create_page_forms(page, list_profile, list_initial_coordinates, name, local=
 
     order_button = buttons.create_button(on_click=order_layout,
                                             text="Ordens",
-                                            color=ft.colors.RED,
+                                            color=ft.Colors.RED,
                                             col=6,
                                             padding=5,)
         
     back_home_button = buttons.create_button(on_click=go_back,
                                             text="Voltar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=12,
                                             padding=5,)
     
@@ -354,7 +353,7 @@ def create_page_forms(page, list_profile, list_initial_coordinates, name, local=
     if list_profile[1] == "adm":
         edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_edit_forms(page, list_profile, list_initial_coordinates, name)),
                                                 text="Editar",
-                                                color=ft.colors.GREEN,
+                                                color=ft.Colors.GREEN,
                                                 col=6,
                                                 padding=5,)    
         
@@ -422,12 +421,12 @@ def create_page_os_forms(page, list_profile, list_initial_coordinates, name, ord
     buttons = Buttons(page)
     back_home_button = buttons.create_button(on_click=go_back,
                                             text="Voltar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=12,
                                             padding=5,)
     edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_edit_os_forms(page, list_profile, list_initial_coordinates, name, order)),
                                             text="Editar",
-                                            color=ft.colors.GREEN,
+                                            color=ft.Colors.GREEN,
                                             col=6,
                                             padding=5,)
           
@@ -475,14 +474,14 @@ def create_page_user_forms(page, list_profile, list_initial_coordinates, user):
 
     back_home_button = buttons.create_button(on_click= lambda e: loading.new_loading_page(page=page, layout=create_view_users_form(page, list_profile, list_initial_coordinates, menu=None)),
                                             text="Voltar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=12,
                                             padding=5,)
     
 
     edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_edit_user_forms(page, list_profile, list_initial_coordinates, user)),
                                             text="Editar",
-                                            color=ft.colors.GREEN,
+                                            color=ft.Colors.GREEN,
                                             col=6,
                                             padding=5,)    
         
@@ -519,7 +518,7 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
 
         snack_bar = ft.SnackBar(
                         content=ft.Text(f"Adicionando..."),
-                        bgcolor=ft.colors.AMBER,
+                        bgcolor=ft.Colors.AMBER,
                         duration=1000,
                     )
         page.overlay.append(snack_bar)
@@ -552,12 +551,12 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
 
     add_button = buttons.create_button(on_click=lambda e :send_point(forms1, image_temp.content),
                                             text="Adicionar",
-                                            color=ft.colors.GREEN,
+                                            color=ft.Colors.GREEN,
                                             col=6,
                                             padding=15,)
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates)),
                                             text="Voltar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=6,
                                             padding=15,)
     
@@ -572,10 +571,10 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
                                   clip_behavior=ft.ClipBehavior.HARD_EDGE,
                                   alignment=ft.alignment.center,
                                     border=ft.Border(
-                                        left=ft.BorderSide(2, ft.colors.BLACK),
-                                        top=ft.BorderSide(2, ft.colors.BLACK),
-                                        right=ft.BorderSide(2, ft.colors.BLACK),
-                                        bottom=ft.BorderSide(2, ft.colors.BLACK),
+                                        left=ft.BorderSide(2, ft.Colors.BLACK),
+                                        top=ft.BorderSide(2, ft.Colors.BLACK),
+                                        right=ft.BorderSide(2, ft.Colors.BLACK),
+                                        bottom=ft.BorderSide(2, ft.Colors.BLACK),
                                         ),
                                     content=None
                                   )
@@ -588,9 +587,9 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
             if not e.files or len(e.files) == 0:
                 return
             snack_bar = ft.SnackBar(
-                content=ft.Text(value="Adicionando imagem...", color=ft.colors.BLACK),
+                content=ft.Text(value="Adicionando imagem...", color=ft.Colors.BLACK),
                 duration=2000,
-                bgcolor=ft.colors.AMBER,
+                bgcolor=ft.Colors.AMBER,
             )
             page.overlay.append(snack_bar)
             snack_bar.open = True
@@ -615,8 +614,8 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
         )
 
     icon_camera = ft.IconButton(
-        icon=ft.icons.CAMERA_ALT,
-        icon_color=ft.colors.AMBER,
+        icon=ft.Icons.CAMERA_ALT,
+        icon_color=ft.Colors.AMBER,
         expand=True,
         scale=2,
         on_click=open_gallery,  
@@ -639,8 +638,8 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
             page.update()
 
     icon_rotate = ft.IconButton(
-        icon=ft.icons.ROTATE_RIGHT_OUTLINED,
-        icon_color=ft.colors.AMBER,
+        icon=ft.Icons.ROTATE_RIGHT_OUTLINED,
+        icon_color=ft.Colors.AMBER,
         expand=True,
         scale=1.5,
         on_click=rotate, 
@@ -718,13 +717,13 @@ def create_page_add_os_forms(page, list_profile, list_initial_coordinates, name)
 
     add_button = buttons.create_button(on_click=lambda e :send_point(forms1),
                                             text="Adicionar",
-                                            color=ft.colors.GREEN,
+                                            color=ft.Colors.GREEN,
                                             col=6,
                                             padding=15,)
     
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_adm_page_order(page, list_profile, list_initial_coordinates, name)),
                                             text="Voltar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=6,
                                             padding=15,)
     
@@ -776,13 +775,13 @@ def create_page_add_user_forms(page, list_profile, list_initial_coordinates):
 
     add_button = buttons.create_button(on_click=lambda e :send_point(forms1, id),
                                             text="Adicionar",
-                                            color=ft.colors.GREEN,
+                                            color=ft.Colors.GREEN,
                                             col=6,
                                             padding=15,)
     
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_view_users_form(page, list_profile, list_initial_coordinates, menu=None)),
                                             text="Voltar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=6,
                                             padding=15,)
     
@@ -842,23 +841,23 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
 
     add_button = buttons.create_button(on_click=lambda e :send_point(list_profile, forms1, image_temp.content, list_initial_coordinates),
                                             text="Salvar",
-                                            color=ft.colors.GREEN,
+                                            color=ft.Colors.GREEN,
                                             col=6,
                                             padding=5,)
     delete_button = buttons.create_button(on_click=lambda e :delete_point(page, list_profile, list_initial_coordinates, name),
                                             text="Excluir",
-                                            color=ft.colors.RED,
+                                            color=ft.Colors.RED,
                                             col=6,
                                             padding=5,)
     back_home_button = buttons.create_button(on_click=go_back,
                                             text="Voltar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=7,
                                             padding=5,)
     
     url_imagem1 = sp.get_storage_post(name)
     if url_imagem1 == "Nulo":
-        initial_image = ft.Text(value="Sem Foto", color=ft.colors.BLACK, data= "semfoto")
+        initial_image = ft.Text(value="Sem Foto", color=ft.Colors.BLACK, data= "semfoto")
     else:
         initial_image = ft.Image(src=url_imagem1, repeat=None, data="foto")
     image_temp = ft.Container(col=8,
@@ -867,10 +866,10 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
                             clip_behavior=ft.ClipBehavior.HARD_EDGE,
                             alignment=ft.alignment.center,
                             border=ft.Border(
-                                left=ft.BorderSide(2, ft.colors.BLACK),
-                                top=ft.BorderSide(2, ft.colors.BLACK),
-                                right=ft.BorderSide(2, ft.colors.BLACK),
-                                bottom=ft.BorderSide(2, ft.colors.BLACK),
+                                left=ft.BorderSide(2, ft.Colors.BLACK),
+                                top=ft.BorderSide(2, ft.Colors.BLACK),
+                                right=ft.BorderSide(2, ft.Colors.BLACK),
+                                bottom=ft.BorderSide(2, ft.Colors.BLACK),
                                 ),
                             content=initial_image,
                             )  
@@ -880,9 +879,9 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
             if not e.files or len(e.files) == 0:
                 return
             snack_bar = ft.SnackBar(
-                content=ft.Text(value="Adicionando imagem...", color=ft.colors.BLACK),
+                content=ft.Text(value="Adicionando imagem...", color=ft.Colors.BLACK),
                 duration=2000,
-                bgcolor=ft.colors.AMBER,
+                bgcolor=ft.Colors.AMBER,
             )
             page.overlay.append(snack_bar)
             snack_bar.open = True
@@ -907,8 +906,8 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
         )
 
     icon_camera = ft.IconButton(
-        icon=ft.icons.CAMERA_ALT,
-        icon_color=ft.colors.AMBER,
+        icon=ft.Icons.CAMERA_ALT,
+        icon_color=ft.Colors.AMBER,
         expand=True,
         scale=2.3,
         on_click=open_gallery,  # Chama a função diretamente
@@ -928,8 +927,8 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
 
 
     icon_rotate = ft.IconButton(
-        icon=ft.icons.ROTATE_RIGHT_OUTLINED,
-        icon_color=ft.colors.AMBER,
+        icon=ft.Icons.ROTATE_RIGHT_OUTLINED,
+        icon_color=ft.Colors.AMBER,
         expand=True,
         scale=1.5,
         on_click=rotate, 
@@ -1017,17 +1016,17 @@ def create_page_edit_os_forms(page, list_profile, list_initial_coordinates, name
 
     add_button = buttons.create_button(on_click=lambda e :send_point(list_profile, forms1, list_initial_coordinates),
                                             text="Salvar",
-                                            color=ft.colors.GREEN,
+                                            color=ft.Colors.GREEN,
                                             col=6,
                                             padding=5,)
     delete_button = buttons.create_button(on_click=lambda e :delete_os(page, list_profile, list_initial_coordinates, name, order),
                                             text="Excluir",
-                                            color=ft.colors.RED,
+                                            color=ft.Colors.RED,
                                             col=6,
                                             padding=5,)
     back_home_button = buttons.create_button(on_click=lambda e :loading.new_loading_page(page=page, layout=create_page_os_forms(page, list_profile, list_initial_coordinates, name, order)),
                                             text="Voltar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=7,
                                             padding=5,)
     
@@ -1092,17 +1091,17 @@ def create_page_edit_user_forms(page, list_profile, list_initial_coordinates, us
 
     add_button = buttons.create_button(on_click=lambda e :send_point(list_profile, list_initial_coordinates, forms1, list_user_forms[0]),
                                             text="Salvar",
-                                            color=ft.colors.GREEN,
+                                            color=ft.Colors.GREEN,
                                             col=6,
                                             padding=5,)
     delete_button = buttons.create_button(on_click=lambda e :delete_user(page, list_profile, list_initial_coordinates, user),
                                             text="Excluir",
-                                            color=ft.colors.RED,
+                                            color=ft.Colors.RED,
                                             col=6,
                                             padding=5,)
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page,layout=create_page_user_forms(page, list_profile, list_initial_coordinates, user)),
                                             text="Voltar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=7,
                                             padding=5,)
     
@@ -1143,7 +1142,7 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
     text2 = calltexts.create_calltext(
                       visible=True,
                       text="Qual o motivo da order de serviço",
-                      color=ft.colors.BLACK,
+                      color=ft.Colors.BLACK,
                       size=30,
                       font=ft.FontWeight.W_900,
                       col=12,
@@ -1151,7 +1150,7 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
     text3 = calltexts.create_calltext(
                         visible=True,
                         text="order enviada com sucesso",
-                        color=ft.colors.GREEN,
+                        color=ft.Colors.GREEN,
                         size=30,
                         font=None,
                         col=12,
@@ -1210,7 +1209,7 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
                 if response.status_code == 201:
                     snack_bar = ft.SnackBar(
                         content=ft.Text("order enviada com sucesso"),
-                        bgcolor=ft.colors.GREEN,
+                        bgcolor=ft.Colors.GREEN,
                         duration=2500,
                     )
                     loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
@@ -1218,14 +1217,14 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
                     print(f"Resposta do erro: {response.text}")
                     snack_bar = ft.SnackBar(
                         content=ft.Text("Erro ao enviar ordem"),
-                        bgcolor=ft.colors.RED,
+                        bgcolor=ft.Colors.RED,
                         duration=2500,
                     )
 
             elif all(box.controls[0].value == False for box in all_checkboxes):
                 snack_bar = ft.SnackBar(
                     content=ft.Text("Nenhuma ordem selecionada"),
-                    bgcolor=ft.colors.AMBER,
+                    bgcolor=ft.Colors.AMBER,
                     duration=2500,
                 )
         page.overlay.append(snack_bar)
@@ -1246,12 +1245,12 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
 
     send_button = buttons.create_button(on_click=send_order,
                                         text="Enviar",
-                                        color=ft.colors.GREEN,
+                                        color=ft.Colors.GREEN,
                                         col=6,
                                         padding=15,)
     back_forms_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_forms(page, list_profile, list_initial_coordinates, name)),
                                               text="Voltar",
-                                              color=ft.colors.AMBER,
+                                              color=ft.Colors.AMBER,
                                               col=6,
                                               padding=15,)
 
@@ -1338,12 +1337,12 @@ def create_adm_page_order(page, list_profile, list_initial_coordinates, name):
                         ft.DataCell(
                             ft.Container(content=
                                          buttons.create_icon_button(
-                                                        icon=ft.icons.SEARCH,
+                                                        icon=ft.Icons.SEARCH,
                                                         on_click=forms(order),
-                                                        color=ft.colors.BLUE,
+                                                        color=ft.Colors.BLUE,
                                                         col=2,
                                                         padding=0,
-                                                        icon_color=ft.colors.WHITE,
+                                                        icon_color=ft.Colors.WHITE,
                                                         ))
                         ),
                     ])
@@ -1363,9 +1362,9 @@ def create_adm_page_order(page, list_profile, list_initial_coordinates, name):
                 width=50,
                 column_spacing=10,
                 columns=[
-                    ft.DataColumn(ft.Text(value="Data", color=ft.colors.BLACK)),  
-                    ft.DataColumn(ft.Text(value="order", color=ft.colors.BLACK)),  
-                    ft.DataColumn(ft.Text(value="Origem", color=ft.colors.BLACK)),  
+                    ft.DataColumn(ft.Text(value="Data", color=ft.Colors.BLACK)),  
+                    ft.DataColumn(ft.Text(value="order", color=ft.Colors.BLACK)),  
+                    ft.DataColumn(ft.Text(value="Origem", color=ft.Colors.BLACK)),  
                     ft.DataColumn(ft.Text(value="")),  
                 ],
                 rows=lista,
@@ -1374,12 +1373,12 @@ def create_adm_page_order(page, list_profile, list_initial_coordinates, name):
 
     send_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_add_os_forms(page, list_profile, list_initial_coordinates, name)),
                                         text="Adicionar",
-                                        color=ft.colors.GREEN,
+                                        color=ft.Colors.GREEN,
                                         col=6,
                                         padding=15,)
     back_forms_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_forms(page, list_profile, list_initial_coordinates, name)),
                                               text="Voltar",
-                                              color=ft.colors.AMBER,
+                                              color=ft.Colors.AMBER,
                                               col=6,
                                               padding=15,
                                               width=200,
@@ -1440,12 +1439,12 @@ def create_page_login(page):
     buttons = Buttons(page)
     btn_login = buttons.create_button(on_click=lambda e: verificar(username_field.value, password_field.value, page),
                                       text="Entrar",
-                                      color=ft.colors.BLUE_700,
+                                      color=ft.Colors.BLUE_700,
                                       col=7,
                                       padding=10,)
     btn_register = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_register(page)),
                                          text="Cadastrar",
-                                         color=ft.colors.AMBER,
+                                         color=ft.Colors.AMBER,
                                          col=7,
                                          padding=10,)
 
@@ -1504,12 +1503,12 @@ def create_page_register(page):
     buttons = Buttons(page)
     btn_register = buttons.create_button(on_click=lambda e: register(username_field.value.strip(), email_field.value.strip(), number_field.value.strip(), password_field1.value.strip(), password_field2.value.strip(), page),
                                          text="Registrar",
-                                         color=ft.colors.BLUE_700,
+                                         color=ft.Colors.BLUE_700,
                                          col=7,
                                          padding=10,)
     btn_back = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_login(page)),
                                      text="Voltar",
-                                     color=ft.colors.AMBER,
+                                     color=ft.Colors.AMBER,
                                      col=7,
                                      padding=10)
 
@@ -1609,32 +1608,32 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                     ft.DataCell(ft.Text(value=name, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                     ft.DataCell(
                         ft.Container(content=buttons.create_icon_button(
-                            icon=ft.icons.SEARCH,
+                            icon=ft.Icons.SEARCH,
                             on_click=forms(),
-                            color=ft.colors.BLUE,
+                            color=ft.Colors.BLUE,
                             col=2,
                             padding=0,
-                            icon_color=ft.colors.WHITE,
+                            icon_color=ft.Colors.WHITE,
                         ))
                     ),
                     ft.DataCell(
                         ft.Container(content=buttons.create_icon_button(
-                            icon=ft.icons.EDIT_ROUNDED,
+                            icon=ft.Icons.EDIT_ROUNDED,
                             on_click=edit(),
-                            color=ft.colors.BLUE,
+                            color=ft.Colors.BLUE,
                             col=2,
                             padding=0,
-                            icon_color=ft.colors.WHITE,
+                            icon_color=ft.Colors.WHITE,
                         ))
                     ),
                     ft.DataCell(
                         ft.Container(content=buttons.create_icon_button(
-                            icon=ft.icons.DELETE,
+                            icon=ft.Icons.DELETE,
                             on_click=delete(),
-                            color=ft.colors.BLUE,
+                            color=ft.Colors.BLUE,
                             col=2,
                             padding=0,
-                            icon_color=ft.colors.WHITE,
+                            icon_color=ft.Colors.WHITE,
                         ))
                     ),
                 ])
@@ -1703,34 +1702,34 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                         ft.DataCell(
                             ft.Container(content=
                                          buttons.create_icon_button(
-                                                        icon=ft.icons.SEARCH,
+                                                        icon=ft.Icons.SEARCH,
                                                         on_click=forms(),
-                                                        color=ft.colors.BLUE,
+                                                        color=ft.Colors.BLUE,
                                                         col=2,
                                                         padding=0,
-                                                        icon_color=ft.colors.WHITE,
+                                                        icon_color=ft.Colors.WHITE,
                                                         ))
                         ),
                         ft.DataCell(
                             ft.Container(content=
                                          buttons.create_icon_button(
-                                                        icon=ft.icons.EDIT_ROUNDED,
+                                                        icon=ft.Icons.EDIT_ROUNDED,
                                                         on_click=edit(),
-                                                        color=ft.colors.BLUE,
+                                                        color=ft.Colors.BLUE,
                                                         col=2,
                                                         padding=0,
-                                                        icon_color=ft.colors.WHITE,
+                                                        icon_color=ft.Colors.WHITE,
                                                         ))
                         ),
                         ft.DataCell(
                             ft.Container(content=
                                          buttons.create_icon_button(
-                                                        icon=ft.icons.DELETE,
+                                                        icon=ft.Icons.DELETE,
                                                         on_click=delete(),
-                                                        color=ft.colors.BLUE,
+                                                        color=ft.Colors.BLUE,
                                                         col=2,
                                                         padding=0,
-                                                        icon_color=ft.colors.WHITE,
+                                                        icon_color=ft.Colors.WHITE,
                                                         ))
                         ),
                     ])
@@ -1790,7 +1789,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
 
 
     filter_container = ft.Container(
-            bgcolor=ft.colors.BLUE,
+            bgcolor=ft.Colors.BLUE,
             padding=10,
             margin=10,
             height=250,
@@ -1803,7 +1802,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                 chk.create_checkbox2("Sem iluminação", 15, None, 8,".", True),
                 buttons.create_button(on_click=lambda e: get_permission_filter(e),
                                             text="Aplicar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=12,
                                             padding=5,)
                 ])
@@ -1811,29 +1810,29 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
 
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates)),
                                             text="Voltar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=12,
                                             padding=5,)
 
     searchfild = ft.TextField(label="Procurar",  # caixa de texto
                                 col=8,
                                 on_change=lambda e: changesearch(e, filter, dicio, forms1),
-                                label_style= ft.TextStyle(color=ft.colors.BLACK),
-                                text_style= ft.TextStyle(color=ft.colors.BLACK),
+                                label_style= ft.TextStyle(color=ft.Colors.BLACK),
+                                text_style= ft.TextStyle(color=ft.Colors.BLACK),
                                 text_align=ft.TextAlign.CENTER,
                                 border_radius=20,
-                                border_color=ft.colors.BLACK,
-                                bgcolor=ft.colors.WHITE
+                                border_color=ft.Colors.BLACK,
+                                bgcolor=ft.Colors.WHITE
 
             )
     
     filter_button = buttons.create_icon_button(
-                                                icon=ft.icons.FILTER_ALT_OUTLINED,
+                                                icon=ft.Icons.FILTER_ALT_OUTLINED,
                                                 on_click=show_filter_container,
-                                                color=ft.colors.BLUE,
+                                                color=ft.Colors.BLUE,
                                                 col=2,
                                                 padding=0,
-                                                icon_color=ft.colors.WHITE,
+                                                icon_color=ft.Colors.WHITE,
                                                 )
 
     return ft.ResponsiveRow(
@@ -1918,12 +1917,12 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
                         ft.DataCell(
                             ft.Container(content=
                                          buttons.create_icon_button(
-                                                        icon=ft.icons.SEARCH,
+                                                        icon=ft.Icons.SEARCH,
                                                         on_click=forms(order),
-                                                        color=ft.colors.BLUE,
+                                                        color=ft.Colors.BLUE,
                                                         col=2,
                                                         padding=0,
-                                                        icon_color=ft.colors.WHITE,
+                                                        icon_color=ft.Colors.WHITE,
                                                         ))
                         ),
                     ])
@@ -1989,12 +1988,12 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
                         ft.DataCell(
                             ft.Container(content=
                                          buttons.create_icon_button(
-                                                        icon=ft.icons.SEARCH,
+                                                        icon=ft.Icons.SEARCH,
                                                         on_click=forms(order),
-                                                        color=ft.colors.BLUE,
+                                                        color=ft.Colors.BLUE,
                                                         col=2,
                                                         padding=0,
-                                                        icon_color=ft.colors.WHITE,
+                                                        icon_color=ft.Colors.WHITE,
                                                         ))
                         ),
                     ])
@@ -2044,7 +2043,7 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
 
 
     filter_container = ft.Container(
-            bgcolor=ft.colors.BLUE,
+            bgcolor=ft.Colors.BLUE,
             padding=10,
             margin=10,
             height=200,
@@ -2056,7 +2055,7 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
                 chk.create_checkbox2("Convidado", 15, None, 8,"Convidado", True),
                 buttons.create_button(on_click=lambda e: get_permission_filter(e),
                                             text="Aplicar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=12,
                                             padding=5,)
                 ])
@@ -2064,29 +2063,29 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
     
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates)),
                                             text="Voltar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=12,
                                             padding=5,)
     
     searchfild = ft.TextField(label="Procurar",  # caixa de texto
                                 col=8,
                                 on_change=lambda e: changesearch(e, dicio_filter, dicio, forms1),
-                                label_style= ft.TextStyle(color=ft.colors.BLACK),
-                                text_style= ft.TextStyle(color=ft.colors.BLACK),
+                                label_style= ft.TextStyle(color=ft.Colors.BLACK),
+                                text_style= ft.TextStyle(color=ft.Colors.BLACK),
                                 text_align=ft.TextAlign.CENTER,
                                 border_radius=20,
-                                border_color=ft.colors.BLACK,
-                                bgcolor=ft.colors.WHITE
+                                border_color=ft.Colors.BLACK,
+                                bgcolor=ft.Colors.WHITE
 
             )
     
     filter_button = buttons.create_icon_button(
-                                                icon=ft.icons.FILTER_ALT_OUTLINED,
+                                                icon=ft.Icons.FILTER_ALT_OUTLINED,
                                                 on_click=show_filter_container,
-                                                color=ft.colors.BLUE,
+                                                color=ft.Colors.BLUE,
                                                 col=2,
                                                 padding=0,
-                                                icon_color=ft.colors.WHITE,
+                                                icon_color=ft.Colors.WHITE,
                                                 )
 
     return ft.ResponsiveRow(
@@ -2174,12 +2173,12 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
                             ft.DataCell(
                                 ft.Container(content=
                                             buttons.create_icon_button(
-                                                            icon=ft.icons.SEARCH,
+                                                            icon=ft.Icons.SEARCH,
                                                             on_click=forms(user_name),
-                                                            color=ft.colors.BLUE,
+                                                            color=ft.Colors.BLUE,
                                                             col=2,
                                                             padding=0,
-                                                            icon_color=ft.colors.WHITE,
+                                                            icon_color=ft.Colors.WHITE,
                                                             ))
                             ),
                         ])
@@ -2242,12 +2241,12 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
                         ft.DataCell(
                             ft.Container(content=
                                          buttons.create_icon_button(
-                                                        icon=ft.icons.SEARCH,
+                                                        icon=ft.Icons.SEARCH,
                                                         on_click=forms(user_name),
-                                                        color=ft.colors.BLUE,
+                                                        color=ft.Colors.BLUE,
                                                         col=2,
                                                         padding=0,
-                                                        icon_color=ft.colors.WHITE,
+                                                        icon_color=ft.Colors.WHITE,
                                                         ))
                         ),
                     ])
@@ -2297,7 +2296,7 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
 
 
     filter_container = ft.Container(
-            bgcolor=ft.colors.BLUE,
+            bgcolor=ft.Colors.BLUE,
             padding=10,
             margin=10,
             height=200,
@@ -2309,7 +2308,7 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
                 chk.create_checkbox2("Convidado", 15, None, 8,"invited", True),
                 buttons.create_button(on_click=lambda e: get_permission_filter(e),
                                             text="Aplicar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=12,
                                             padding=5,)
                 ])
@@ -2318,34 +2317,34 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
 
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates)),
                                             text="Voltar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=12,
                                             padding=5,)
     
     searchfild = ft.TextField(label="Procurar",  # caixa de texto
                                 col=8,
                                 on_change=lambda e: changesearch(e, dicio_filter, dicio, forms1),
-                                label_style= ft.TextStyle(color=ft.colors.BLACK),
-                                text_style= ft.TextStyle(color=ft.colors.BLACK),
+                                label_style= ft.TextStyle(color=ft.Colors.BLACK),
+                                text_style= ft.TextStyle(color=ft.Colors.BLACK),
                                 text_align=ft.TextAlign.CENTER,
                                 border_radius=20,
-                                border_color=ft.colors.BLACK,
-                                bgcolor=ft.colors.WHITE
+                                border_color=ft.Colors.BLACK,
+                                bgcolor=ft.Colors.WHITE
 
             )
     
     filter_button = buttons.create_icon_button(
-                                                icon=ft.icons.FILTER_ALT_OUTLINED,
+                                                icon=ft.Icons.FILTER_ALT_OUTLINED,
                                                 on_click=show_filter_container,
-                                                color=ft.colors.BLUE,
+                                                color=ft.Colors.BLUE,
                                                 col=2,
                                                 padding=0,
-                                                icon_color=ft.colors.WHITE,
+                                                icon_color=ft.Colors.WHITE,
                                                 )
 
     add_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, layout=create_page_add_user_forms(page, list_profile, list_initial_coordinates)),
                                                 text="Adicionar",
-                                                color=ft.colors.GREEN,
+                                                color=ft.Colors.GREEN,
                                                 col=6,
                                                 padding=5,)
 
@@ -2388,7 +2387,7 @@ def verificar(username, password, page):
             
         snack_bar = ft.SnackBar(
         content=ft.Text("Login realizado"),
-        bgcolor=ft.colors.GREEN,
+        bgcolor=ft.Colors.GREEN,
         duration= 1000,
         )
         map_layer = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -2402,7 +2401,7 @@ def verificar(username, password, page):
         # Exibe mensagem de erro se as credenciais não forem encontradas
         snack_bar = ft.SnackBar(
             content=ft.Text("Login ou senha incorretos"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
 
     page.overlay.append(snack_bar)
@@ -2417,7 +2416,7 @@ def register(username, email, number, password1, password2, page):
     if not username or not email or not number or not password1 or not password2:
         snack_bar = ft.SnackBar(
             content=ft.Text("Alguns campos não foram preenchidos"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
         page.overlay.append(snack_bar)
         snack_bar.open = True
@@ -2428,7 +2427,7 @@ def register(username, email, number, password1, password2, page):
     if password1 != password2:
         snack_bar = ft.SnackBar(
             content=ft.Text("As senhas não coincidem"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
         page.overlay.append(snack_bar)
         snack_bar.open = True
@@ -2441,14 +2440,14 @@ def register(username, email, number, password1, password2, page):
     if response.status_code == 201:
         snack_bar = ft.SnackBar(
             content=ft.Text("Usuário registrado com sucesso"),
-            bgcolor=ft.colors.GREEN
+            bgcolor=ft.Colors.GREEN
         )
     else:
         print(f"Erro ao inserir registro: {response.status_code}")
         print(f"Resposta do erro: {response.text}")
         snack_bar = ft.SnackBar(
             content=ft.Text(f"Erro ao registrar usuário: {response.text}"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
 
     page.overlay.append(snack_bar)
@@ -2466,7 +2465,7 @@ def add_point(page, list_profile, list_initial_coordinates, list_forms, image, a
     if any(field == "" or field is None for field in list_forms):
         snack_bar = ft.SnackBar(
             content=ft.Text("Alguns campos não foram preenchidos"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
         page.overlay.append(snack_bar)
         snack_bar.open = True
@@ -2480,7 +2479,7 @@ def add_point(page, list_profile, list_initial_coordinates, list_forms, image, a
 
         snack_bar = ft.SnackBar(
             content=ft.Text("Ponto adicionado com sucesso"),
-            bgcolor=ft.colors.GREEN,
+            bgcolor=ft.Colors.GREEN,
             duration=3000,
         )
         loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
@@ -2491,7 +2490,7 @@ def add_point(page, list_profile, list_initial_coordinates, list_forms, image, a
     else:
         snack_bar = ft.SnackBar(
             content=ft.Text(f"Erro ao inserir ponto: {response.text}"),
-            bgcolor=ft.colors.RED,
+            bgcolor=ft.Colors.RED,
             duration=4000,
         )
  
@@ -2507,7 +2506,7 @@ def add_os(page, list_profile, list_initial_coordinates, list_add_os, name):
     if any(field == "" or field is None for field in list_add_os):
         snack_bar = ft.SnackBar(
             content=ft.Text("Alguns campos não foram preenchidos"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
         page.overlay.append(snack_bar)
         snack_bar.open = True
@@ -2520,7 +2519,7 @@ def add_os(page, list_profile, list_initial_coordinates, list_add_os, name):
     if response.status_code == 201:
         snack_bar = ft.SnackBar(
             content=ft.Text("ordem adicionada com sucesso"),
-            bgcolor=ft.colors.GREEN,
+            bgcolor=ft.Colors.GREEN,
             duration=2500,
         )
 
@@ -2531,7 +2530,7 @@ def add_os(page, list_profile, list_initial_coordinates, list_add_os, name):
         print(f"Resposta do erro: {response.text}")
         snack_bar = ft.SnackBar(
             content=ft.Text(f"Erro ao adicionar ordem: {response.text}"),
-            bgcolor=ft.colors.RED,
+            bgcolor=ft.Colors.RED,
             duration=4000,
         )
  
@@ -2547,7 +2546,7 @@ def add_user(page, list_profile, list_initial_coordinates, list_add_user, id):
     if any(field == "" or field is None for field in list_add_user):
         snack_bar = ft.SnackBar(
             content=ft.Text("Alguns campos não foram preenchidos"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
         page.overlay.append(snack_bar)
         snack_bar.open = True
@@ -2560,7 +2559,7 @@ def add_user(page, list_profile, list_initial_coordinates, list_add_user, id):
     if response.status_code == 201:
         snack_bar = ft.SnackBar(
             content=ft.Text("Usuario adicionado com sucesso"),
-            bgcolor=ft.colors.GREEN,
+            bgcolor=ft.Colors.GREEN,
             duration=2500,
         )
 
@@ -2571,7 +2570,7 @@ def add_user(page, list_profile, list_initial_coordinates, list_add_user, id):
         print(f"Resposta do erro: {response.text}")
         snack_bar = ft.SnackBar(
             content=ft.Text(f"Erro ao adicionar usuario: {response.text}"),
-            bgcolor=ft.colors.RED,
+            bgcolor=ft.Colors.RED,
             duration=4000,
         )
  
@@ -2587,7 +2586,7 @@ def edit_point(page, list_profile, list_initial_coordinates, list_forms, image, 
 
     snack_bar = ft.SnackBar(
         content=ft.Text("Alterando..."),
-        bgcolor=ft.colors.ORANGE,
+        bgcolor=ft.Colors.ORANGE,
         duration=1000,
     )
     page.overlay.append(snack_bar)
@@ -2597,7 +2596,7 @@ def edit_point(page, list_profile, list_initial_coordinates, list_forms, image, 
     if any(field == "" or field is None for field in list_forms):
         snack_bar = ft.SnackBar(
             content=ft.Text("Alguns campos não foram preenchidos"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
         page.overlay.append(snack_bar)
         snack_bar.open = True
@@ -2609,7 +2608,7 @@ def edit_point(page, list_profile, list_initial_coordinates, list_forms, image, 
     if response.status_code in [200, 204]:  # 204 indica sucesso sem conteúdo
         snack_bar = ft.SnackBar(
             content=ft.Text("Alterações Salvas"),
-            bgcolor=ft.colors.GREEN,
+            bgcolor=ft.Colors.GREEN,
             duration=2000,
         )
         loading = LoadingPages(page)
@@ -2623,7 +2622,7 @@ def edit_point(page, list_profile, list_initial_coordinates, list_forms, image, 
         print(f"Resposta do erro: {response.text}")
         snack_bar = ft.SnackBar(
             content=ft.Text(f"Erro ao editar ponto: {response.text}"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
 
 
@@ -2637,7 +2636,7 @@ def edit_os(page, list_profile, list_initial_coordinates, list_edited_os_forms, 
 
     snack_bar = ft.SnackBar(
         content=ft.Text("Alterando..."),
-        bgcolor=ft.colors.ORANGE,
+        bgcolor=ft.Colors.ORANGE,
         duration=1000,
     )
     page.overlay.append(snack_bar)
@@ -2648,7 +2647,7 @@ def edit_os(page, list_profile, list_initial_coordinates, list_edited_os_forms, 
     if any(field == "" or field is None for field in list_edited_os_forms):
         snack_bar = ft.SnackBar(
             content=ft.Text("Alguns campos não foram preenchidos"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
         page.overlay.append(snack_bar)
         snack_bar.open = True
@@ -2660,7 +2659,7 @@ def edit_os(page, list_profile, list_initial_coordinates, list_edited_os_forms, 
     if response.status_code in [200, 204]:  # 204 indica sucesso sem conteúdo
         snack_bar = ft.SnackBar(
             content=ft.Text("Alterações Salvas"),
-            bgcolor=ft.colors.GREEN,
+            bgcolor=ft.Colors.GREEN,
             duration=2000,
         )
         loading.new_loading_page(page=page, layout=create_page_os_forms(page, list_profile, list_initial_coordinates, name, order))
@@ -2670,7 +2669,7 @@ def edit_os(page, list_profile, list_initial_coordinates, list_edited_os_forms, 
         print(f"Resposta do erro: {response.text}")
         snack_bar = ft.SnackBar(
             content=ft.Text(f"Erro ao editar ponto: {response.text}"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
 
 
@@ -2685,7 +2684,7 @@ def edit_user(page, list_profile, list_initial_coordinates, list_edited_user_for
 
     snack_bar = ft.SnackBar(
         content=ft.Text("Alterando..."),
-        bgcolor=ft.colors.ORANGE,
+        bgcolor=ft.Colors.ORANGE,
         duration=1000,
     )
     page.overlay.append(snack_bar)
@@ -2696,7 +2695,7 @@ def edit_user(page, list_profile, list_initial_coordinates, list_edited_user_for
     if any(field == "" or field is None for field in list_edited_user_forms):
         snack_bar = ft.SnackBar(
             content=ft.Text("Alguns campos não foram preenchidos"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
         page.overlay.append(snack_bar)
         snack_bar.open = True
@@ -2708,7 +2707,7 @@ def edit_user(page, list_profile, list_initial_coordinates, list_edited_user_for
     if response.status_code in [200, 204]:  # 204 indica sucesso sem conteúdo
         snack_bar = ft.SnackBar(
             content=ft.Text("Alterações Salvas"),
-            bgcolor=ft.colors.GREEN,
+            bgcolor=ft.Colors.GREEN,
             duration=2000,
         )
         loading.new_loading_page(page=page,
@@ -2719,7 +2718,7 @@ def edit_user(page, list_profile, list_initial_coordinates, list_edited_user_for
         print(f"Resposta do erro: {response.text}")
         snack_bar = ft.SnackBar(
             content=ft.Text(f"Erro ao editar perfil: {response.text}"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
 
 
@@ -2736,7 +2735,7 @@ def delete_point(page, list_profile, list_initial_coordinates, name):
 
     snack_bar = ft.SnackBar(
         content=ft.Text("Excluindo..."),
-        bgcolor=ft.colors.ORANGE,
+        bgcolor=ft.Colors.ORANGE,
         duration=1000,
     )
     page.overlay.append(snack_bar)
@@ -2749,7 +2748,7 @@ def delete_point(page, list_profile, list_initial_coordinates, name):
     if list_response[0].status_code == 204 and list_response[1].status_code == 204:
         snack_bar = ft.SnackBar(
                 content=ft.Text("Ponto excluido"),
-                bgcolor=ft.colors.GREEN,
+                bgcolor=ft.Colors.GREEN,
                 duration=2500,
             )
         loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
@@ -2757,7 +2756,7 @@ def delete_point(page, list_profile, list_initial_coordinates, name):
     else:
         snack_bar = ft.SnackBar(
             content=ft.Text(f"Erro ao excluir ponto: {list_response[0].text}, {list_response[1].text}, {list_response[2].text}"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
         loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
 
@@ -2771,7 +2770,7 @@ def delete_os(page, list_profile, list_initial_coordinates, name, order):
 
     snack_bar = ft.SnackBar(
         content=ft.Text("Excluindo..."),
-        bgcolor=ft.colors.ORANGE,
+        bgcolor=ft.Colors.ORANGE,
         duration=1000,
     )
     page.overlay.append(snack_bar)
@@ -2787,7 +2786,7 @@ def delete_os(page, list_profile, list_initial_coordinates, name, order):
         if name != None:
             snack_bar = ft.SnackBar(
                     content=ft.Text("ordem excluida"),
-                    bgcolor=ft.colors.GREEN,
+                    bgcolor=ft.Colors.GREEN,
                     duration=2500,
                 )
 
@@ -2796,7 +2795,7 @@ def delete_os(page, list_profile, list_initial_coordinates, name, order):
         else:
             snack_bar = ft.SnackBar(
                     content=ft.Text("ordem excluida"),
-                    bgcolor=ft.colors.GREEN,
+                    bgcolor=ft.Colors.GREEN,
                     duration=2500,
                 )
 
@@ -2808,7 +2807,7 @@ def delete_os(page, list_profile, list_initial_coordinates, name, order):
         print(f"Resposta do erro: {response.text}")
         snack_bar = ft.SnackBar(
             content=ft.Text(f"Erro ao excluir order: {response.text}"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
 
     # Exibir a mensagem e atualizar a página
@@ -2822,7 +2821,7 @@ def delete_user(page, list_profile, list_initial_coordinates, user):
 
     snack_bar = ft.SnackBar(
         content=ft.Text("Excluindo..."),
-        bgcolor=ft.colors.ORANGE,
+        bgcolor=ft.Colors.ORANGE,
         duration=1000,
     )
     page.overlay.append(snack_bar)
@@ -2837,7 +2836,7 @@ def delete_user(page, list_profile, list_initial_coordinates, user):
 
         snack_bar = ft.SnackBar(
                 content=ft.Text("Usuario excluido"),
-                bgcolor=ft.colors.GREEN,
+                bgcolor=ft.Colors.GREEN,
                 duration=2500,
             )
 
@@ -2846,7 +2845,7 @@ def delete_user(page, list_profile, list_initial_coordinates, user):
     else:
         snack_bar = ft.SnackBar(
             content=ft.Text(f"Erro ao excluir usuario: {response.text}"),
-            bgcolor=ft.colors.RED
+            bgcolor=ft.Colors.RED
         )
 
     # Exibir a mensagem e atualizar a página
@@ -2867,7 +2866,9 @@ class Map:
         self.initial_coordinates = list_initial_coordinates
         self.center_map_coordinates = list_center_map_coordinates 
         self.markers = Marker(self.page, self.initial_coordinates)
-        self.mappoints = self.markers.create_points(self.name, 20, True)
+        self.current_point_size = 20
+        self.current_point_visible = True
+        self.mappoints = self.markers.create_points(self.name, self.current_point_size, self.current_point_visible)
         self.current_zoom = None
         self.zoom_zone = "above_17"
 
@@ -2904,15 +2905,14 @@ class Map:
                 initial_zoom = 18.44
 
         self.google = map.Map(
+                    initial_center=map.MapLatitudeLongitude(self.initial_coordinates[0], self.initial_coordinates[1]),
                     expand=True,
-                    configuration=map.MapConfiguration(
-                        initial_center=map.MapLatitudeLongitude(self.initial_coordinates[0], self.initial_coordinates[1]),  
-                        initial_zoom = initial_zoom,
-                        min_zoom=15.5,
-                        max_zoom=max_zoom,
-                        on_event=handle_event,
-                        on_tap=tap_event,
-                    ),    
+                    initial_zoom=initial_zoom,
+                    min_zoom=15.5,
+                    max_zoom=max_zoom,
+                    on_event=handle_event,
+                    on_tap=tap_event,
+                    interaction_configuration=map.MapInteractionConfiguration(),  
                     layers=[
                         map.TileLayer(
                             url_template=self.initial_coordinates[2],
@@ -2923,7 +2923,6 @@ class Map:
                         )
                     ],
                 )
-        
 
         return ft.Column(
                 visible=True,
@@ -2935,7 +2934,7 @@ class Map:
                             width=430,
                             height=800,
                             alignment=ft.alignment.center,
-                            bgcolor=ft.colors.GREY,
+                            bgcolor=ft.Colors.GREY,
                             padding=0,
                             expand=True,
                             content=ft.Stack(
@@ -2946,9 +2945,9 @@ class Map:
                                             content=ft.Container(
                                                 alignment=ft.alignment.center,  
                                                 content=ft.Icon(
-                                                    name=ft.icons.CONTROL_POINT,
+                                                    name=ft.Icons.CONTROL_POINT,
                                                     size=40,
-                                                    color=ft.colors.BLACK,
+                                                    color=ft.Colors.BLACK,
                                                 ),
                                             ),
                                         ),
@@ -2974,11 +2973,17 @@ class Map:
                 if new_zoom_zone != self.zoom_zone:
                     self.zoom_zone = new_zoom_zone
                     if new_zoom_zone == "above_17":
-                        self.update_size_point(20, True)
+                        self.current_point_size = 20
+                        self.current_point_visible = True
+                        self.update_size_point(self.current_point_size, self.current_point_visible)
                     if new_zoom_zone == "below_17":
-                        self.update_size_point(10, True)
+                        self.current_point_size = 10
+                        self.current_point_visible = True
+                        self.update_size_point(self.current_point_size, self.current_point_visible)
                     if new_zoom_zone == "below_16":
-                        self.update_size_point(5, False)
+                        self.current_point_size = 5
+                        self.current_point_visible = False
+                        self.update_size_point(self.current_point_size, self.current_point_visible)
         except:
             None
 
@@ -3012,6 +3017,57 @@ class Map:
             self.page.update()
         except:
             None
+    
+    def move_map(self, x, y, zoom):
+        self.google.move_to(
+            destination=map.MapLatitudeLongitude(x, y),
+            zoom=zoom
+        )
+        try:
+            self.page.overlay[1].visible = False
+            self.page.overlay.pop(1)
+            self.page.update()
+        except:
+            None
+
+    def change_layer(self, url, max_zoom, zoom_to=False):
+
+        self.google.layers[0].url_template = url
+        self.google.max_zoom = max_zoom
+        if zoom_to:
+            if self.current_zoom > 18.44:
+                self.google.zoom_to(zoom=zoom_to)
+        try:
+            self.page.overlay[1].visible = False
+            self.page.overlay.pop(1)
+            self.page.update()
+        except:
+            None
+        self.page.update()
+    
+    def filter_map(self, new_filter):
+
+        try:
+            self.page.overlay[1].visible = False
+            self.page.overlay.pop(1)
+            self.page.update()
+        except:
+            None
+        
+        try:
+            self.MarkerLayer[0].clear()
+            self.page.update()
+            if self.MarkerLayer[0] == []:
+                self.initial_coordinates[4] = new_filter
+                new_mappoints = self.markers.create_points(self.name, self.current_point_size, self.current_point_visible)
+                self.MarkerLayer[0].extend(new_mappoints)
+            self.page.update()
+        except:
+            None
+
+    def reset_map_rotation(self):
+
+        self.google.reset_rotation()
 
 
 class Marker:
@@ -3061,11 +3117,11 @@ class Marker:
             ]
 
             if data_color == "yellow":
-                point_color = ft.colors.AMBER
+                point_color = ft.Colors.AMBER
             if data_color == "white":
-                point_color = ft.colors.PINK_200
+                point_color = ft.Colors.PINK_200
             if data_color == "blue":
-                point_color = ft.colors.BLUE
+                point_color = ft.Colors.BLUE
                 
 
             list_initial_coordinates = [x, y, self.list_initial_coordinates[2], self.list_initial_coordinates[3], self.list_initial_coordinates[4], self.list_initial_coordinates[5]]
@@ -3109,15 +3165,16 @@ class Marker:
 
 class Search:
 
-    def __init__(self, page, list_profile, list_initial_coordinates):
+    def __init__(self, page, list_profile, list_initial_coordinates, maps):
         self.page = page
         self.list_initial_coordinates = list_initial_coordinates
+        self.maps = maps
         self.sp = SupaBase(self.page)
 
         self.resultdata = ft.ListView()
 
         self.resultcon = ft.Container(
-            bgcolor=ft.colors.BLUE,
+            bgcolor=ft.Colors.BLUE,
             padding=10,
             margin=10,
             height=300,
@@ -3167,19 +3224,12 @@ class Search:
 
             loading = LoadingPages(self.page)
 
-            # Função para criar o evento de clique com coordenadas fixas
-            def create_on_click(lat=Latitude, long=Longitude):
-                return lambda e: loading.new_loading_page(
-                    page=self.page,
-                    layout=create_page_home(self.page, list_profile, list_initial_coordinates=[lat, long, self.list_initial_coordinates[2],self.list_initial_coordinates[3], self.list_initial_coordinates[4], 18.4]),
-                )
-
             # Adiciona o botão à lista de itens
             itens.append(
                 ft.ListTile(
-                    title=ft.Text(value=name, color=ft.colors.WHITE),
-                    on_click=create_on_click(),
-                    bgcolor_activated=ft.colors.AMBER
+                    title=ft.Text(value=name, color=ft.Colors.WHITE),
+                    on_click=lambda e, lat=Latitude, long=Longitude: self.maps.move_map(lat, long, 18.4),
+                    bgcolor=ft.Colors.BLUE
                 )
             )
 
@@ -3214,11 +3264,11 @@ class Search:
 
         self.txtsearch = ft.TextField(label="Procurar",  # caixa de texto
                                         on_change=searchnow,
-                                        label_style= ft.TextStyle(color=ft.colors.BLACK),
-                                        text_style= ft.TextStyle(color=ft.colors.BLACK),
+                                        label_style= ft.TextStyle(color=ft.Colors.BLACK),
+                                        text_style= ft.TextStyle(color=ft.Colors.BLACK),
                                         border_radius=20,
-                                        border_color=ft.colors.WHITE,
-                                        bgcolor=ft.colors.WHITE
+                                        border_color=ft.Colors.WHITE,
+                                        bgcolor=ft.Colors.WHITE
 
             )
 
@@ -3235,8 +3285,11 @@ class Search:
 
 class Container:
 
-    def __init__(self, page, list_profile, list_initial_coordinates):
+    def __init__(self, page, list_profile, list_initial_coordinates, maps):
         self.page = page
+        self.maps = maps
+        self.layer_aerial = "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+        self.layer_road = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         self.sp = SupaBase(page)
         loading = LoadingPages(page)
         web_images = Web_Image(page)
@@ -3247,16 +3300,6 @@ class Container:
         map_aerial = web_images.create_web_image(src=url_imagem1) 
         url_imagem2 = web_images.get_image_url(name="map_road")
         map_road = web_images.create_web_image(src=url_imagem2)
-
-        def create_map_aerial(e):
-            layer_aerial = "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            list_initial_coordinates[2]=layer_aerial
-            loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
-
-        def create_map_road(e):
-            layer_aerial = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-            list_initial_coordinates[2]=layer_aerial
-            loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
 
         def get_permission_filter(e):
 
@@ -3272,12 +3315,11 @@ class Container:
             if null_type:
                 list_map_filter.append(".")
 
-            list_initial_coordinates[4] = list_map_filter
-            loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
+            self.maps.filter_map(list_map_filter)
 
         self.map_container = ft.Row([
                                 ft.Container(
-                                    bgcolor=ft.colors.BLUE,
+                                    bgcolor=ft.Colors.BLUE,
                                     padding=10,
                                     margin=10,
                                     height=120,
@@ -3287,19 +3329,19 @@ class Container:
                                     content=ft.Column([
                                             ft.Row([
                                                 ft.Container(
-                                                    bgcolor=ft.colors.WHITE,
+                                                    bgcolor=ft.Colors.WHITE,
                                                     width=100,
                                                     height=100,
                                                     content=(map_road),
-                                                    on_click=create_map_road,
+                                                    on_click=lambda e, layer=self.layer_road: self.maps.change_layer(layer, 20.9),
                                                     border_radius=10,   
                                                 ),
                                                 ft.Container(
-                                                    bgcolor=ft.colors.WHITE,
+                                                    bgcolor=ft.Colors.WHITE,
                                                     width=100,
                                                     height=100,
                                                     content=(map_aerial),
-                                                    on_click=create_map_aerial,
+                                                    on_click=lambda e, layer=self.layer_aerial: self.maps.change_layer(layer, 18.44, 18.44),
                                                     border_radius=10,   
                                                 ),
                                             ],
@@ -3312,7 +3354,7 @@ class Container:
                                 )
 
         self.filter_container = ft.Container(
-            bgcolor=ft.colors.BLUE,
+            bgcolor=ft.Colors.BLUE,
             padding=10,
             margin=10,
             height=250,
@@ -3324,7 +3366,7 @@ class Container:
                 chk.create_checkbox2("Sem iluminação", 15, None, 8,".", True),
                 buttons.create_button(on_click=lambda e: get_permission_filter(e),
                                             text="Aplicar",
-                                            color=ft.colors.AMBER,
+                                            color=ft.Colors.AMBER,
                                             col=12,
                                             padding=5,)
                 ])

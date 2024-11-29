@@ -8,7 +8,7 @@ def main(page: ft.Page):
     page.window.height = 960
     page.window.width = 440 
     page.window.resizable = False  
-    page.bgcolor = ft.colors.WHITE  
+    page.bgcolor = ft.Colors.WHITE 
     page.scroll = "auto"
     page.padding=0  
 
