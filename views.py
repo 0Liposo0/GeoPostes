@@ -2871,6 +2871,7 @@ class Map:
         self.mappoints = self.markers.create_points(self.name, self.current_point_size, self.current_point_visible)
         self.current_zoom = None
         self.zoom_zone = "above_17"
+        self.list_filter = ["Lâmpada LED", "Lâmpada de vapor de sódio", "."]
 
 
         self.google = None
@@ -2965,9 +2966,9 @@ class Map:
             if self.current_zoom is not None:
                 if self.current_zoom > 17:
                     new_zoom_zone = "above_17"
-                if self.current_zoom < 17:
+                if self.current_zoom < 17.9:
                     new_zoom_zone = "below_17"
-                if self.current_zoom < 16:
+                if self.current_zoom < 16.5:
                     new_zoom_zone = "below_16"
 
                 if new_zoom_zone != self.zoom_zone:
@@ -3008,15 +3009,18 @@ class Map:
 
     def update_size_point(self, size, visible):
 
-        try:
-            self.MarkerLayer[0].clear()
-            self.page.update()
-            if self.MarkerLayer[0] == []:
-                new_mappoints = self.markers.create_points(self.name, size, visible)
-                self.MarkerLayer[0].extend(new_mappoints)
-            self.page.update()
-        except:
-            None
+        for item in self.MarkerLayer[0]:
+            try:
+                item.content.controls[0].width = size
+                item.content.controls[0].height = size
+                item.content.controls[1].size = size
+                if item.data in self.list_filter:
+                    item.content.controls[1].visible = visible
+            except AttributeError as e:
+                None
+        self.page.update()
+
+
     
     def move_map(self, x, y, zoom):
         self.google.move_to(
@@ -3053,17 +3057,21 @@ class Map:
             self.page.update()
         except:
             None
-        
-        try:
-            self.MarkerLayer[0].clear()
-            self.page.update()
-            if self.MarkerLayer[0] == []:
-                self.initial_coordinates[4] = new_filter
-                new_mappoints = self.markers.create_points(self.name, self.current_point_size, self.current_point_visible)
-                self.MarkerLayer[0].extend(new_mappoints)
-            self.page.update()
-        except:
-            None
+
+        for item in self.MarkerLayer[0]:
+            try:
+                if item.data not in new_filter:
+                    item.content.controls[0].visible = False
+                    item.content.controls[1].visible = False
+                else:
+                    item.content.controls[0].visible = True
+                    item.content.controls[1].visible = True
+
+                self.list_filter = new_filter
+            except AttributeError as e:
+                None
+        self.page.update()
+
 
     def reset_map_rotation(self):
 
@@ -3103,18 +3111,7 @@ class Marker:
             x = row["x"]
             y = row["y"]
             data_color = row["color"]
-
-            point = sp.get_form_post(name)
-            data = point.json()
-            row = data[0]
-            list_post_form= [
-                row["name"],
-                row["situation"],
-                row["type"],
-                row["point"],
-                row["hood"],
-                row["address"]
-            ]
+            type_point = row["type"]
 
             if data_color == "yellow":
                 point_color = ft.Colors.AMBER
@@ -3136,19 +3133,18 @@ class Marker:
 
             number = int(name.split('-')[1])
 
-            if list_post_form[2] in list_initial_coordinates[4]:
-
-                InitialButtons[number] = {
-                    "element": buttons.create_point_button(
-                        on_click=create_on_click(),  # Usa a função auxiliar
-                        text=str(number),
-                        color=point_color,
-                        size=size,
-                        visible=visible,
-                    ),
-                    "x": x,
-                    "y": y,
-                }
+            InitialButtons[number] = {
+                "element": buttons.create_point_button(
+                    on_click=create_on_click(),  # Usa a função auxiliar
+                    text=str(number),
+                    color=point_color,
+                    size=size,
+                    visible=visible,
+                ),
+                "x": x,
+                "y": y,
+                "type": type_point, 
+            }
 
         # Cria marcadores com base nos botões criados
         for number, button_data in InitialButtons.items():
@@ -3156,6 +3152,7 @@ class Marker:
                 content=button_data["element"],
                 x=button_data["x"],
                 y=button_data["y"],
+                data=button_data["type"],
             )
             FinalPoints.append(marker)
 

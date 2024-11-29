@@ -166,11 +166,12 @@ class Buttons:
                 ]
             )
     
-    def create_point_marker(self, content, x, y):
+    def create_point_marker(self, content, x, y, data):
         return map.Marker(
                 content=content,
                 coordinates=map.MapLatitudeLongitude(x, y),
-                rotate=True, 
+                rotate=True,
+                data=data, 
                 )
     
 
@@ -989,7 +990,7 @@ class SupaBase:
             "Content-Type": "application/json",
         }
 
-        params = {"select": "name, x, y, color"}
+        params = {"select": "name, x, y, color, type"}
 
         response = requests.get(
             f"{self.supabase_url}/rest/v1/point_post_capela",
@@ -1256,6 +1257,7 @@ class SupaBase:
                 "name": ip,
                 "x": list_initial_coordinates[0],
                 "y": list_initial_coordinates[1],
+                "type": list_forms[2],
                 "color": point_color,
                 "changed_at": data_formatada,
                 "changed_by": list_profile[0],
@@ -1423,7 +1425,7 @@ class SupaBase:
                 params={"select": "name", "name": f'eq.{previous_data["name"]}'}
             )
 
-            data2 = { "color": point_color}
+            data2 = { "color": point_color, "type": list_forms[2]}
 
             response2 = requests.patch(
                 f'{self.supabase_url}/rest/v1/point_post_capela?name=eq.{previous_data["name"]}',
