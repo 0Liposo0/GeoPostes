@@ -2,6 +2,7 @@ import flet as ft
 import requests
 import flet.map as map
 from datetime import datetime
+import time
 
 
 
@@ -30,17 +31,17 @@ class TextTheme:
         return ft.Theme(
         text_theme=ft.TextTheme(
             title_large=ft.TextStyle(
-                size=12,
+                size=15,
                 color=ft.Colors.BLACK,
                 weight=ft.FontWeight.W_900,
             ),
             title_medium=ft.TextStyle(
-                size=12,
+                size=15,
                 color=ft.Colors.BLACK,
                 weight=ft.FontWeight.W_400,
             ),
             title_small=ft.TextStyle(
-                size=13,
+                size=12,
                 color=ft.Colors.BLACK,
                 weight=ft.FontWeight.W_400,
             ),
@@ -375,14 +376,30 @@ class TextField:
         self.page = page
 
 
-    def create_textfield(self,value, text, password, read=False, input_filter=None, keyboard_type=None):
+    def create_textfield(self,value, text, password, read=False, input_filter=None, keyboard_type=None, multiline=False):
 
         return  ft.TextField(
             value=value,
             label= text,
             password=password,
+            multiline=multiline,
             label_style= ft.TextStyle(color=ft.Colors.BLACK, size=12),
             text_style= ft.TextStyle(color=ft.Colors.BLACK, size=12),
+            col=8,
+            read_only=read,
+            input_filter=input_filter,
+            keyboard_type=keyboard_type
+            )
+    
+    def create_textfield2(self,value, text, password, read=False, input_filter=None, keyboard_type=None, multiline=False):
+
+        return  ft.TextField(
+            value=value,
+            label= text,
+            password=password,
+            multiline=multiline,
+            label_style= ft.TextStyle(color=ft.Colors.BLACK, size=15),
+            text_style= ft.TextStyle(color=ft.Colors.BLACK, size=15),
             col=8,
             read_only=read,
             input_filter=input_filter,
@@ -761,17 +778,36 @@ class Forms:
         data_cria_field = textfields.create_textfield(value=list_os_forms[0], text=None, password=False)
         ip_field = textfields.create_textfield(value=list_os_forms[1], text=None, password=False)
         reclamante_field = textfields.create_textfield(value=list_os_forms[2], text=None, password=False)
-        usuario_field = textfields.create_textfield(value=list_os_forms[3], text=None, password=False)
+        usuario = list_os_forms[3]
         celular_field = textfields.create_textfield(value=list_os_forms[4], text=None, password=False)
-        order_field = textfields.create_textfield(value=list_os_forms[5], text=None, password=False)
+        order_field = textfields.create_textfield(value=list_os_forms[5], text=None, password=False, read=True)
         origem_field = textfields.create_textfield(value=list_os_forms[6], text=None, password=False)
-        observ_field = textfields.create_textfield(value=list_os_forms[7], text=None, password=False)
-        materi_field = textfields.create_textfield(value=list_os_forms[8], text=None, password=False)
+        observ_field = textfields.create_textfield(value=list_os_forms[7], text=None, password=False, multiline=True)
+        materi_field = textfields.create_textfield(value=list_os_forms[8], text=None, password=False, multiline=True)
         pontos_field = textfields.create_textfield(value=list_os_forms[9], text=None, password=False)
         status_field = textfields.create_textfield(value=list_os_forms[10], text=None, password=False)
         data_andamen_field = textfields.create_textfield(value=list_os_forms[11], text=None, password=False)
         data_conclu_field = textfields.create_textfield(value=list_os_forms[12], text=None, password=False)
         equipe_field = textfields.create_textfield(value=list_os_forms[13], text=None, password=False)
+
+
+        def drop_down_menu(value=None, opt1=None, opt2=None, opt3=None, opt4=None, opt5=None, opt6=None):
+
+            list = [opt1, opt2, opt3, opt4, opt5, opt6]
+            list_option = []
+            for opt in list:
+                if opt != None:
+                    list_option.append(ft.dropdown.Option(opt))
+
+            menu = ft.Dropdown(
+                options=list_option,
+                value=value,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK, size=12),
+                bgcolor=ft.Colors.WHITE,
+                options_fill_horizontally=True,
+                text_style= ft.TextStyle(size=12, color=ft.Colors.BLACK)
+            )
+            return menu
 
         return ft.Container(
             padding=0,
@@ -806,7 +842,7 @@ class Forms:
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=usuario_field, width=200)
+                            ft.Container(content=drop_down_menu(usuario, "adm", "convidado"), width=200)
                         )
                     ]),
                     ft.DataRow(cells=[
@@ -942,7 +978,7 @@ class Forms:
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value="Permissão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
-                            ft.Container(content=drop_down_menu(list_user_forms[4], "adm", "invited"), width=200)
+                            ft.Container(content=drop_down_menu(list_user_forms[4], "adm", "convidado"), width=200)
                         )
                     ]),
                    
@@ -956,7 +992,46 @@ class LoadingPages:
     def __init__(self, page):
         self.page = page
 
-    def new_loading_page(self, page, layout):
+    def new_loading_page(self, page, call_layout, text="Carregando"):
+
+        page.floating_action_button = None
+        page.bottom_appbar = None
+        page.appbar = None
+        page.clean()
+        page.controls.clear()
+        page.overlay.clear()
+
+        loading_text = ft.Column(
+                            controls=[
+                                ft.Container(
+                                    visible=True,
+                                    alignment=ft.alignment.center,
+                                    expand=True,
+                                    height=960,
+                                    col=12,
+                                    content=ft.Column(
+                                        alignment=ft.MainAxisAlignment.CENTER,  
+                                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                        controls=[
+                                            ft.Text(
+                                                value=text,
+                                                text_align=ft.TextAlign.CENTER,
+                                                size=30,
+                                                color=ft.Colors.BLACK,
+                                                weight=ft.FontWeight.W_400,
+                                            ),
+                                            ft.ProgressRing(color=ft.Colors.BLACK)
+                                        ])
+                                ),
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,  
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER, 
+                        )
+
+        page.add(loading_text)
+        page.update()
+
+        layout = call_layout()
 
         page.add(layout)
 
@@ -1066,7 +1141,7 @@ class SupaBase:
         }
 
         response = requests.get(
-            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
+            f"{self.supabase_url}/rest/v1/order_post_capela",
             headers=headers,
             params=params,
         )
@@ -1086,7 +1161,7 @@ class SupaBase:
         }
 
         response = requests.get(
-            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
+            f"{self.supabase_url}/rest/v1/order_post_capela",
             headers=headers,
             params=params,
         )
@@ -1282,7 +1357,7 @@ class SupaBase:
         }
 
         response = requests.get(
-            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
+            f"{self.supabase_url}/rest/v1/order_post_capela",
             headers=headers,
             params={"select": "order_id", "order_id": f"eq.{list_add_os[5]}"}
         )
@@ -1316,7 +1391,7 @@ class SupaBase:
         }
 
         response = requests.post(
-            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto",
+            f"{self.supabase_url}/rest/v1/order_post_capela",
             headers=headers,
             json=data,
         )
@@ -1539,7 +1614,7 @@ class SupaBase:
         }
 
         response = requests.patch(
-            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto?order_id=eq.{list_edited_os_forms[5]}",
+            f"{self.supabase_url}/rest/v1/order_post_capela?order_id=eq.{list_edited_os_forms[5]}",
             headers=headers,
             json=data,
         )
@@ -1654,7 +1729,7 @@ class SupaBase:
         }
 
         response = requests.delete(
-            f"{self.supabase_url}/rest/v1/ordens_postes_capeladoalto?order_id=eq.{order}",
+            f"{self.supabase_url}/rest/v1/order_post_capela?order_id=eq.{order}",
             headers=headers,
         )
 
@@ -1760,7 +1835,7 @@ class SupaBase:
                 "email": email,
                 "numero": number,
                 "senha": password1,
-                "permission": "invited",
+                "permission": "convidado",
             }
 
             # Fazer a solicitação POST para inserir o novo registro

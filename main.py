@@ -20,8 +20,8 @@ def main(page: ft.Page):
  
 
     loading = LoadingPages(page)
-    loading.new_loading_page(page=page, layout=create_page_login(page))
-#    loading.new_loading_page(page=page, layout=create_page_home(page, list_profile, list_initial_coordinates))
+    loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page))
+#    loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates), text="Gerando Mapa")
 
 if __name__ == "__main__":
     ft.app(target=main, upload_dir="uploads")
