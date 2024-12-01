@@ -32,7 +32,6 @@ def create_page_home(page, list_profile, list_initial_coordinates):
     rightmenu = navigations.create_navigation(list_profile, action1, action2, action3, action4, action5)
     menu = menus.create_settings_menu(color=ft.Colors.WHITE, col=10, action=lambda e: page.open(rightmenu))
 
-
     point_location = map.Marker(
                 content=ft.Column(
                             spacing=0,
@@ -286,7 +285,7 @@ def create_page_forms(page, list_profile, list_initial_coordinates, name, local=
     forms = Forms(page)
     sp = SupaBase(page)
     buttons = Buttons(page)
-      
+ 
     point = sp.get_form_post(name)
     data = point.json()
     row = data[0]
@@ -2163,9 +2162,8 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
             filter_button,
             filter_container,
             text_count_itens,
-            forms1,
-            back_home_button
-         
+            back_home_button,
+            forms1,   
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -3218,6 +3216,12 @@ class Marker:
         # Classe Buttons usada para criar botões e marcadores
         buttons = Buttons(self.page)
 
+        color_mapping = {
+            "yellow": ft.Colors.AMBER,
+            "white": ft.Colors.PINK_200,
+            "blue": ft.Colors.BLUE
+        }
+
         # Loop para criar os botões com base nas linhas da tabela
         for row in data:
             name = row["name"]
@@ -3226,22 +3230,22 @@ class Marker:
             data_color = row["color"]
             type_point = row["type"]
 
-            if data_color == "yellow":
-                point_color = ft.Colors.AMBER
-            if data_color == "white":
-                point_color = ft.Colors.PINK_200
-            if data_color == "blue":
-                point_color = ft.Colors.BLUE
-                
+            point_color = color_mapping.get(data_color, ft.Colors.GREY)
 
-            list_initial_coordinates = [x, y, self.list_initial_coordinates[2], self.list_initial_coordinates[3], self.list_initial_coordinates[4], self.list_initial_coordinates[5]]
+            def chande_coordinates(lat, long):    
+                self.list_initial_coordinates[0] = lat
+                self.list_initial_coordinates[1] = long
+
+                return self.list_initial_coordinates
 
             loading = LoadingPages(self.page)
       
-            def create_on_click(name=name, list_initial_coordinates=list_initial_coordinates):
+            def create_on_click(name=name, lat=x, long=y):  # Fixando lat e long como padrão
                 return lambda e: loading.new_loading_page(
                     page=self.page,
-                    call_layout=lambda:create_page_forms(self.page, list_profile, list_initial_coordinates, name)
+                    call_layout=lambda: create_page_forms(
+                        self.page, list_profile, chande_coordinates(lat=lat, long=long), name
+                    )
                 )
 
             number = int(name.split('-')[1])
