@@ -392,20 +392,28 @@ class TextField:
             keyboard_type=keyboard_type
             )
     
-    def create_textfield2(self,value, text, password, read=False, input_filter=None, keyboard_type=None, multiline=False):
+    def create_textfield2(self,value, text, password, read=False, input_filter=None, keyboard_type=None, multiline=False, reveal_password=False):
 
-        return  ft.TextField(
-            value=value,
-            label= text,
-            password=password,
-            multiline=multiline,
-            label_style= ft.TextStyle(color=ft.Colors.BLACK, size=15),
-            text_style= ft.TextStyle(color=ft.Colors.BLACK, size=15),
-            col=8,
-            read_only=read,
-            input_filter=input_filter,
-            keyboard_type=keyboard_type
-            )
+        return ft.Column(
+                    [
+                        ft.TextField(
+                            value=value,
+                            label=text,
+                            password=password,
+                            can_reveal_password=reveal_password,
+                            multiline=multiline,
+                            label_style=ft.TextStyle(color=ft.Colors.BLACK, size=15),
+                            text_style=ft.TextStyle(color=ft.Colors.BLACK, size=15),
+                            width=370,  
+                            read_only=read,
+                            input_filter=input_filter,
+                            keyboard_type=keyboard_type,
+                        )
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    width=400,  
+                )
     
     def create_description_textfield(self, text):
 
@@ -476,218 +484,242 @@ class Forms:
         textthemes = TextTheme()
         texttheme1 = textthemes.create_text_theme1()
 
-        return ft.Container(
-            padding=0,
-            col=12,
-            theme=texttheme1,  
-            content=ft.DataTable(
-                data_row_max_height=60,
-                column_spacing=10,
-                columns=[
-                    ft.DataColumn(ft.Text(value="")),  
-                    ft.DataColumn(ft.Text(value="")),  
-                ],
-                rows=[
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=list_post_form[0], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Situação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=list_post_form[1], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Tipo de Lâmpada", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=list_post_form[2], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Pontos", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=list_post_form[3], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Bairro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=list_post_form[4], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Logradouro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=list_post_form[5], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                ],
-            ),
-        )
+        return ft.Column([
+                    ft.Container(
+                        padding=0,
+                        col=12,
+                        theme=texttheme1,  
+                        content=ft.DataTable(
+                            data_row_max_height=60,
+                            column_spacing=30,
+                            columns=[
+                                ft.DataColumn(ft.Text(value="")),  
+                                ft.DataColumn(ft.Text(value="")),  
+                            ],
+                            rows=[
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=ft.Text(value=list_post_form[0], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Situação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=ft.Text(value=list_post_form[1], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Tipo de Lâmpada", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=ft.Text(value=list_post_form[2], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Pontos", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=ft.Text(value=list_post_form[3], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Bairro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=ft.Text(value=list_post_form[4], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Logradouro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=ft.Text(value=list_post_form[5], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                    )
+                                ]),
+                            ],
+                        ),
+                    )
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,  
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    height=470,
+                    width=440,  
+                    expand=True,
+                    )
     
     def create_user_form(self, list_user_form):
 
         textthemes = TextTheme()
         texttheme1 = textthemes.create_text_theme1()
 
-        return ft.Container(
-            padding=0,
-            col=12,
-            theme=texttheme1,  
-            content=ft.DataTable(
-                data_row_max_height=50,
-                columns=[
-                    ft.DataColumn(ft.Text(value="")),  
-                    ft.DataColumn(ft.Text(value="")),  
-                ],
-                rows=[
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="ID", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=list_user_form[0], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+        return ft.Column([
+                    ft.Container(
+                            padding=0,
+                            col=12,
+                            theme=texttheme1,  
+                            content=ft.DataTable(
+                                data_row_max_height=50,
+                                columns=[
+                                    ft.DataColumn(ft.Text(value="")),  
+                                    ft.DataColumn(ft.Text(value="")),  
+                                ],
+                                rows=[
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="ID", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=list_user_form[0], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=list_user_form[1], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="E-mail", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=list_user_form[2], theme_style=ft.TextThemeStyle.TITLE_SMALL), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Numero", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=list_user_form[3], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Senha", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=list_user_form[4], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Permissão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=list_user_form[5], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                ],
+                            ),
                         )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=list_user_form[1], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        ],
+                        alignment=ft.MainAxisAlignment.CENTER,  
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        height=400,
+                        width=440,  
+                        expand=True,
                         )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="E-mail", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=list_user_form[2], theme_style=ft.TextThemeStyle.TITLE_SMALL), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Numero", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=list_user_form[3], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Senha", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=list_user_form[4], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Permissão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=list_user_form[5], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                ],
-            ),
-        )
     
     def create_os_forms(self, data_criacao, ip, reclamante, function, celular, order, origem, obser, materiais, ponto, status, data_andamen, data_conclu, equipe):
 
         textthemes = TextTheme()
         texttheme1 = textthemes.create_text_theme1()
 
-        return ft.Container(
-            padding=0,
-            col=12,
-            theme=texttheme1,  
-            content=ft.DataTable(
-                data_row_max_height=60,
-                column_spacing=10,
-                columns=[
-                    ft.DataColumn(ft.Text(value="")),  
-                    ft.DataColumn(ft.Text(value="")),  
-                ],
-                rows=[
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Criação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=data_criacao, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+        return ft.Column([
+                    ft.Container(
+                            padding=0,
+                            col=12,
+                            theme=texttheme1,  
+                            content=ft.DataTable(
+                                data_row_max_height=60,
+                                column_spacing=30,
+                                columns=[
+                                    ft.DataColumn(ft.Text(value="")),  
+                                    ft.DataColumn(ft.Text(value="")),  
+                                ],
+                                rows=[
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Criação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=data_criacao, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=ip, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Reclamante", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=reclamante, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=function, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Celular", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=celular, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Ordem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=order, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Origem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=origem, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Observação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=obser, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Materiais", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=materiais, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Ponto", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=ponto, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Status", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=status, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Data do andamento", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=data_andamen, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Data da conclusão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=data_conclu, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Equipe", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ft.Text(value=equipe, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                                        )
+                                    ]),
+                                ],
+                            ),
                         )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=ip, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
+                        ],
+                        alignment=ft.MainAxisAlignment.CENTER,  
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        height=900,
+                        width=440,  
+                        expand=True,
                         )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Reclamante", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=reclamante, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=function, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Celular", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=celular, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Ordem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=order, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Origem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=origem, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Observação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=obser, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Materiais", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=materiais, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Ponto", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=ponto, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Status", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=status, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Data do andamento", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=data_andamen, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Data da conclusão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=data_conclu, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Equipe", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ft.Text(value=equipe, theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                        )
-                    ]),
-                ],
-            ),
-        )
 
     def create_add_forms(self, ip, situ, tipo, pontos, bairro, logra):
 
@@ -718,57 +750,65 @@ class Forms:
             return menu
     
 
-        return ft.Container(
-            padding=0,
-            col=12,
-            theme=texttheme1,
-            content=ft.DataTable(
-                data_row_max_height=60,
-                column_spacing=10,
-                columns=[
-                    ft.DataColumn(ft.Text(value="")),  # Primeira coluna
-                    ft.DataColumn(ft.Text(value="")),  # Segunda coluna
-                ],
-                rows=[
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ip_field, width=240)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Situação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=drop_down_menu(situ, "Com iluminação", "Sem iluminação"), width=240)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Tipo de Lâmpada", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=drop_down_menu(tipo, ".", "Lâmpada LED", "Lâmpada de vapor de sódio"), width=240)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Pontos", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=drop_down_menu(pontos, "0","1", "2", "3", "4", "5"), width=240)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Bairro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=bairro_field, width=240)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Logradouro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=logradouro_field, width=240)
-                        )
-                    ]),
-                ],
-            ),
-        )
+        return ft.Column([
+                    ft.Container(
+                        padding=0,
+                        col=12,
+                        theme=texttheme1,
+                        content=ft.DataTable(
+                            data_row_max_height=60,
+                            column_spacing=30,
+                            columns=[
+                                ft.DataColumn(ft.Text(value="")), 
+                                ft.DataColumn(ft.Text(value="")),  
+                            ],
+                            rows=[
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=ip_field, width=240)
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Situação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=drop_down_menu(situ, "Com iluminação", "Sem iluminação"), width=240)
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Tipo de Lâmpada", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=drop_down_menu(tipo, ".", "Lâmpada LED", "Lâmpada de vapor de sódio"), width=240)
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Pontos", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=drop_down_menu(pontos, "0","1", "2", "3", "4", "5"), width=240)
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Bairro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=bairro_field, width=240)
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Logradouro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=logradouro_field, width=240)
+                                    )
+                                ]),
+                            ],
+                        ),
+                    )
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,  
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    height=470,
+                    width=440,  
+                    expand=True,
+                    )
 
     def create_add_os_forms(self, list_os_forms):
 
@@ -810,105 +850,113 @@ class Forms:
             )
             return menu
 
-        return ft.Container(
-            padding=0,
-            col=12,
-            theme=texttheme1,
-            content=ft.DataTable(
-                data_row_max_height=60,
-                column_spacing=10,
-                columns=[
-                    ft.DataColumn(ft.Text(value="")),  
-                    ft.DataColumn(ft.Text(value="")), 
-                ],
-                rows=[
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Data de Criação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=data_cria_field, width=200)  
+        return ft.Column([
+                    ft.Container(
+                            padding=0,
+                            col=12,
+                            theme=texttheme1,
+                            content=ft.DataTable(
+                                data_row_max_height=60,
+                                column_spacing=30,
+                                columns=[
+                                    ft.DataColumn(ft.Text(value="")),  
+                                    ft.DataColumn(ft.Text(value="")), 
+                                ],
+                                rows=[
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Data de Criação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=data_cria_field, width=200)  
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=ip_field, width=200)  
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Reclamante", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=reclamante_field, width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=drop_down_menu(usuario, "adm", "convidado"), width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Celular", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=celular_field, width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Ordem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=order_field, width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Origem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=origem_field, width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Observação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=observ_field, width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Material", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=materi_field, width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Ponto Queimado", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=pontos_field, width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Status", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=status_field, width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Data de Andamento", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=data_andamen_field, width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Data de Conclusão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=data_conclu_field, width=200)
+                                        )
+                                    ]),
+                                    ft.DataRow(cells=[
+                                        ft.DataCell(ft.Text(value="Equipe", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                        ft.DataCell(
+                                            ft.Container(content=equipe_field, width=200)
+                                        )
+                                    ]),
+                                ],
+                            ),
                         )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=ip_field, width=200)  
+                        ],
+                        alignment=ft.MainAxisAlignment.CENTER,  
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        height=900,
+                        width=440,  
+                        expand=True,
                         )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Reclamante", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=reclamante_field, width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=drop_down_menu(usuario, "adm", "convidado"), width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Celular", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=celular_field, width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Ordem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=order_field, width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Origem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=origem_field, width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Observação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=observ_field, width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Material", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=materi_field, width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Ponto Queimado", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=pontos_field, width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Status", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=status_field, width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Data de Andamento", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=data_andamen_field, width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Data de Conclusão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=data_conclu_field, width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Equipe", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=equipe_field, width=200)
-                        )
-                    ]),
-                ],
-            ),
-        )
     
     def create_add_user_forms(self, list_user_forms, new=False):
 
@@ -941,52 +989,60 @@ class Forms:
             )
             return menu
        
-        return ft.Container(
-            padding=0,
-            col=12,
-            theme=texttheme1,
-            content=ft.DataTable(
-                data_row_max_height=60,
-                column_spacing=10,
-                columns=[
-                    ft.DataColumn(ft.Text(value="")),  
-                    ft.DataColumn(ft.Text(value="")), 
-                ],
-                rows=[
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=user_name_field, width=200)  
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="E-mail", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=user_email_field, width=200)  
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Numero", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=user_phone_field, width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Senha", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=user_password_field, width=200)
-                        )
-                    ]),
-                    ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value="Permissão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                        ft.DataCell(
-                            ft.Container(content=drop_down_menu(list_user_forms[4], "adm", "convidado"), width=200)
-                        )
-                    ]),
-                   
-                ],
-            ),
-        )
+        return ft.Column([
+                    ft.Container(
+                        padding=0,
+                        col=12,
+                        theme=texttheme1,
+                        content=ft.DataTable(
+                            data_row_max_height=60,
+                            column_spacing=10,
+                            columns=[
+                                ft.DataColumn(ft.Text(value="")),  
+                                ft.DataColumn(ft.Text(value="")), 
+                            ],
+                            rows=[
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=user_name_field, width=200)  
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="E-mail", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=user_email_field, width=200)  
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Numero", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=user_phone_field, width=200)
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Senha", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=user_password_field, width=200)
+                                    )
+                                ]),
+                                ft.DataRow(cells=[
+                                    ft.DataCell(ft.Text(value="Permissão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                                    ft.DataCell(
+                                        ft.Container(content=drop_down_menu(list_user_forms[4], "adm", "convidado"), width=200)
+                                    )
+                                ]),
+                            
+                            ],
+                        ),
+                    )
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,  
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    height=400,
+                    width=440,  
+                    expand=True,
+                    )
 
 
 class LoadingPages:

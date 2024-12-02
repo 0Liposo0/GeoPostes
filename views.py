@@ -223,13 +223,17 @@ def create_page_home(page, list_profile, list_initial_coordinates):
     page.appbar = ft.AppBar(
         bgcolor=ft.Colors.BLUE,
         toolbar_height=80,
-        actions=[
-            ft.Column(controls=[ft.Container(width=15)]),
-            search_text_fild,
-            ft.Column(controls=[ft.Container(width=40)]),
-            menu,
-            ft.Column(controls=[ft.Container(width=15)]),
-        ],
+        center_title=True,
+        title=ft.Row(
+            controls=[
+                search_text_fild,
+                ft.Container(width=15),  
+                menu,
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,  
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,  
+            expand=True,
+        ),
     )
 
     if list_profile[1] == "adm":
@@ -248,17 +252,13 @@ def create_page_home(page, list_profile, list_initial_coordinates):
         shape=ft.NotchShape.CIRCULAR,
         height=80,
         content=ft.Row(
+            spacing=40,
+            alignment=ft.MainAxisAlignment.CENTER,
             controls=[
                 button_location,
-                ft.Container(expand=True),
                 button_map_rotate,
-                ft.Container(expand=True),
-                ft.Container(expand=True),
-                ft.Container(expand=True),
-                ft.Container(expand=True),
-                ft.Container(expand=True),
+                ft.Container(width=10),
                 button_map_filter,
-                ft.Container(expand=True),
                 button_map_layer
             ]
         ),
@@ -310,37 +310,41 @@ def create_page_forms(page, list_profile, list_initial_coordinates, name, local=
 
     url_imagem1 = sp.get_storage_post(name)
 
-    if url_imagem1 == "Nulo":
+    texts = CallText(page)
+    foto = texts.create_calltext(
+                                visible=True,
+                                text="Sem foto",
+                                color=ft.Colors.BLACK,
+                                size=15,
+                                font=ft.FontWeight.W_400,
+                                col=12,
+                                padding=0,
+                                )
 
-        texts = CallText(page)
-        text1 = texts.create_calltext(
-                                    visible=True,
-                                    text="Sem foto",
-                                    color=ft.Colors.BLACK,
-                                    size=15,
-                                    font=ft.FontWeight.W_400,
-                                    col=12,
-                                    padding=0,
-                                    )
-        foto_poste = ft.Container(col=12,height=400,alignment=ft.alignment.center,content=(text1))  
-    else:
+    if url_imagem1 != "Nulo":
         foto = ft.Image(src=url_imagem1, repeat=None)
-        foto_poste = ft.Container(col=8,
-                            height=400,
-                            expand=True,
-                            image=ft.Image(
-                                fit=ft.ImageFit.FILL  
-                                ),
-                            clip_behavior=ft.ClipBehavior.HARD_EDGE,
-                            alignment=ft.alignment.center,
-                            border=ft.Border(
-                                left=ft.BorderSide(2, ft.Colors.BLACK),
-                                top=ft.BorderSide(2, ft.Colors.BLACK),
-                                right=ft.BorderSide(2, ft.Colors.BLACK),
-                                bottom=ft.BorderSide(2, ft.Colors.BLACK),
-                                ),
-                            content=foto
-                            )  
+
+    foto_poste = ft.Column(
+        [
+            ft.Container(
+                clip_behavior=ft.ClipBehavior.HARD_EDGE,
+                alignment=ft.alignment.center,
+                height=400,  
+                width=301,
+                col=12,  
+                border=ft.Border(
+                    left=ft.BorderSide(2, ft.Colors.BLACK),
+                    top=ft.BorderSide(2, ft.Colors.BLACK),
+                    right=ft.BorderSide(2, ft.Colors.BLACK),
+                    bottom=ft.BorderSide(2, ft.Colors.BLACK),
+                ),
+                content=foto  
+            )
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        spacing=10,  
+    )
 
     def go_back(e=None):
         if local ==False:
@@ -355,7 +359,7 @@ def create_page_forms(page, list_profile, list_initial_coordinates, name, local=
     order_button = buttons.create_button(on_click=order_layout,
                                             text="Ordens",
                                             color=ft.Colors.RED,
-                                            col=6,
+                                            col=None,
                                             padding=5,)
         
     back_home_button = buttons.create_button(on_click=go_back,
@@ -369,7 +373,7 @@ def create_page_forms(page, list_profile, list_initial_coordinates, name, local=
         edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_edit_forms(page, list_profile, list_initial_coordinates, name)),
                                                 text="Editar",
                                                 color=ft.Colors.GREEN,
-                                                col=6,
+                                                col=None,
                                                 padding=5,)    
         
 
@@ -380,7 +384,8 @@ def create_page_forms(page, list_profile, list_initial_coordinates, name, local=
             foto_poste,  
             order_button,
             edit_button,
-            back_home_button   
+            back_home_button,
+            ft.Container(height=10),   
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -451,7 +456,8 @@ def create_page_os_forms(page, list_profile, list_initial_coordinates, name, ord
         controls=[
             os_forms,
             edit_button,
-            back_home_button   
+            back_home_button,
+            ft.Container(height=10),   
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -497,7 +503,7 @@ def create_page_user_forms(page, list_profile, list_initial_coordinates, user):
     edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_edit_user_forms(page, list_profile, list_initial_coordinates, user)),
                                             text="Editar",
                                             color=ft.Colors.GREEN,
-                                            col=6,
+                                            col=12,
                                             padding=5,)    
         
 
@@ -506,7 +512,8 @@ def create_page_user_forms(page, list_profile, list_initial_coordinates, user):
         controls=[
             form,
             edit_button,
-            back_home_button   
+            back_home_button,
+            ft.Container(height=10),   
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -542,19 +549,19 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
 
         time.sleep(1)
 
-        if image_temp.content != None:
-            angle = int(image_temp.content.rotate.angle * (180 / math.pi) if image_temp.content.rotate else 0)
+        if image_temp.controls[0].content != None:
+            angle = int(image_temp.controls[0].content.rotate.angle * (180 / math.pi) if image_temp.controls[0].content.rotate else 0)
         else:
             angle = None
 
 
         list_forms = [
-                object.content.rows[0].cells[1].content.content.value,
-                object.content.rows[1].cells[1].content.content.value,
-                object.content.rows[2].cells[1].content.content.value,
-                object.content.rows[3].cells[1].content.content.value,
-                object.content.rows[4].cells[1].content.content.value,
-                object.content.rows[5].cells[1].content.content.value,
+                object.controls[0].content.rows[0].cells[1].content.content.value,
+                object.controls[0].content.rows[1].cells[1].content.content.value,
+                object.controls[0].content.rows[2].cells[1].content.content.value,
+                object.controls[0].content.rows[3].cells[1].content.content.value,
+                object.controls[0].content.rows[4].cells[1].content.content.value,
+                object.controls[0].content.rows[5].cells[1].content.content.value,
         ]
 
 
@@ -564,35 +571,39 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
 
     forms1 = forms.create_add_forms(ip=new_number, situ=None, tipo=None, pontos=None, bairro=".", logra=".")
 
-    add_button = buttons.create_button(on_click=lambda e :send_point(forms1, image_temp.content),
+    add_button = buttons.create_button(on_click=lambda e :send_point(forms1, image_temp.controls[0].content),
                                             text="Adicionar",
                                             color=ft.Colors.GREEN,
-                                            col=6,
-                                            padding=15,)
+                                            col=12,
+                                            padding=5,)
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates)),
                                             text="Voltar",
                                             color=ft.Colors.AMBER,
-                                            col=6,
-                                            padding=15,)
+                                            col=12,
+                                            padding=5,)
     
 
-
-
-
-
-    image_temp = ft.Container(col=8,
-                                  height=400,
-                                  expand=True,
-                                  clip_behavior=ft.ClipBehavior.HARD_EDGE,
-                                  alignment=ft.alignment.center,
-                                    border=ft.Border(
-                                        left=ft.BorderSide(2, ft.Colors.BLACK),
-                                        top=ft.BorderSide(2, ft.Colors.BLACK),
-                                        right=ft.BorderSide(2, ft.Colors.BLACK),
-                                        bottom=ft.BorderSide(2, ft.Colors.BLACK),
-                                        ),
-                                    content=None
-                                  )
+    image_temp = ft.Column(
+        [
+            ft.Container(
+                clip_behavior=ft.ClipBehavior.HARD_EDGE,
+                alignment=ft.alignment.center,
+                height=400,  
+                width=301,
+                col=12,  
+                border=ft.Border(
+                    left=ft.BorderSide(2, ft.Colors.BLACK),
+                    top=ft.BorderSide(2, ft.Colors.BLACK),
+                    right=ft.BorderSide(2, ft.Colors.BLACK),
+                    bottom=ft.BorderSide(2, ft.Colors.BLACK),
+                ),
+                content=None  
+            )
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        spacing=10,  
+    )
 
 
 
@@ -613,7 +624,7 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
 
             image_container = ft.Image(src=selected_image.path, col=8) 
 
-            image_temp.content = image_container
+            image_temp.controls[0].content = image_container
 
             page.update()
 
@@ -639,14 +650,14 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
     )
 
     def rotate(e):
-        if hasattr(image_temp.content, 'rotate'):
+        if hasattr(image_temp.controls[0].content, 'rotate'):
 
             # Obtemos o ângulo atual em graus, assumindo 0 se não estiver definido
-            current_angle_degrees = image_temp.content.rotate.angle * (180 / math.pi) if image_temp.content.rotate else 0
+            current_angle_degrees = image_temp.controls[0].content.rotate.angle * (180 / math.pi) if image_temp.controls[0].content.rotate else 0
             # Adicionamos 90 graus ao ângulo atual
             new_angle_degrees = (current_angle_degrees + 90) % 360
             # Define a rotação com o novo ângulo em radianos
-            image_temp.content.rotate = ft.transform.Rotate(math.radians(new_angle_degrees))
+            image_temp.controls[0].content.rotate = ft.transform.Rotate(math.radians(new_angle_degrees))
 
             angle = new_angle_degrees
 
@@ -674,7 +685,8 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
             image_temp,
             icon_rotate,
             add_button, 
-            back_home_button   
+            back_home_button,
+            ft.Container(height=10)   
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -733,21 +745,22 @@ def create_page_add_os_forms(page, list_profile, list_initial_coordinates, name)
     add_button = buttons.create_button(on_click=lambda e :send_point(forms1),
                                             text="Adicionar",
                                             color=ft.Colors.GREEN,
-                                            col=6,
-                                            padding=15,)
+                                            col=12,
+                                            padding=5,)
     
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_adm_page_order(page, list_profile, list_initial_coordinates, name)),
                                             text="Voltar",
                                             color=ft.Colors.AMBER,
-                                            col=6,
-                                            padding=15,)
+                                            col=12,
+                                            padding=5,)
     
     return ft.ResponsiveRow(
         columns=12,
         controls=[
             forms1,
             add_button, 
-            back_home_button   
+            back_home_button,
+            ft.Container(height=10),   
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -791,13 +804,13 @@ def create_page_add_user_forms(page, list_profile, list_initial_coordinates):
     add_button = buttons.create_button(on_click=lambda e :send_point(forms1, id),
                                             text="Adicionar",
                                             color=ft.Colors.GREEN,
-                                            col=6,
+                                            col=12,
                                             padding=15,)
     
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_view_users_form(page, list_profile, list_initial_coordinates, menu=None)),
                                             text="Voltar",
                                             color=ft.Colors.AMBER,
-                                            col=6,
+                                            col=12,
                                             padding=15,)
     
     return ft.ResponsiveRow(
@@ -805,7 +818,8 @@ def create_page_add_user_forms(page, list_profile, list_initial_coordinates):
         controls=[
             forms1,
             add_button, 
-            back_home_button   
+            back_home_button,
+            ft.Container(height=10),   
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -828,6 +842,7 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
     loading = LoadingPages(page)
     sp = SupaBase(page)
     buttons = Buttons(page)
+    texts = CallText(page)
 
     def send_point(list_profile, object, image, list_initial_coordinates):
 
@@ -854,7 +869,7 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
         else:
             loading.new_loading_page(page=page, call_layout=lambda:create_view_postes_form(page, list_profile, list_initial_coordinates, menu=None))
 
-    add_button = buttons.create_button(on_click=lambda e :send_point(list_profile, forms1, image_temp.content, list_initial_coordinates),
+    add_button = buttons.create_button(on_click=lambda e :send_point(list_profile, forms1, image_temp.controls[0].content, list_initial_coordinates),
                                             text="Salvar",
                                             color=ft.Colors.GREEN,
                                             col=6,
@@ -871,23 +886,41 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
                                             padding=5,)
     
     url_imagem1 = sp.get_storage_post(name)
-    if url_imagem1 == "Nulo":
-        initial_image = ft.Text(value="Sem Foto", color=ft.Colors.BLACK, data= "semfoto")
-    else:
-        initial_image = ft.Image(src=url_imagem1, repeat=None, data="foto")
-    image_temp = ft.Container(col=8,
-                            height=400,
-                            expand=True,
-                            clip_behavior=ft.ClipBehavior.HARD_EDGE,
-                            alignment=ft.alignment.center,
-                            border=ft.Border(
-                                left=ft.BorderSide(2, ft.Colors.BLACK),
-                                top=ft.BorderSide(2, ft.Colors.BLACK),
-                                right=ft.BorderSide(2, ft.Colors.BLACK),
-                                bottom=ft.BorderSide(2, ft.Colors.BLACK),
-                                ),
-                            content=initial_image,
-                            )  
+    
+    initial_image = texts.create_calltext(
+                                visible=True,
+                                text="Sem foto",
+                                color=ft.Colors.BLACK,
+                                size=15,
+                                font=ft.FontWeight.W_400,
+                                col=12,
+                                padding=0,
+                                )
+
+    if url_imagem1 != "Nulo":
+        initial_image = ft.Image(src=url_imagem1, repeat=None)
+
+    image_temp = ft.Column(
+        [
+            ft.Container(
+                clip_behavior=ft.ClipBehavior.HARD_EDGE,
+                alignment=ft.alignment.center,
+                height=400,  
+                width=301,
+                col=12,  
+                border=ft.Border(
+                    left=ft.BorderSide(2, ft.Colors.BLACK),
+                    top=ft.BorderSide(2, ft.Colors.BLACK),
+                    right=ft.BorderSide(2, ft.Colors.BLACK),
+                    bottom=ft.BorderSide(2, ft.Colors.BLACK),
+                ),
+                content=initial_image  
+            )
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        spacing=10,  
+    )  
 
     def on_image_selected(e: ft.FilePickerResultEvent):
 
@@ -905,7 +938,7 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
 
             image_container = ft.Image(src=selected_image.path, col=8, data="foto") 
 
-            image_temp.content = image_container
+            image_temp.controls[0].content = image_container
 
             page.update()
 
@@ -931,13 +964,13 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
     )
 
     def rotate(e):
-        if hasattr(image_temp.content, 'rotate'):
+        if hasattr(image_temp.controls[0].content, 'rotate'):
             # Obtemos o ângulo atual em graus, assumindo 0 se não estiver definido
-            current_angle_degrees = image_temp.content.rotate.angle * (180 / math.pi) if image_temp.content.rotate else 0
+            current_angle_degrees = image_temp.controls[0].content.rotate.angle * (180 / math.pi) if image_temp.controls[0].content.rotate else 0
             # Adicionamos 90 graus ao ângulo atual
             new_angle_degrees = (current_angle_degrees + 90) % 360
             # Define a rotação com o novo ângulo em radianos
-            image_temp.content.rotate = ft.transform.Rotate(math.radians(new_angle_degrees))
+            image_temp.controls[0].content.rotate = ft.transform.Rotate(math.radians(new_angle_degrees))
             page.update()
 
 
@@ -1032,17 +1065,17 @@ def create_page_edit_os_forms(page, list_profile, list_initial_coordinates, name
     add_button = buttons.create_button(on_click=lambda e :send_point(list_profile, forms1, list_initial_coordinates),
                                             text="Salvar",
                                             color=ft.Colors.GREEN,
-                                            col=6,
+                                            col=12,
                                             padding=5,)
     delete_button = buttons.create_button(on_click=lambda e :delete_os(page, list_profile, list_initial_coordinates, name, order),
                                             text="Excluir",
                                             color=ft.Colors.RED,
-                                            col=6,
+                                            col=12,
                                             padding=5,)
     back_home_button = buttons.create_button(on_click=lambda e :loading.new_loading_page(page=page, call_layout=lambda:create_page_os_forms(page, list_profile, list_initial_coordinates, name, order)),
                                             text="Voltar",
                                             color=ft.Colors.AMBER,
-                                            col=7,
+                                            col=12,
                                             padding=5,)
     
 
@@ -1053,7 +1086,8 @@ def create_page_edit_os_forms(page, list_profile, list_initial_coordinates, name
             forms1,
             add_button,
             delete_button,
-            back_home_button   
+            back_home_button,
+            ft.Container(height=10),   
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -1368,22 +1402,31 @@ def create_adm_page_order(page, list_profile, list_initial_coordinates, name):
 
 
     
-    forms2 = ft.Container(
-            padding=0,
-            col=12,
-            theme=texttheme1,  
-            content=ft.DataTable(
-                data_row_max_height=50,
-                width=50,
-                column_spacing=10,
-                columns=[
-                    ft.DataColumn(ft.Text(value="DATA", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
-                    ft.DataColumn(ft.Text(value="ORDEM", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
-                    ft.DataColumn(ft.Text(value="ORIGEM", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
-                    ft.DataColumn(ft.Text(value="")),  
-                ],
-                rows=lista,
-            ),
+    forms2 =ft.Column(
+        controls=[
+            ft.Container(
+                padding=0,
+                theme=texttheme1,  
+                content=ft.DataTable(
+                    data_row_max_height=50,
+                    column_spacing=20,
+                    expand=True, 
+                    columns=[
+                        ft.DataColumn(ft.Text(value="Data", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
+                        ft.DataColumn(ft.Text(value="Ordem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
+                        ft.DataColumn(ft.Text(value="Origem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
+                        ft.DataColumn(ft.Text(value="")),  
+                    ],
+                    rows=lista,
+                ),
+            )
+        ],
+        scroll=ft.ScrollMode.AUTO,  
+        alignment=ft.MainAxisAlignment.CENTER,  
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        height=300,
+        width=440,  
+        expand=True, 
         )
 
     send_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_add_os_forms(page, list_profile, list_initial_coordinates, name)),
@@ -1396,7 +1439,6 @@ def create_adm_page_order(page, list_profile, list_initial_coordinates, name):
                                               color=ft.Colors.AMBER,
                                               col=6,
                                               padding=15,
-                                              width=200,
                                               )
 
     container1 = ft.Container(padding=10)
@@ -1443,16 +1485,16 @@ def create_page_login(page):
     def visible_password(e):
         password_field.password = not password_field.password
         page.update()
-    box_login = checkboxes.create_checkbox(text="Mostrar senha", size=15, on_change=visible_password, col=8)
+    
 
     textfields = TextField(page)
     username_field = textfields.create_textfield2(value=None, text="Usuário ou E-mail", password=False)
-    password_field = textfields.create_textfield2(value=None, text="Senha", password=True)
+    password_field = textfields.create_textfield2(value=None, text="Senha", password=True, reveal_password=True)
 
     loading = LoadingPages(page)
 
     buttons = Buttons(page)
-    btn_login = buttons.create_button(on_click=lambda e: verificar(username_field.value, password_field.value, page),
+    btn_login = buttons.create_button(on_click=lambda e: verificar(username_field.controls[0].value, password_field.controls[0].value, page),
                                       text="Entrar",
                                       color=ft.Colors.BLUE_700,
                                       col=7,
@@ -1475,7 +1517,6 @@ def create_page_login(page):
             container1,  
             username_field,  
             password_field,
-            box_login,
             container2,
             btn_login,
             btn_register, 
@@ -1830,25 +1871,31 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
 
 
 
-    filter_container = ft.Container(
-            bgcolor=ft.Colors.BLUE,
-            padding=10,
-            margin=10,
-            height=250,
-            border_radius=20,
-            col=10,
-            visible=False,
-            content=ft.Column([
-                chk.create_checkbox2("Lâmpada LED", 15, None, 8,"Lâmpada LED", True),
-                chk.create_checkbox2("Lâmpada de vapor de sódio", 15, None, 8,"Lâmpada de vapor de sódio", True),
-                chk.create_checkbox2("Sem iluminação", 15, None, 8,".", True),
-                buttons.create_button(on_click=lambda e: get_permission_filter(e),
-                                            text="Aplicar",
-                                            color=ft.Colors.AMBER,
-                                            col=12,
-                                            padding=5,)
-                ])
-            )
+    filter_container = ft.Row([ 
+                        ft.Container(
+                            bgcolor=ft.Colors.BLUE,
+                            padding=10,
+                            margin=10,
+                            height=250,
+                            width=400,
+                            border_radius=20,
+                            col=12,
+                            visible=False,
+                            content=ft.Column([
+                                chk.create_checkbox2("Lâmpada LED", 15, None, 8,"Lâmpada LED", True),
+                                chk.create_checkbox2("Lâmpada de vapor de sódio", 15, None, 8,"Lâmpada de vapor de sódio", True),
+                                chk.create_checkbox2("Sem iluminação", 15, None, 8,".", True),
+                                buttons.create_button(on_click=lambda e: get_permission_filter(e),
+                                                            text="Aplicar",
+                                                            color=ft.Colors.AMBER,
+                                                            col=12,
+                                                            padding=5,)
+                                ])
+                            )
+                            ],
+                            vertical_alignment=ft.CrossAxisAlignment.END,
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            )
 
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates)),
                                             text="Voltar",
@@ -2118,24 +2165,30 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
 
 
 
-    filter_container = ft.Container(
-            bgcolor=ft.Colors.BLUE,
-            padding=10,
-            margin=10,
-            height=200,
-            border_radius=20,
-            col=10,
-            visible=False,
-            content=ft.Column([
-                chk.create_checkbox2("Administrador", 15, None, 8,"adm", True),
-                chk.create_checkbox2("Convidado", 15, None, 8,"convidado", True),
-                buttons.create_button(on_click=lambda e: get_permission_filter(e),
-                                            text="Aplicar",
-                                            color=ft.Colors.AMBER,
-                                            col=12,
-                                            padding=5,)
-                ])
-            )
+    filter_container = ft.Row([
+                        ft.Container(
+                            bgcolor=ft.Colors.BLUE,
+                            padding=10,
+                            margin=10,
+                            height=200,
+                            width=400,
+                            border_radius=20,
+                            col=10,
+                            visible=False,
+                            content=ft.Column([
+                                chk.create_checkbox2("Administrador", 15, None, 8,"adm", True),
+                                chk.create_checkbox2("Convidado", 15, None, 8,"convidado", True),
+                                buttons.create_button(on_click=lambda e: get_permission_filter(e),
+                                                            text="Aplicar",
+                                                            color=ft.Colors.AMBER,
+                                                            col=12,
+                                                            padding=5,)
+                                ])
+                            )
+                            ],
+                            vertical_alignment=ft.CrossAxisAlignment.END,
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            )
     
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates)),
                                             text="Voltar",
@@ -2397,24 +2450,29 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
 
 
 
-    filter_container = ft.Container(
-            bgcolor=ft.Colors.BLUE,
-            padding=10,
-            margin=10,
-            height=200,
-            border_radius=20,
-            col=10,
-            visible=False,
-            content=ft.Column([
-                chk.create_checkbox2("Administrador", 15, None, 8,"adm", True),
-                chk.create_checkbox2("Convidado", 15, None, 8,"convidado", True),
-                buttons.create_button(on_click=lambda e: get_permission_filter(e),
-                                            text="Aplicar",
-                                            color=ft.Colors.AMBER,
-                                            col=12,
-                                            padding=5,)
-                ])
-            )
+    filter_container = ft.Row([
+                        ft.Container(
+                            bgcolor=ft.Colors.BLUE,
+                            padding=10,
+                            margin=10,
+                            height=200,
+                            border_radius=20,
+                            col=10,
+                            visible=False,
+                            content=ft.Column([
+                                chk.create_checkbox2("Administrador", 15, None, 8,"adm", True),
+                                chk.create_checkbox2("Convidado", 15, None, 8,"convidado", True),
+                                buttons.create_button(on_click=lambda e: get_permission_filter(e),
+                                                            text="Aplicar",
+                                                            color=ft.Colors.AMBER,
+                                                            col=12,
+                                                            padding=5,)
+                                ])
+                            )
+                            ],
+                            vertical_alignment=ft.CrossAxisAlignment.END,
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            )
 
 
     back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates)),
@@ -3308,19 +3366,23 @@ class Search:
 
         self.resultdata = ft.ListView()
 
-        self.resultcon = ft.Container(
-            bgcolor=ft.Colors.BLUE,
-            padding=10,
-            margin=10,
-            height=300,
-            border_radius=20,
-            offset=ft.transform.Offset(-2,0),
-            animate_offset = ft.animation.Animation(600,curve="easeIn"),
-            content=ft.Column([
-                self.resultdata
-
-                ])
-            )
+        self.resultcon = ft.Row([
+                            ft.Container(
+                                bgcolor=ft.Colors.BLUE,
+                                padding=10,
+                                margin=10,
+                                height=300,
+                                width=400,
+                                border_radius=20,
+                                col=12,
+                                content=ft.Column([
+                                    self.resultdata
+                                    ])
+                                )
+                                ],
+                        vertical_alignment=ft.CrossAxisAlignment.END,
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        )
 
         itens = []
 
@@ -3390,8 +3452,7 @@ class Search:
         return self.txtsearch
 
     def create_search_container(self):
-        self.resultcon.offset = ft.transform.Offset(0, 0)  # Centralizado
-        self.resultcon.animate_offset = ft.animation.Animation(600, curve="easeIn")
+
         return self.resultcon
     
     def reset_serach(self):
@@ -3419,9 +3480,9 @@ class Container:
 
         def get_permission_filter(e):
 
-            led_type = self.filter_container.content.controls[0].controls[0].value
-            sodium_type = self.filter_container.content.controls[1].controls[0].value
-            null_type = self.filter_container.content.controls[2].controls[0].value
+            led_type = self.filter_container.controls[0].content.controls[0].controls[0].value
+            sodium_type = self.filter_container.controls[0].content.controls[1].controls[0].value
+            null_type = self.filter_container.controls[0].content.controls[2].controls[0].value
             list_map_filter = []
 
             if led_type:
@@ -3464,29 +3525,35 @@ class Container:
                                             spacing=25)
                                         ])
                                     )
+                                    ],
+                                    vertical_alignment=ft.CrossAxisAlignment.END,
+                                    alignment=ft.MainAxisAlignment.CENTER,
+                                    )
+
+        self.filter_container = ft.Row([
+                                ft.Container(
+                                    bgcolor=ft.Colors.BLUE,
+                                    padding=10,
+                                    margin=10,
+                                    height=250,
+                                    width=400,
+                                    border_radius=20,
+                                    col=12,
+                                    content=ft.Column([
+                                        chk.create_checkbox2("Lâmpada LED", 15, None, 8,"Lâmpada LED", True),
+                                        chk.create_checkbox2("Lâmpada de vapor de sódio", 15, None, 8,"Lâmpada de vapor de sódio", True),
+                                        chk.create_checkbox2("Sem iluminação", 15, None, 8,".", True),
+                                        buttons.create_button(on_click=lambda e: get_permission_filter(e),
+                                                                    text="Aplicar",
+                                                                    color=ft.Colors.AMBER,
+                                                                    col=12,
+                                                                    padding=5,)
+                                        ])
+                                )
                                 ],
                                 vertical_alignment=ft.CrossAxisAlignment.END,
                                 alignment=ft.MainAxisAlignment.CENTER,
                                 )
-
-        self.filter_container = ft.Container(
-            bgcolor=ft.Colors.BLUE,
-            padding=10,
-            margin=10,
-            height=250,
-            border_radius=20,
-            col=10,
-            content=ft.Column([
-                chk.create_checkbox2("Lâmpada LED", 15, None, 8,"Lâmpada LED", True),
-                chk.create_checkbox2("Lâmpada de vapor de sódio", 15, None, 8,"Lâmpada de vapor de sódio", True),
-                chk.create_checkbox2("Sem iluminação", 15, None, 8,".", True),
-                buttons.create_button(on_click=lambda e: get_permission_filter(e),
-                                            text="Aplicar",
-                                            color=ft.Colors.AMBER,
-                                            col=12,
-                                            padding=5,)
-                ])
-            )
 
 
     def create_maps_container(self):
