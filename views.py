@@ -1841,7 +1841,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
     )
     
     def show_filter_container(e):
-        filter_container.visible = not filter_container.visible
+        filter_container.controls[0].visible = not filter_container.controls[0].visible
         page.update()
 
     def get_permission_filter(e):
@@ -2145,7 +2145,7 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
     )
     
     def show_filter_container(e):
-        filter_container.visible = not filter_container.visible
+        filter_container.controls[0].visible = not filter_container.controls[0].visible
         page.update()
 
     def get_permission_filter(e):
@@ -2430,7 +2430,7 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
     )
     
     def show_filter_container(e):
-        filter_container.visible = not filter_container.visible
+        filter_container.controls[0].visible = not filter_container.controls[0].visible
         page.update()
 
     def get_permission_filter(e):
@@ -2456,6 +2456,7 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
                             padding=10,
                             margin=10,
                             height=200,
+                            width=400,
                             border_radius=20,
                             col=10,
                             visible=False,
