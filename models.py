@@ -102,6 +102,7 @@ class Buttons:
     def create_icon_button(self, icon, on_click, color, col, padding, icon_color):
         return ft.Column(
             col=col,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
                     ft.Container(
@@ -945,7 +946,8 @@ class Forms:
             col=12,
             theme=texttheme1,
             content=ft.DataTable(
-                data_row_max_height=50,
+                data_row_max_height=60,
+                column_spacing=10,
                 columns=[
                     ft.DataColumn(ft.Text(value="")),  
                     ft.DataColumn(ft.Text(value="")), 
@@ -1409,7 +1411,7 @@ class SupaBase:
         response1 = requests.get(
             f"{self.supabase_url}/rest/v1/login_geopostes",
             headers=headers,
-            params={"select": "email", "email": f"eq.{list_add_user[0]}"}
+            params={"select": "email", "email": f"eq.{list_add_user[1]}"}
         )
 
         if response1.status_code == 200 and response1.json():
@@ -1427,7 +1429,7 @@ class SupaBase:
         response2 = requests.get(
             f"{self.supabase_url}/rest/v1/login_geopostes",
             headers=headers,
-            params={"select": "usuario", "usuario": f"eq.{list_add_user[1]}"}
+            params={"select": "usuario", "usuario": f"eq.{list_add_user[0]}"}
         )
 
         if response2.status_code == 200 and response2.json():

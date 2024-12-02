@@ -144,13 +144,20 @@ def create_page_home(page, list_profile, list_initial_coordinates):
     page.run_task(update_map, page, point_location, button_location, maps)
 
 
+    async def to_check_size(page, maps):
+        while True:
+            maps.to_check_update_size()
+            await asyncio.sleep(1)
+    page.run_task(to_check_size, page, maps)
+
+
 
 
     name_points = markers.return_name_points()
     searchs = Search(page, list_profile, list_initial_coordinates, maps, name_points)
     search_text_fild = searchs.create_search_text()
     search_container = searchs.create_search_container()
-    list_maps_acess_controls.append(search_text_fild)
+    list_maps_acess_controls.insert(0, search_text_fild)
     search_container.visible = False
 
     containers = Container(page, list_profile, list_center_map_coordinates, maps)
@@ -267,6 +274,7 @@ def create_page_home(page, list_profile, list_initial_coordinates):
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
+
 
 
 
@@ -1608,7 +1616,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                 page.update()
 
                 name = row["name"]
-                number = int(name.split('-')[1])
+                number = (str(name.split('-')[1])).zfill(4)
 
                 def forms(name=name):
                     return lambda e: loading.new_loading_page(
@@ -1626,7 +1634,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                     return lambda e: delete_point(page, list_profile, list_initial_coordinates, name)
 
                 linha = ft.DataRow(cells=[
-                    ft.DataCell(ft.Text(value=name, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                    ft.DataCell(ft.Text(value=number, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                     ft.DataCell(
                         ft.Container(content=buttons.create_icon_button(
                             icon=ft.Icons.SEARCH,
@@ -1704,7 +1712,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
 
             name = row["name"]
 
-            number = int(name.split('-')[1])
+            number = (str(name.split('-')[1])).zfill(4)
            
             def forms(name=name):
                 return lambda e: loading.new_loading_page(
@@ -1722,7 +1730,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                 return lambda e :delete_point(page, list_profile, list_initial_coordinates, name)
 
             linha = ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value=name, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                        ft.DataCell(ft.Text(value=number, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                         ft.DataCell(
                             ft.Container(content=
                                          buttons.create_icon_button(
@@ -1775,7 +1783,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                     expand=True,  
                     columns=[
                         ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="Visualizar", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Ficha", text_align=ft.TextAlign.CENTER)),  
                         ft.DataColumn(ft.Text(value="Editar", text_align=ft.TextAlign.CENTER)),  
                         ft.DataColumn(ft.Text(value="Excluir", text_align=ft.TextAlign.CENTER)),  
                     ],
@@ -1786,7 +1794,8 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
         scroll=ft.ScrollMode.AUTO,  
         alignment=ft.MainAxisAlignment.CENTER,  
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        height=600,  
+        height=300,
+        width=440,  
         expand=True,  
     )
     
@@ -1863,7 +1872,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                                                 icon=ft.Icons.FILTER_ALT_OUTLINED,
                                                 on_click=show_filter_container,
                                                 color=ft.Colors.BLUE,
-                                                col=2,
+                                                col=6,
                                                 padding=0,
                                                 icon_color=ft.Colors.WHITE,
                                                 )
@@ -1878,8 +1887,8 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
             filter_button,
             filter_container,
             text_count_itens,
-            back_home_button,
             forms1,
+            back_home_button,
          
         ],
         alignment=ft.MainAxisAlignment.CENTER,
@@ -2068,13 +2077,13 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
                 theme=texttheme1,
                 content=ft.DataTable(
                     data_row_max_height=50,
-                    column_spacing=40,  
+                    column_spacing=20,  
                     expand=True,  
                     columns=[
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Data", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Ordem", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Tipo", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Ficha", text_align=ft.TextAlign.CENTER)),  
                     ],
                     rows=lista,  
                 ),
@@ -2083,7 +2092,8 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
         scroll=ft.ScrollMode.AUTO,  
         alignment=ft.MainAxisAlignment.CENTER,  
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        height=600,  
+        height=300,
+        width=440,  
         expand=True,  
     )
     
@@ -2149,7 +2159,7 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
                                                 icon=ft.Icons.FILTER_ALT_OUTLINED,
                                                 on_click=show_filter_container,
                                                 color=ft.Colors.BLUE,
-                                                col=2,
+                                                col=6,
                                                 padding=0,
                                                 icon_color=ft.Colors.WHITE,
                                                 )
@@ -2162,8 +2172,8 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
             filter_button,
             filter_container,
             text_count_itens,
-            back_home_button,
-            forms1,   
+            forms1,
+            back_home_button,   
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -2248,7 +2258,6 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
             
 
                 linha = ft.DataRow(cells=[
-                            ft.DataCell(ft.Text(value=user_id, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
                             ft.DataCell(ft.Text(value=user_name, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
                             ft.DataCell(ft.Text(value=user_permission, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
                             ft.DataCell(
@@ -2320,7 +2329,6 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
          
 
             linha = ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value=user_id, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
                         ft.DataCell(ft.Text(value=user_name, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
                         ft.DataCell(ft.Text(value=user_permission, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
                         ft.DataCell(
@@ -2349,13 +2357,12 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
                 theme=texttheme1,
                 content=ft.DataTable(
                     data_row_max_height=50,
-                    column_spacing=40,  
+                    column_spacing=20,  
                     expand=True,  
                     columns=[
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Tipo", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Visualizar", text_align=ft.TextAlign.CENTER)),  
                     ],
                     rows=lista,  
                 ),
@@ -2364,7 +2371,8 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
         scroll=ft.ScrollMode.AUTO,  
         alignment=ft.MainAxisAlignment.CENTER,  
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        height=600,  
+        height=300,
+        width=440,  
         expand=True,  
     )
     
@@ -2431,7 +2439,7 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
                                                 icon=ft.Icons.FILTER_ALT_OUTLINED,
                                                 on_click=show_filter_container,
                                                 color=ft.Colors.BLUE,
-                                                col=2,
+                                                col=6,
                                                 padding=0,
                                                 icon_color=ft.Colors.WHITE,
                                                 )
@@ -2450,9 +2458,9 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
             filter_button,
             filter_container,
             text_count_itens,
-            back_home_button,
             forms1,
             add_button,
+            back_home_button,
          
         ],
         alignment=ft.MainAxisAlignment.CENTER,
@@ -3034,7 +3042,6 @@ class Map:
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=[
                         ft.Container(
-                            width=430,
                             height=800,
                             alignment=ft.alignment.center,
                             bgcolor=ft.Colors.GREY,
@@ -3065,6 +3072,25 @@ class Map:
     def update_position(self):
 
         try:
+
+            if self.point_location.coordinates is not None:
+                if self.point_location in self.MarkerLayer[0]:
+                    self.MarkerLayer[0].remove(self.point_location)
+                    self.page.update()
+
+                # Adicionar o marcador atualizado
+                else:      
+                    self.MarkerLayer[0].append(self.point_location)
+                    self.page.update()
+
+            self.page.update()
+
+        except:
+            None
+
+    def to_check_update_size(self):
+
+        try:
             if self.current_zoom is not None:
                 if self.current_zoom > 17:
                     new_zoom_zone = "above_17"
@@ -3087,27 +3113,10 @@ class Map:
                         self.current_point_size = 5
                         self.current_point_visible = False
                         self.update_size_point(self.current_point_size, self.current_point_visible)
-        except:
-            None
-
-        try:
-
-            if self.point_location.coordinates is not None:
-                if self.point_location in self.MarkerLayer[0]:
-                    self.MarkerLayer[0].remove(self.point_location)
-                    self.page.update()
-
-                # Adicionar o marcador atualizado
-                else:      
-                    self.MarkerLayer[0].append(self.point_location)
-                    self.page.update()
-
-            self.page.update()
 
         except:
             None
-        
-  
+
 
     def update_size_point(self, size, visible):
 
@@ -3123,6 +3132,7 @@ class Map:
                     item.content.controls[1].visible = visible
             except AttributeError as e:
                 None
+
         self.page.update()
 
 
