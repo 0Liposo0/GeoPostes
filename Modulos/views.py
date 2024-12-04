@@ -3067,9 +3067,6 @@ class Map:
                     ],
                 )
         conteiner_height = 800
-        if self.page.web:
-            conteiner_height = 1200
-
 
         self.complete_map = ft.Column(
                     visible=True,
@@ -3227,6 +3224,7 @@ class Map:
 
     def get_zoom(self):
         return self.google.zoom
+
 
 class Marker:
 
