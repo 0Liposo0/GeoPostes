@@ -205,6 +205,7 @@ def create_page_home(page, list_profile, list_initial_coordinates):
         bgcolor=ft.Colors.BLUE,
         toolbar_height=80,
         center_title=True,
+        leading=None,
         title=ft.Row(
             controls=[
                 search_text_fild,
@@ -216,6 +217,7 @@ def create_page_home(page, list_profile, list_initial_coordinates):
             expand=True,
         ),
     )
+
 
     if list_profile[1] == "adm":
         page.floating_action_button = ft.FloatingActionButton(
@@ -1212,7 +1214,7 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
                     "ip": name,
                     "numero": numero,
                     "reclamante": list_profile[0],
-                    "function": "Convidado",
+                    "function": "convidado",
                     "celular": list_profile[2],
                     "order_id": new_order,
                     "origem": "Público",
@@ -1234,7 +1236,7 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
 
                 if response.status_code == 201:
                     snack_bar = ft.SnackBar(
-                        content=ft.Text("order enviada com sucesso"),
+                        content=ft.Text("ordem enviada com sucesso"),
                         bgcolor=ft.Colors.GREEN,
                         duration=2500,
                     )
@@ -1822,12 +1824,12 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
         page.update()
 
     def get_permission_filter(e):
-        led_type = filter_container.content.controls[0].controls[0].value
-        led_type_data = filter_container.content.controls[0].controls[0].data
-        sodium_type = filter_container.content.controls[1].controls[0].value
-        sodium_type_data = filter_container.content.controls[1].controls[0].data
-        null_type = filter_container.content.controls[2].controls[0].value
-        null_type_data = filter_container.content.controls[2].controls[0].data
+        led_type = filter_container.controls[0].content.controls[0].controls[0].value
+        led_type_data = filter_container.controls[0].content.controls[0].controls[0].data
+        sodium_type = filter_container.controls[0].content.controls[1].controls[0].value
+        sodium_type_data = filter_container.controls[0].content.controls[1].controls[0].data
+        null_type = filter_container.controls[0].content.controls[2].controls[0].value
+        null_type_data = filter_container.controls[0].content.controls[2].controls[0].data
         if led_type:
             dicio_filter["type_filter"] = f"eq.{led_type_data}"
         if sodium_type:
@@ -1842,7 +1844,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
             dicio_filter["type_filter"] = f"neq.{led_type_data}"
         if led_type and sodium_type and null_type:
             dicio_filter["type_filter"] = f"like.*"
-        filter_container.visible = not filter_container.visible
+        filter_container.controls[0].visible = not filter_container.controls[0].visible
         page.update()
         changesearch(e, dicio_filter, dicio, forms1, count_itens, text_count_itens),
 
@@ -1854,7 +1856,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                             padding=10,
                             margin=10,
                             height=250,
-                            width=400,
+                            width=300,
                             border_radius=20,
                             col=12,
                             visible=False,
@@ -2126,17 +2128,17 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
         page.update()
 
     def get_permission_filter(e):
-        adm_permission = filter_container.content.controls[0].controls[0].value
-        adm_permission_data = filter_container.content.controls[0].controls[0].data
-        invited_permission = filter_container.content.controls[1].controls[0].value
-        invited_permission_data = filter_container.content.controls[1].controls[0].data
+        adm_permission = filter_container.controls[0].content.controls[0].controls[0].value
+        adm_permission_data = filter_container.controls[0].content.controls[0].controls[0].data
+        invited_permission = filter_container.controls[0].content.controls[1].controls[0].value
+        invited_permission_data = filter_container.controls[0].content.controls[1].controls[0].data
         if adm_permission:
             dicio_filter["permission_filter"] = f"eq.{adm_permission_data}"
         if invited_permission:
             dicio_filter["permission_filter"] = f"eq.{invited_permission_data}"
         if invited_permission and adm_permission:
             dicio_filter["permission_filter"] = f"like.*"
-        filter_container.visible = not filter_container.visible
+        filter_container.controls[0].visible = not filter_container.controls[0].visible
         page.update()
         changesearch(e, dicio_filter, dicio, forms1, count_itens, text_count_itens),
 
@@ -2148,7 +2150,7 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
                             padding=10,
                             margin=10,
                             height=200,
-                            width=400,
+                            width=300,
                             border_radius=20,
                             col=10,
                             visible=False,
@@ -2411,17 +2413,17 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
         page.update()
 
     def get_permission_filter(e):
-        adm_permission = filter_container.content.controls[0].controls[0].value
-        adm_permission_data = filter_container.content.controls[0].controls[0].data
-        invited_permission = filter_container.content.controls[1].controls[0].value
-        invited_permission_data = filter_container.content.controls[1].controls[0].data
+        adm_permission = filter_container.controls[0].content.controls[0].controls[0].value
+        adm_permission_data = filter_container.controls[0].content.controls[0].controls[0].data
+        invited_permission = filter_container.controls[0].content.controls[1].controls[0].value
+        invited_permission_data = filter_container.controls[0].content.controls[1].controls[0].data
         if adm_permission:
             dicio_filter["permission_filter"] = f"eq.{adm_permission_data}"
         if invited_permission:
             dicio_filter["permission_filter"] = f"eq.{invited_permission_data}"
         if invited_permission and adm_permission:
             dicio_filter["permission_filter"] = f"like.*"
-        filter_container.visible = not filter_container.visible
+        filter_container.controls[0].visible = not filter_container.controls[0].visible
         page.update()
         changesearch(e, dicio_filter, dicio, forms1, count_itens, text_count_itens),
 
@@ -2433,7 +2435,7 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
                             padding=10,
                             margin=10,
                             height=200,
-                            width=400,
+                            width=300,
                             border_radius=20,
                             col=10,
                             visible=False,
@@ -3332,7 +3334,7 @@ class Marker:
                 data=button_data["type"],
             )
             FinalPoints.append(marker)
-        print(count)
+
         # Retorna a lista de marcadores
         return FinalPoints
     
@@ -3357,7 +3359,7 @@ class Search:
                                 padding=10,
                                 margin=10,
                                 height=300,
-                                width=400,
+                                width=300,
                                 border_radius=20,
                                 col=12,
                                 content=ft.Column([
@@ -3429,7 +3431,8 @@ class Search:
                                         border_radius=20,
                                         border_color=ft.Colors.WHITE,
                                         bgcolor=ft.Colors.WHITE,
-                                        keyboard_type=ft.KeyboardType.NUMBER
+                                        keyboard_type=ft.KeyboardType.NUMBER,
+                                        width=300,
 
             )
 
@@ -3523,7 +3526,7 @@ class Container:
                                     padding=10,
                                     margin=10,
                                     height=250,
-                                    width=400,
+                                    width=300,
                                     border_radius=20,
                                     col=12,
                                     content=ft.Column([

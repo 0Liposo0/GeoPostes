@@ -804,7 +804,6 @@ class Forms:
         data_cria_field = textfields.create_textfield(value=list_os_forms[0], text=None, password=False)
         ip_field = textfields.create_textfield(value=list_os_forms[1], text=None, password=False)
         reclamante_field = textfields.create_textfield(value=list_os_forms[2], text=None, password=False)
-        usuario = list_os_forms[3]
         celular_field = textfields.create_textfield(value=list_os_forms[4], text=None, password=False)
         order_field = textfields.create_textfield(value=list_os_forms[5], text=None, password=False, read=True)
         origem_field = textfields.create_textfield(value=list_os_forms[6], text=None, password=False)
@@ -869,7 +868,7 @@ class Forms:
                                     ft.DataRow(cells=[
                                         ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
                                         ft.DataCell(
-                                            ft.Container(content=drop_down_menu(usuario, "adm", "convidado"), width=200)
+                                            ft.Container(content=drop_down_menu(list_os_forms[3], "adm", "convidado"), width=200)
                                         )
                                     ]),
                                     ft.DataRow(cells=[
