@@ -1937,7 +1937,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.patch(
-            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{list_edited_os_forms[5]}",
+            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{list_edited_os_forms[5]}',
             headers=headers,
             json=data,
         )
@@ -1983,7 +1983,7 @@ class SupaBase:
         }
 
         response = requests.patch(
-            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{previus_name}",
+            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{previus_name}',
             headers=headers,
             json=data,
         )
@@ -2004,12 +2004,12 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response1 = requests.delete(
-            f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}?name=eq.{name}",
+            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}?name=eq.{name}',
             headers=headers,
         )
 
         response2 = requests.delete(
-            f"{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}?name=eq.{name}",
+            f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}?name=eq.{name}',
             headers=headers,
         )
 
@@ -2064,7 +2064,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.delete(
-            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{order}",
+            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{order}',
             headers=headers,
         )
 
@@ -2082,7 +2082,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.delete(
-            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{user}",
+            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{user}',
             headers=headers,
         )
 
