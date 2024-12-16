@@ -1324,7 +1324,7 @@ def create_invited_page_order(page, name, maps):
                 current_profile = profile.return_current_profile()
 
                 response = requests.post(
-                    f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
+                    f'{url}/rest/v1/order_post_{current_profile["city_call_name"]}',
                     headers=headers,
                     json=data,
                 )
@@ -1438,7 +1438,7 @@ def create_adm_page_order(page, name, maps):
     current_profile = profile.return_current_profile()
 
     response = requests.get(
-        f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
+        f'{url}/rest/v1/order_post_{current_profile["city_call_name"]}',
         headers=headers,
         params=params,
     )
@@ -2104,7 +2104,7 @@ def create_view_orders_form(page, maps):
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
+            f'{url}/rest/v1/order_post_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -2181,7 +2181,7 @@ def create_view_orders_form(page, maps):
     current_profile = profile.return_current_profile()
 
     response = requests.get(
-        f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
+        f'{url}/rest/v1/order_post_{current_profile["city_call_name"]}',
         headers=headers,
         params=params,
     )
@@ -2386,7 +2386,7 @@ def create_view_users_form(page):
 
         # Faz uma nova requisição com o filtro atualizado
         response = requests.get(
-            f"{url}/rest/v1/users_{current_profile["city_call_name"]}",
+            f'{url}/rest/v1/users_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -2462,7 +2462,7 @@ def create_view_users_form(page):
 
     # Requisição à API
     response = requests.get(
-        f"{url}/rest/v1/users_{current_profile["city_call_name"]}",
+        f'{url}/rest/v1/users_{current_profile["city_call_name"]}',
         headers=headers,
         params=params,
     )
