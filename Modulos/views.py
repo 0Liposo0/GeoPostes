@@ -2748,7 +2748,7 @@ def add_point(page, coordinates, list_forms, image, angle, maps):
         current_profile = profile.return_current_profile()
 
         new_number = list_forms[0].zfill(4)
-        ip = f"IP {current_profile["city_acronym"]}-{new_number}"
+        ip = f'IP {current_profile["city_acronym"]}-{new_number}'
         point_data = sp.get_one_point_post(ip)
         data = point_data.json()
         row = data[0]
@@ -2941,7 +2941,7 @@ def edit_point(page, list_edited_forms, image, previous_data, maps):
         current_profile = profile.return_current_profile()
 
         new_number = (str(list_edited_forms[0])).zfill(4)
-        ip = f"IP {current_profile["city_acronym"]}-{new_number}"
+        ip = f'IP {current_profile["city_acronym"]}-{new_number}'
         point_data = sp.get_one_point_post(ip)
         data = point_data.json()
         row = data[0]

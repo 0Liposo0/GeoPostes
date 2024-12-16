@@ -1574,7 +1574,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
         number = str(list_forms[0])
         new_number = number.zfill(4)
-        ip = f"IP {current_profile["city_acronym"]}-{new_number}"
+        ip = f'IP {current_profile["city_acronym"]}-{new_number}'
 
         point_color = None
         if list_forms[2] == "Lâmpada LED":
@@ -1787,7 +1787,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
         number = str(list_forms[0])
         new_number = number.zfill(4)
-        ip = f"IP {current_profile["city_acronym"]}-{new_number}"
+        ip = f'IP {current_profile["city_acronym"]}-{new_number}'
 
         headers = {
             "apikey": self.supabase_key,
