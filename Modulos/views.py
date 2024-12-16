@@ -8,28 +8,14 @@ import time
 import asyncio
 
 
-def create_page_home(page, list_profile, list_initial_coordinates):
-
-    page.go("/home")
-
+def create_page_home(page):
+    
+    page.go("/")
     loading = LoadingPages(page)
     buttons = Buttons(page)
     menus = SettingsMenu(page)
     navigations = NavigationDrawer(page)
 
-
-    list_center_map_coordinates = [list_initial_coordinates[0], list_initial_coordinates[1], list_initial_coordinates[2], list_initial_coordinates[3], list_initial_coordinates[4], list_initial_coordinates[5]]
-
-    navigations = NavigationDrawer(page)
-    action1 = lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page)) 
-    action2 = lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_center_map_coordinates))
-    action3 = lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_view_postes_form(page, list_profile, list_center_map_coordinates, menu=rightmenu)) 
-    action4 = lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_view_orders_form(page, list_profile, list_center_map_coordinates, menu=rightmenu)) 
-    action5 = lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_view_users_form(page, list_profile, list_center_map_coordinates, menu=rightmenu)) 
-    rightmenu = navigations.create_navigation(list_profile, action1, action2, action3, action4, action5)
-    menu = menus.create_settings_menu(color=ft.Colors.WHITE, col=10, action=lambda e: page.open(rightmenu))
-  
-  
     point_location = map.Marker(
                 content=ft.Column(
                             spacing=0,
@@ -54,23 +40,85 @@ def create_page_home(page, list_profile, list_initial_coordinates):
                                  ),    
                             ]
                         ),
-                coordinates=list_initial_coordinates[3],
-                rotate=True, 
+                coordinates=None,
+                rotate=True,
+                data="point_location" 
                 )
 
     list_maps_acess_controls = []
-    markers = Marker(page, list_initial_coordinates)
-    maps = Map(page, list_profile, point_location, list_initial_coordinates, list_center_map_coordinates, list_maps_acess_controls, markers)
+    markers = Marker(page)
+    maps = Map(page, point_location, list_maps_acess_controls)
+    requests_points = markers.create_points(15, True, maps)
+    current_map_points = CurrentMapPoints()
+    current_map_points.add_list_point(requests_points)
+    map_points = current_map_points.return_current_points()
+
+    def points_radius(lista_pontos, ponto_central, raio=500):
+       
+        list_points_radius = []
+        lat_central = float(ponto_central[0])
+        lon_central = float(ponto_central[1])
+        r_terra = 6371000  # Raio da Terra em metros
+
+        for item in lista_pontos:
+            
+            lat = float(item.coordinates.latitude)
+            lon = float(item.coordinates.longitude)
+
+            lat1 = math.radians(lat_central)
+            lon1 = math.radians(lon_central)
+            lat2 = math.radians(lat)
+            lon2 = math.radians(lon)
+            
+            # Diferenças
+            delta_lat = lat2 - lat1
+            delta_lon = lon2 - lon1
+
+            # Fórmula de haversine
+            a = math.sin(delta_lat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(delta_lon / 2)**2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+            distancia = r_terra * c
+
+            # Verificar se o ponto está dentro do raio
+            if distancia <= raio:
+                list_points_radius.append(item)
+
+        return list_points_radius
+
+    radius_map_points = points_radius(map_points, ["-23.481570", "-47.740459"])
+    maps.add_points_map(radius_map_points)
     mapa1 = maps.create_map()
-    
-    
-    
+
+    def reload_map():
+        new_requests_points = markers.create_points(15, True, maps)
+        current_map_points = CurrentMapPoints()
+        current_map_points.add_list_point(new_requests_points)
+        acess_search = Search(page=page, maps=maps, name_points=None)
+        list_tiles = []
+
+        for item in new_requests_points:
+            name = item.data[0]
+            Latitude = item.data[2]
+            Longitude = item.data[3]
+
+            def move_and_reset(lat, long):
+                maps.move_map(lat, long, 18.4)
+                maps.reset_home_text_field()
+
+            list_tiles.append(
+                ft.ListTile(
+                    title=ft.Text(value=name, color=ft.Colors.WHITE),
+                    on_click=lambda e, lat=Latitude, long=Longitude: move_and_reset(lat, long),
+                    bgcolor=ft.Colors.BLUE,
+                    data=name
+                )
+            )
+
+        acess_search.reload_itens(list_tiles)
+        
 
     def handle_position_change(e):
         point_location.coordinates = map.MapLatitudeLongitude(e.latitude, e.longitude)
-        list_initial_coordinates[3] =  map.MapLatitudeLongitude(e.latitude, e.longitude)
-        list_center_map_coordinates[3] = map.MapLatitudeLongitude(e.latitude, e.longitude)
-        page.update() 
 
     gl = ft.Geolocator(
                     location_settings=ft.GeolocatorSettings(
@@ -78,9 +126,10 @@ def create_page_home(page, list_profile, list_initial_coordinates):
                         distance_filter=1,
                     ),
                     on_position_change=handle_position_change,
-                    data = 0,
+                    data = "geolocator",
                     )
     page.overlay.insert(0, gl)
+    list_maps_acess_controls.insert(0, gl)
 
     def go_to_location(e=None):
         if point_location.coordinates is not None:
@@ -119,58 +168,107 @@ def create_page_home(page, list_profile, list_initial_coordinates):
                                                         padding=0,
                                                         )
 
-    async def to_check_size(page, maps, point_location, button_location):
-        while True:
-            maps.to_check_update_size()
-            if point_location.coordinates is not None:
-                button_location.controls[0].content.icon_color = ft.Colors.GREEN
-            else:
-               button_location.controls[0].content.icon_color = ft.Colors.RED
-            maps.update_position()
-            await asyncio.sleep(1)
-    page.run_task(to_check_size, page, maps, point_location, button_location)
+
+    task_ref = [None, 1]  # Variável global para rastrear a tarefa
+
+    async def to_check_size(page, maps, point_location, button_location, mapa1):
+        try:
+            while True:
+                current_points = current_map_points.return_current_points()
+                new_points = points_radius(current_points, [maps.get_lat_center_coordinates(), maps.get_long_center_coordinates()])
+                maps.reload_map(new_points)
+                maps.to_check_update_size()
+                maps.update_position()
+                if point_location.coordinates is not None:
+                    button_location.controls[0].content.icon_color = ft.Colors.GREEN
+                else:
+                    button_location.controls[0].content.icon_color = ft.Colors.RED
+                if page.route == "/home":
+                    mapa1.update()
+                    button_location.update()
+                await asyncio.sleep(0.5)
+        except asyncio.CancelledError:
+            raise
+
+    def start_task(page, maps, point_location, button_location, mapa1, task_ref):
+        if task_ref[0] is None or task_ref[0].done():  # Evita iniciar múltiplas instâncias
+            task_ref[0] = page.run_task(
+                to_check_size,  
+                page, maps, point_location, button_location, mapa1  
+            )
+    start_task(page, maps, point_location, button_location, mapa1, task_ref)
+
+    def cancel_task():
+        task_ref[0].cancel()  
 
 
+
+    def go_back():
+        cancel_task()
+        loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page))
+
+    action1 = lambda e: go_back()
+
+    action2 = lambda e: reload_map()
+
+    action3 = lambda e: loading.new_loading_overlay_page(page=page,
+    call_layout=lambda:create_view_postes_form(page, maps),
+    menu=rightmenu) 
+    
+    action4 = lambda e: loading.new_loading_overlay_page(page=page,
+    call_layout=lambda:create_view_orders_form(page, maps),
+    menu=rightmenu)
+
+    action5 = lambda e: loading.new_loading_overlay_page(page=page,
+    call_layout=lambda:create_view_users_form(page),
+    menu=rightmenu)
+
+    rightmenu = navigations.create_navigation(action1, action2, action3, action4, action5)
+    menu = menus.create_settings_menu(color=ft.Colors.WHITE, col=10, action=lambda e: page.open(rightmenu))
 
 
     name_points = markers.return_name_points()
-    searchs = Search(page, list_profile, list_initial_coordinates, maps, name_points)
-
+    searchs = Search(page, maps, name_points)
     search_text_fild = searchs.create_search_text()
     search_container = searchs.create_search_container()
     list_maps_acess_controls.insert(0, search_text_fild)
     search_container.visible = False
 
-    containers = Container(page, list_profile, list_center_map_coordinates, maps)
+
+    containers = Container(page, maps)
     map_layer_container = containers.create_maps_container()
     map_filter_container = containers.create_filter_container()
-    map_layer_container.visible = False
-    map_filter_container.visible = False
 
     def show_map_layer_container(e):
-        try:
-            page.overlay.pop(1)
-        except:
-            None
-        if not map_layer_container in page.overlay:
-            page.overlay.append(map_layer_container)    
-            map_layer_container.visible = not map_layer_container.visible
-        else:
+        if map_layer_container in page.overlay:
             page.overlay.remove(map_layer_container)
-            map_layer_container.visible = not map_layer_container.visible
+        else:
+            try:
+                overlay_copy = list(page.overlay)
+                for item in overlay_copy:
+                    if item == gl:
+                        pass
+                    else:
+                        page.overlay.remove(item)
+                page.overlay.append(map_layer_container)
+            except:
+                pass
         page.update()
 
     def show_filter_container(e):
-        try:
-            page.overlay.pop(1)
-        except:
-            None
-        if not map_filter_container in page.overlay:
-            page.overlay.append(map_filter_container)    
-            map_filter_container.visible = not map_filter_container.visible
-        else:
+        if map_filter_container in page.overlay:
             page.overlay.remove(map_filter_container)
-            map_filter_container.visible = not map_filter_container.visible
+        else:
+            try:
+                overlay_copy = list(page.overlay)
+                for item in overlay_copy:
+                    if item == gl:
+                        pass
+                    else:
+                        page.overlay.remove(item)
+                page.overlay.append(map_filter_container)
+            except:
+                pass
         page.update()
 
     button_map_layer = buttons.create_call_location_button(
@@ -205,28 +303,26 @@ def create_page_home(page, list_profile, list_initial_coordinates):
         bgcolor=ft.Colors.BLUE,
         toolbar_height=80,
         center_title=True,
-        leading=None,
-        title=ft.Row(
-            controls=[
+        actions=[
                 search_text_fild,
-                ft.Container(width=15),  
+                ft.Container(width=20),  
                 menu,
+                ft.Container(width=25),
             ],
-            alignment=ft.MainAxisAlignment.CENTER,  
-            vertical_alignment=ft.CrossAxisAlignment.CENTER,  
-            expand=True,
-        ),
     )
 
+    profile = CurrentProfile()
+    dict_profile = profile.return_current_profile()
 
-    if list_profile[1] == "adm":
+    if dict_profile["permission"] == "adm":
         page.floating_action_button = ft.FloatingActionButton(
                             content=ft.Icon(name=ft.Icons.ADD_LOCATION_ROUNDED, color=ft.Colors.BLUE, scale=2),
                             bgcolor=ft.Colors.WHITE,
                             shape=ft.RoundedRectangleBorder(radius=50),
-                            on_click= lambda e: loading.new_loading_page(page=page,
-                            call_layout=lambda:create_page_add_forms(page, list_profile,
-                            list_initial_coordinates=[list_center_map_coordinates[0], list_center_map_coordinates[1], list_center_map_coordinates[2],list_center_map_coordinates[3], list_center_map_coordinates[4], list_center_map_coordinates[5]])) 
+                            on_click= lambda e: loading.new_loading_overlay_page(page=page,
+                            call_layout=lambda:create_page_add_forms(page,
+                            maps = maps,
+                            )) 
                         )
     
     page.floating_action_button_location = ft.FloatingActionButtonLocation.MINI_CENTER_DOCKED
@@ -259,17 +355,7 @@ def create_page_home(page, list_profile, list_initial_coordinates):
 
 
 
-
-
-def create_page_forms(page, list_profile, list_initial_coordinates, name, local=False):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
+def create_page_forms(page, name, maps, local=False):
 
     loading = LoadingPages(page)
     forms = Forms(page)
@@ -330,13 +416,32 @@ def create_page_forms(page, list_profile, list_initial_coordinates, name, local=
 
     def go_back(e=None):
         if local ==False:
-            loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates))
+            try:
+                overlay_copy = list(page.overlay)
+                for item in overlay_copy:
+                    if item.data == "geolocator":
+                        pass
+                    else:
+                        page.overlay.remove(item)
+                page.update()
+            except:
+                pass
         else:
-            loading.new_loading_page(page=page, call_layout=lambda:create_view_postes_form(page, list_profile, list_initial_coordinates, menu=None))       
+            loading.add_loading_overlay_page(page=page,
+            call_layout=lambda:create_view_postes_form(page, maps),
+            current_container=page.overlay[1])       
 
-    order_layout = lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_invited_page_order(page, list_profile, list_initial_coordinates, name))
-    if list_profile[1] == "adm":
-        order_layout = lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_adm_page_order(page, list_profile, list_initial_coordinates, name))
+    order_layout = lambda e: loading.add_loading_overlay_page(page=page,
+    call_layout=lambda:create_invited_page_order(page, name, maps),
+    current_container=page.overlay[1])
+
+    profile = CurrentProfile()
+    dict_profile = profile.return_current_profile()
+
+    if dict_profile["permission"] == "adm":
+        order_layout = lambda e: loading.add_loading_overlay_page(page=page,
+        call_layout=lambda:create_adm_page_order(page, name, maps),
+        current_container=page.overlay[1])
 
     order_button = buttons.create_button(on_click=order_layout,
                                             text="Ordens",
@@ -351,37 +456,33 @@ def create_page_forms(page, list_profile, list_initial_coordinates, name, local=
                                             padding=5,)
     
     edit_button = ft.Container(height=2)
-    if list_profile[1] == "adm":
-        edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_edit_forms(page, list_profile, list_initial_coordinates, name)),
+    if dict_profile["permission"] == "adm":
+        edit_button = buttons.create_button(on_click=lambda e: loading.add_loading_overlay_page(
+                                                    page=page,
+                                                    call_layout=lambda:create_page_edit_forms(page, name, maps),
+                                                    current_container=page.overlay[1],
+                                                    ),
                                                 text="Editar",
                                                 color=ft.Colors.GREEN,
                                                 col=None,
                                                 padding=5,)    
         
 
-    return ft.ResponsiveRow(
-        columns=12,
-        controls=[
-            form,
-            foto_poste,  
-            order_button,
-            edit_button,
-            back_home_button,
-            ft.Container(height=10),   
-        ],
-        alignment=ft.MainAxisAlignment.CENTER,
-        vertical_alignment=ft.CrossAxisAlignment.CENTER,
-    )
-
-def create_page_os_forms(page, list_profile, list_initial_coordinates, name, order):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
+    return  ft.ResponsiveRow(
+                columns=12,
+                controls=[
+                    form,
+                    foto_poste,  
+                    order_button,
+                    edit_button,
+                    back_home_button,
+                    ft.Container(height=10),   
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+                               
+def create_page_os_forms(page, name, order, maps):
 
     loading = LoadingPages(page)
     forms = Forms(page)
@@ -394,30 +495,35 @@ def create_page_os_forms(page, list_profile, list_initial_coordinates, name, ord
 
     row = data[0]
 
-    data_criacao = row["created_at"]
-    ip = row["ip"]
-    reclamante = row["reclamante"]
-    function = row["function"]
-    celular = row["celular"]
-    order = row["order_id"]
-    origem = row["origem"]
-    obser = row["observacao"]
-    materiais = row["materiais"]
-    ponto = row["ponto"]
-    status = row["status"]
-    data_andamen = row["data_andamento"]
-    data_conclu = row["data_conclusao"]
-    equipe = row["equipe"]
-    
+    list_os_form =[
+        row["created_at"],
+        row["ip"],
+        row["reclamante"],
+        row["function"],
+        row["celular"],
+        row["order_id"],
+        row["origem"],
+        row["observacao"],
+        row["materiais"],
+        row["ponto"],
+        row["status"],
+        row["data_andamento"],
+        row["data_conclusao"],
+        row["equipe"]
+    ]
 
-    os_forms = forms.create_os_forms(data_criacao, ip, reclamante, function, celular, order, origem, obser, materiais, ponto, status, data_andamen, data_conclu, equipe)
+    os_forms = forms.create_os_forms(list_os_form)
 
 
     def go_back(e=None):
         if name == None:
-            loading.new_loading_page(page=page, call_layout=lambda:create_view_orders_form(page, list_profile, list_initial_coordinates, menu=None))
+            loading.add_loading_overlay_page(page=page,
+            call_layout=lambda:create_view_orders_form(page, maps),
+            current_container=page.overlay[1])
         else:
-            loading.new_loading_page(page=page, call_layout=lambda:create_adm_page_order(page, list_profile, list_initial_coordinates, name))
+            loading.add_loading_overlay_page(page=page,
+            call_layout=lambda:create_adm_page_order(page, name, maps),
+            current_container=page.overlay[1])
 
 
     buttons = Buttons(page)
@@ -426,11 +532,14 @@ def create_page_os_forms(page, list_profile, list_initial_coordinates, name, ord
                                             color=ft.Colors.AMBER,
                                             col=12,
                                             padding=5,)
-    edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_edit_os_forms(page, list_profile, list_initial_coordinates, name, order)),
-                                            text="Editar",
-                                            color=ft.Colors.GREEN,
-                                            col=6,
-                                            padding=5,)
+    
+    edit_button = buttons.create_button(on_click=lambda e: loading.add_loading_overlay_page(page=page,
+    call_layout=lambda:create_page_edit_os_forms(page, name, order, maps),
+    current_container=page.overlay[1]),
+    text="Editar",
+    color=ft.Colors.GREEN,
+    col=6,
+    padding=5,)
           
 
     return ft.ResponsiveRow(
@@ -445,15 +554,7 @@ def create_page_os_forms(page, list_profile, list_initial_coordinates, name, ord
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
-def create_page_user_forms(page, list_profile, list_initial_coordinates, user):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
+def create_page_user_forms(page, user):
 
     loading = LoadingPages(page)
     forms = Forms(page)
@@ -475,18 +576,22 @@ def create_page_user_forms(page, list_profile, list_initial_coordinates, user):
     form = forms.create_user_form(list_user_form)
 
 
-    back_home_button = buttons.create_button(on_click= lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_view_users_form(page, list_profile, list_initial_coordinates, menu=None)),
-                                            text="Voltar",
-                                            color=ft.Colors.AMBER,
-                                            col=12,
-                                            padding=5,)
+    back_home_button = buttons.create_button(on_click= lambda e: loading.add_loading_overlay_page(page=page,
+    call_layout=lambda:create_view_users_form(page),
+    current_container=page.overlay[1]),
+    text="Voltar",
+    color=ft.Colors.AMBER,
+    col=12,
+    padding=5,)
     
 
-    edit_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_edit_user_forms(page, list_profile, list_initial_coordinates, user)),
-                                            text="Editar",
-                                            color=ft.Colors.GREEN,
-                                            col=12,
-                                            padding=5,)    
+    edit_button = buttons.create_button(on_click=lambda e: loading.add_loading_overlay_page(page=page,
+    call_layout=lambda:create_page_edit_user_forms(page, user),
+    current_container=page.overlay[1]),
+    text="Editar",
+    color=ft.Colors.GREEN,
+    col=12,
+    padding=5,)    
         
 
     return ft.ResponsiveRow(
@@ -503,20 +608,15 @@ def create_page_user_forms(page, list_profile, list_initial_coordinates, user):
 
 
 
-def create_page_add_forms(page, list_profile, list_initial_coordinates):
+def create_page_add_forms(page, maps):
 
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
-
-    loading = LoadingPages(page)
     forms = Forms(page)
     buttons = Buttons(page)
     sp = SupaBase(page)
+
+    lat = maps.get_lat_center_coordinates()
+    lon = maps.get_long_center_coordinates()
+    coordinates = [lat, lon]
 
     def send_point(object, image):
 
@@ -527,7 +627,7 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
                     )
         page.overlay.append(snack_bar)
         snack_bar.open = True
-        page.update()
+        page.update()  #Necessario
 
         time.sleep(1)
 
@@ -535,7 +635,6 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
             angle = int(image_temp.controls[0].content.rotate.angle * (180 / math.pi) if image_temp.controls[0].content.rotate else 0)
         else:
             angle = None
-
 
         list_forms = [
                 object.controls[0].content.rows[0].cells[1].content.content.value,
@@ -547,18 +646,30 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
         ]
 
 
-        add_point(page, list_profile, list_initial_coordinates, list_forms, image=image, angle=angle)
+        add_point(page, coordinates, list_forms, image=image, angle=angle, maps=maps)
      
     new_number = sp.get_last_form_post()
 
     forms1 = forms.create_add_forms(ip=new_number, situ=None, tipo=None, pontos=None, bairro=".", logra=".")
+
+    def go_back(e=None):
+        try:
+            overlay_copy = list(page.overlay)
+            for item in overlay_copy:
+                if item.data == "geolocator":
+                        pass
+                else:
+                    page.overlay.remove(item)
+            page.update() # Necessario
+        except:
+            pass
 
     add_button = buttons.create_button(on_click=lambda e :send_point(forms1, image_temp.controls[0].content),
                                             text="Adicionar",
                                             color=ft.Colors.GREEN,
                                             col=12,
                                             padding=5,)
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates)),
+    back_home_button = buttons.create_button(on_click=go_back,
                                             text="Voltar",
                                             color=ft.Colors.AMBER,
                                             col=12,
@@ -613,7 +724,7 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
     fp = ft.FilePicker(on_result=on_image_selected)
     if fp in page.overlay:
         page.overlay.remove(fp)
-    page.overlay.append(fp)
+    page.overlay.insert(2, fp)
 
     def open_gallery(e): 
         fp.pick_files(              
@@ -675,15 +786,7 @@ def create_page_add_forms(page, list_profile, list_initial_coordinates):
 
     )
 
-def create_page_add_os_forms(page, list_profile, list_initial_coordinates, name):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
+def create_page_add_os_forms(page, name, maps):
 
     loading = LoadingPages(page)
     forms = Forms(page)
@@ -709,15 +812,20 @@ def create_page_add_os_forms(page, list_profile, list_initial_coordinates, name)
             object.controls[0].content.rows[13].cells[1].content.content.value,
         ]
         
-        add_os(page, list_profile, list_initial_coordinates, list_add_os, name)
+        add_os(page, list_add_os, name)
 
     data_atual = datetime.now()
     data_formatada = data_atual.strftime("%d/%m/%Y")
     id = str(sp.get_os_id())
     new_order = id.zfill(4)
 
+    profile = CurrentProfile()
+    dict_profile = profile.return_current_profile()
 
-    list_os_forms = [data_formatada, name, list_profile[0], list_profile[1], list_profile[2], new_order, None, None, None, None, "Aberto", "Pendente", "Pendente", None]
+    profile = CurrentProfile()
+    dict_profile = profile.return_current_profile()
+
+    list_os_forms = [data_formatada, name, dict_profile["user"], dict_profile["permission"], dict_profile["number"], new_order, None, None, None, None, "Aberto", "Pendente", "Pendente", None]
 
     forms1 = forms.create_add_os_forms(list_os_forms)
 
@@ -727,11 +835,13 @@ def create_page_add_os_forms(page, list_profile, list_initial_coordinates, name)
                                             col=12,
                                             padding=5,)
     
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_adm_page_order(page, list_profile, list_initial_coordinates, name)),
-                                            text="Voltar",
-                                            color=ft.Colors.AMBER,
-                                            col=12,
-                                            padding=5,)
+    back_home_button = buttons.create_button(on_click=lambda e: loading.add_loading_overlay_page(page=page,
+    call_layout=lambda:create_adm_page_order(page, name, maps),
+    current_container=page.overlay[1]),
+    text="Voltar",
+    color=ft.Colors.AMBER,
+    col=12,
+    padding=5,)
     
     return ft.ResponsiveRow(
         columns=12,
@@ -746,16 +856,8 @@ def create_page_add_os_forms(page, list_profile, list_initial_coordinates, name)
 
     )
 
-def create_page_add_user_forms(page, list_profile, list_initial_coordinates):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
-
+def create_page_add_user_forms(page):
+ 
     loading = LoadingPages(page)
     forms = Forms(page)
     buttons = Buttons(page)
@@ -772,7 +874,7 @@ def create_page_add_user_forms(page, list_profile, list_initial_coordinates):
             object.controls[0].content.rows[4].cells[1].content.content.value,
         ]
         
-        add_user(page, list_profile, list_initial_coordinates, list_add_user, id)
+        add_user(page, list_add_user, id)
 
     id = str(sp.get_user_id())
 
@@ -786,11 +888,13 @@ def create_page_add_user_forms(page, list_profile, list_initial_coordinates):
                                             col=12,
                                             padding=15,)
     
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_view_users_form(page, list_profile, list_initial_coordinates, menu=None)),
-                                            text="Voltar",
-                                            color=ft.Colors.AMBER,
-                                            col=12,
-                                            padding=15,)
+    back_home_button = buttons.create_button(on_click=lambda e: loading.add_loading_overlay_page(page=page,
+    call_layout=lambda:create_view_users_form(page),
+    current_container=page.overlay[1]),
+    text="Voltar",
+    color=ft.Colors.AMBER,
+    col=12,
+    padding=15,)
     
     return ft.ResponsiveRow(
         columns=12,
@@ -807,23 +911,24 @@ def create_page_add_user_forms(page, list_profile, list_initial_coordinates):
 
 
 
-def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, local=False):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
-
+def create_page_edit_forms(page, name, maps, local=False):
+  
     forms = Forms(page)
     loading = LoadingPages(page)
     sp = SupaBase(page)
     buttons = Buttons(page)
     texts = CallText(page)
 
-    def send_point(list_profile, object, image, list_initial_coordinates):
+    def send_point(object, image):
+
+        snack_bar = ft.SnackBar(
+        content=ft.Text("Alterando..."),
+        bgcolor=ft.Colors.ORANGE,
+        duration=1000,
+        )
+        page.overlay.append(snack_bar)
+        snack_bar.open = True
+        page.update()
 
         list_forms = [
             object.controls[0].content.rows[0].cells[1].content.content.value,
@@ -834,7 +939,7 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
             object.controls[0].content.rows[5].cells[1].content.content.value,
         ]
 
-        edit_point(page, list_profile, list_initial_coordinates, list_forms, image, row)
+        edit_point(page, list_forms, image, row, maps)
 
     form = sp.get_form_post(name)
     data = form.json()
@@ -844,16 +949,21 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
 
     def go_back(e=None):
         if local ==False:
-            loading.new_loading_page(page=page, call_layout=lambda:create_page_forms(page, list_profile, list_initial_coordinates, name))
+            loading.add_loading_overlay_page(page=page,
+                                            call_layout=lambda:create_page_forms(page, name, maps),
+                                            current_container=page.overlay[1]
+                                            )
         else:
-            loading.new_loading_page(page=page, call_layout=lambda:create_view_postes_form(page, list_profile, list_initial_coordinates, menu=None))
+            loading.add_loading_overlay_page(page=page,
+            call_layout=lambda:create_view_postes_form(page, maps),
+            current_container=page.overlay[1])
 
-    add_button = buttons.create_button(on_click=lambda e :send_point(list_profile, forms1, image_temp.controls[0].content, list_initial_coordinates),
+    add_button = buttons.create_button(on_click=lambda e :send_point(forms1, image_temp.controls[0].content),
                                             text="Salvar",
                                             color=ft.Colors.GREEN,
                                             col=6,
                                             padding=5,)
-    delete_button = buttons.create_button(on_click=lambda e :delete_point(page, list_profile, list_initial_coordinates, name),
+    delete_button = buttons.create_button(on_click=lambda e :delete_point(page, name, maps),
                                             text="Excluir",
                                             color=ft.Colors.RED,
                                             col=6,
@@ -924,7 +1034,7 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
     fp = ft.FilePicker(on_result=on_image_selected)
     if fp in page.overlay:
         page.overlay.remove(fp)
-    page.overlay.append(fp)
+    page.overlay.insert(2, fp)
 
     def open_gallery(e): 
         fp.pick_files(              
@@ -978,22 +1088,14 @@ def create_page_edit_forms(page, list_profile, list_initial_coordinates, name, l
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
-def create_page_edit_os_forms(page, list_profile, list_initial_coordinates, name, order):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
-
+def create_page_edit_os_forms(page, name, order, maps):
+  
     loading = LoadingPages(page)
     forms = Forms(page)
     buttons = Buttons(page)
     sp = SupaBase(page)
 
-    def send_point(list_profile, object, list_initial_coordinates):
+    def send_point(object):
 
         list_edited_os_forms = [
             object.controls[0].content.rows[0].cells[1].content.content.value,
@@ -1012,7 +1114,7 @@ def create_page_edit_os_forms(page, list_profile, list_initial_coordinates, name
             object.controls[0].content.rows[13].cells[1].content.content.value,
         ]
 
-        edit_os(page, list_profile, list_initial_coordinates, list_edited_os_forms, order, name)
+        edit_os(page, list_edited_os_forms, order, name)
      
 
     os = sp.get_os(order)
@@ -1041,21 +1143,23 @@ def create_page_edit_os_forms(page, list_profile, list_initial_coordinates, name
     forms1 = forms.create_add_os_forms(list_os_forms)
 
 
-    add_button = buttons.create_button(on_click=lambda e :send_point(list_profile, forms1, list_initial_coordinates),
+    add_button = buttons.create_button(on_click=lambda e :send_point(forms1),
                                             text="Salvar",
                                             color=ft.Colors.GREEN,
                                             col=12,
                                             padding=5,)
-    delete_button = buttons.create_button(on_click=lambda e :delete_os(page, list_profile, list_initial_coordinates, name, order),
+    delete_button = buttons.create_button(on_click=lambda e :delete_os(page, name, order),
                                             text="Excluir",
                                             color=ft.Colors.RED,
                                             col=12,
                                             padding=5,)
-    back_home_button = buttons.create_button(on_click=lambda e :loading.new_loading_page(page=page, call_layout=lambda:create_page_os_forms(page, list_profile, list_initial_coordinates, name, order)),
-                                            text="Voltar",
-                                            color=ft.Colors.AMBER,
-                                            col=12,
-                                            padding=5,)
+    back_home_button = buttons.create_button(on_click=lambda e :loading.add_loading_overlay_page(page=page,
+    call_layout=lambda:create_page_os_forms(page, name, order, maps),
+    current_container=page.overlay[1]),
+    text="Voltar",
+    color=ft.Colors.AMBER,
+    col=12,
+    padding=5,)
     
 
 
@@ -1072,22 +1176,14 @@ def create_page_edit_os_forms(page, list_profile, list_initial_coordinates, name
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
-def create_page_edit_user_forms(page, list_profile, list_initial_coordinates, user):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
+def create_page_edit_user_forms(page, user):
 
     loading = LoadingPages(page)
     forms = Forms(page)
     buttons = Buttons(page)
     sp = SupaBase(page)
 
-    def send_point(list_profile, list_initial_coordinates, object, previus_user):
+    def send_point(object, previus_user):
 
         list_edited_user_forms = [
             object.controls[0].content.rows[0].cells[1].content.content.value,
@@ -1097,7 +1193,7 @@ def create_page_edit_user_forms(page, list_profile, list_initial_coordinates, us
             object.controls[0].content.rows[4].cells[1].content.content.value,
         ]
 
-        edit_user(page, list_profile, list_initial_coordinates, list_edited_user_forms, previus_user)
+        edit_user(page, list_edited_user_forms, previus_user)
      
 
     user_data = sp.get_form_user(user)
@@ -1117,21 +1213,23 @@ def create_page_edit_user_forms(page, list_profile, list_initial_coordinates, us
     forms1 = forms.create_add_user_forms(list_user_forms)
 
 
-    add_button = buttons.create_button(on_click=lambda e :send_point(list_profile, list_initial_coordinates, forms1, list_user_forms[0]),
+    add_button = buttons.create_button(on_click=lambda e :send_point(forms1, list_user_forms[0]),
                                             text="Salvar",
                                             color=ft.Colors.GREEN,
                                             col=6,
                                             padding=5,)
-    delete_button = buttons.create_button(on_click=lambda e :delete_user(page, list_profile, list_initial_coordinates, user),
+    delete_button = buttons.create_button(on_click=lambda e :delete_user(page, user),
                                             text="Excluir",
                                             color=ft.Colors.RED,
                                             col=6,
                                             padding=5,)
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page,call_layout=lambda:create_page_user_forms(page, list_profile, list_initial_coordinates, user)),
-                                            text="Voltar",
-                                            color=ft.Colors.AMBER,
-                                            col=7,
-                                            padding=5,)
+    back_home_button = buttons.create_button(on_click=lambda e: loading.add_loading_overlay_page(page=page,
+    call_layout=lambda:create_page_user_forms(page, user),
+    current_container=page.overlay[1]),
+    text="Voltar",
+    color=ft.Colors.AMBER,
+    col=7,
+    padding=5,)
     
 
 
@@ -1149,15 +1247,7 @@ def create_page_edit_user_forms(page, list_profile, list_initial_coordinates, us
  
 
 
-def create_invited_page_order(page, list_profile, list_initial_coordinates, name):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
+def create_invited_page_order(page, name, maps):
 
     loading = LoadingPages(page)
     calltexts = CallText(page)
@@ -1209,13 +1299,16 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
                     "Content-Type": "application/json",
                 }
 
+                profile = CurrentProfile()
+                dict_profile = profile.return_current_profile()
+
                 data={
                     "created_at": data_formatada,
                     "ip": name,
                     "numero": numero,
-                    "reclamante": list_profile[0],
+                    "reclamante": dict_profile["user"],
                     "function": "convidado",
-                    "celular": list_profile[2],
+                    "celular": dict_profile["number"],
                     "order_id": new_order,
                     "origem": "Público",
                     "observacao": box.controls[0].data,
@@ -1227,12 +1320,14 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
                     "equipe": ".",
                 }
 
+                profile = CurrentProfile()
+                current_profile = profile.return_current_profile()
+
                 response = requests.post(
-                    f"{url}/rest/v1/order_post_capela",
+                    f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
                     headers=headers,
                     json=data,
                 )
-
 
                 if response.status_code == 201:
                     snack_bar = ft.SnackBar(
@@ -1240,7 +1335,16 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
                         bgcolor=ft.Colors.GREEN,
                         duration=2500,
                     )
-                    loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates))
+                    try:
+                        overlay_copy = list(page.overlay)
+                        for item in overlay_copy:
+                            if item.data == "geolocator":
+                                pass
+                            else:
+                                page.overlay.remove(item)
+                        page.update()
+                    except:
+                        pass
                 else:
                     print(f"Resposta do erro: {response.text}")
                     snack_bar = ft.SnackBar(
@@ -1276,11 +1380,13 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
                                         color=ft.Colors.GREEN,
                                         col=6,
                                         padding=15,)
-    back_forms_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_forms(page, list_profile, list_initial_coordinates, name)),
-                                              text="Voltar",
-                                              color=ft.Colors.AMBER,
-                                              col=6,
-                                              padding=15,)
+    back_forms_button = buttons.create_button(on_click=lambda e: loading.add_loading_overlay_page(page=page,
+    call_layout=lambda:create_page_forms(page, name, maps),
+    current_container=page.overlay[1]),
+    text="Voltar",
+    color=ft.Colors.AMBER,
+    col=6,
+    padding=15,)
 
 
     container1 = ft.Container(padding=10)
@@ -1299,15 +1405,7 @@ def create_invited_page_order(page, list_profile, list_initial_coordinates, name
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
-def create_adm_page_order(page, list_profile, list_initial_coordinates, name):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
+def create_adm_page_order(page, name, maps):
 
     loading = LoadingPages(page)
     buttons = Buttons(page)
@@ -1336,9 +1434,11 @@ def create_adm_page_order(page, list_profile, list_initial_coordinates, name):
         "order": "order_id.desc"
     }
 
-    # Requisição à API
+    profile = CurrentProfile()
+    current_profile = profile.return_current_profile()
+
     response = requests.get(
-        f"{url}/rest/v1/order_post_capela",
+        f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
         headers=headers,
         params=params,
     )
@@ -1352,9 +1452,10 @@ def create_adm_page_order(page, list_profile, list_initial_coordinates, name):
             function = row["function"]
 
             def forms(order):
-                return lambda e: loading.new_loading_page(
+                return lambda e: loading.add_loading_overlay_page(
                     page=page,
-                    call_layout=lambda:create_page_os_forms(page, list_profile, list_initial_coordinates, name, order)
+                    call_layout=lambda:create_page_os_forms(page, name, order, maps),
+                    current_container=page.overlay[1]
                 )
          
 
@@ -1408,17 +1509,22 @@ def create_adm_page_order(page, list_profile, list_initial_coordinates, name):
         expand=True, 
         )
 
-    send_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_add_os_forms(page, list_profile, list_initial_coordinates, name)),
-                                        text="Adicionar",
-                                        color=ft.Colors.GREEN,
-                                        col=6,
-                                        padding=15,)
-    back_forms_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_forms(page, list_profile, list_initial_coordinates, name)),
-                                              text="Voltar",
-                                              color=ft.Colors.AMBER,
-                                              col=6,
-                                              padding=15,
-                                              )
+    send_button = buttons.create_button(on_click=lambda e: loading.add_loading_overlay_page(page=page,
+    call_layout=lambda:create_page_add_os_forms(page, name, maps),
+    current_container=page.overlay[1]),
+    text="Adicionar",
+    color=ft.Colors.GREEN,
+    col=6,
+    padding=15,)
+    
+    back_forms_button = buttons.create_button(on_click=lambda e: loading.add_loading_overlay_page(page=page,
+    call_layout=lambda:create_page_forms(page, name, maps),
+    current_container=page.overlay[1]),
+    text="Voltar",
+    color=ft.Colors.AMBER,
+    col=6,
+    padding=15,
+    )
 
     container1 = ft.Container(padding=10)
 
@@ -1438,16 +1544,88 @@ def create_adm_page_order(page, list_profile, list_initial_coordinates, name):
     )
 
 
+def create_page_cities(page):
+
+    sp = SupaBase(page)
+    loading = LoadingPages(page)
+
+    web_images = Web_Image(page)
+    url_imagem1 = web_images.get_image_url(name="titulo_geopostes")
+    login_title = web_images.create_web_image(src=url_imagem1)
+    login_title.height = 120 
+    url_imagem2 = web_images.get_image_url(name="globo")
+    globo_img = web_images.create_web_image(src=url_imagem2)
+    globo_img.height = 250
+
+    response = sp.get_cities()
+    data = response.json()
+    list_cities = []
+
+    profile = CurrentProfile()
+
+    for row in data:
+        name = row["name"]
+        call_name = row["call_name"]
+        lat = row["lat"]
+        lon = row["lon"]
+        acronym = row["acronym"]
+
+        def add_city(name, call_name, lat, lon, acronym):
+            def callback(e):
+                anchor.controls[0].close_view()
+                page.update()
+                time.sleep(0.5)
+                profile.add_city_name(name)
+                profile.add_city_call_name(call_name)
+                profile.add_city_lat(lat)
+                profile.add_city_lon(lon)
+                profile.add_city_acronym(acronym)
+                loading.new_loading_page(page=page, call_layout=lambda: create_page_login(page))
+            return callback
+
+
+        list_tile = ft.ListTile(title=ft.Text(name), on_click=add_city(name=name, call_name=call_name, lat=lat, lon=lon, acronym=acronym))
+
+        list_cities.append(list_tile)
+
+    def handle_tap(e):
+        anchor.controls[0].open_view()
+
+    anchor = ft.Column(
+        [
+            ft.SearchBar(
+                view_elevation=4,
+                divider_color=ft.Colors.AMBER,
+                bar_hint_text="Escolha uma cidade",
+                on_tap=handle_tap,
+                controls=list_cities,
+                width=300,
+                bar_bgcolor=ft.Colors.BLUE_700,
+                bar_text_style=ft.TextStyle(color=ft.Colors.WHITE)
+            ) 
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        width=300,  
+    )
+
+    container1 = ft.Container(padding=10)
+
+    return ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            container1,
+            login_title,
+            container1,
+            globo_img,
+            container1,
+            anchor            
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
 
 def create_page_login(page):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
 
     web_images = Web_Image(page)
     url_imagem1 = web_images.get_image_url(name="titulo_geopostes")
@@ -1461,10 +1639,6 @@ def create_page_login(page):
     login_facens.height = 70
 
     checkboxes = CheckBox(page)
-    def visible_password(e):
-        password_field.password = not password_field.password
-        page.update()
-    
 
     textfields = TextField(page)
     username_field = textfields.create_textfield2(value=None, text="Usuário ou E-mail", password=False)
@@ -1473,16 +1647,27 @@ def create_page_login(page):
     loading = LoadingPages(page)
 
     buttons = Buttons(page)
+
     btn_login = buttons.create_button(on_click=lambda e: verificar(username_field.controls[0].value, password_field.controls[0].value, page),
                                       text="Entrar",
-                                      color=ft.Colors.BLUE_700,
+                                      color=ft.Colors.GREEN,
                                       col=7,
-                                      padding=10,)
+                                      padding=5,)
     btn_register = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_register(page)),
                                          text="Cadastrar",
+                                         color=ft.Colors.BLUE_700,
+                                         col=7,
+                                         padding=5,)
+    btn_back = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_cities(page)),
+                                         text="Voltar",
                                          color=ft.Colors.AMBER,
                                          col=7,
-                                         padding=10,)
+                                         padding=5,)
+
+    calltexts = CallText(page)
+    profile = CurrentProfile()
+    current_profile = profile.return_current_profile()
+    text1 = calltexts.create_container_calltext2(text=current_profile["city_name"])
 
     container1 = ft.Container(padding=10)
     container2 = ft.Container(padding=5)
@@ -1493,12 +1678,15 @@ def create_page_login(page):
         controls=[
             container1,
             login_title,
-            container1,  
+            container2,
+            text1,
+            container2,  
             username_field,  
             password_field,
             container2,
             btn_login,
-            btn_register, 
+            btn_register,
+            btn_back, 
             container2,             
         ],
         alignment=ft.MainAxisAlignment.CENTER,
@@ -1506,14 +1694,6 @@ def create_page_login(page):
     )
 
 def create_page_register(page):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
 
     web_images = Web_Image(page)
     url_imagem1 = web_images.get_image_url(name="titulo_geopostes")
@@ -1529,14 +1709,12 @@ def create_page_register(page):
     password_field1 = textfields.create_textfield2(value=None, text="Senha", password=True)
     password_field2 = textfields.create_textfield2(value=None, text="Confirmar senha", password=False)
 
-    container1 = ft.Container(
-      padding=5
-    )
-
+    container1 = ft.Container(padding=5)
+    container2 = ft.Container(padding=5)
     loading = LoadingPages(page)
-
     buttons = Buttons(page)
-    btn_register = buttons.create_button(on_click=lambda e: register(username_field.value.strip(), email_field.value.strip(), number_field.value.strip(), password_field1.value.strip(), password_field2.value.strip(), page),
+
+    btn_register = buttons.create_button(on_click=lambda e: register(username_field.controls[0].value.strip(), email_field.controls[0].value.strip(), number_field.controls[0].value.strip(), password_field1.controls[0].value.strip(), password_field2.controls[0].value.strip(), page),
                                          text="Registrar",
                                          color=ft.Colors.BLUE_700,
                                          col=7,
@@ -1547,12 +1725,19 @@ def create_page_register(page):
                                      col=7,
                                      padding=10)
 
+    calltexts = CallText(page)
+    profile = CurrentProfile()
+    current_profile = profile.return_current_profile()
+    text1 = calltexts.create_container_calltext2(text=current_profile["city_name"])
+
     return ft.ResponsiveRow(
         columns=12,
         controls=[
             container1,
-            register_title, 
-            container1, 
+            register_title,
+            container2,
+            text1,
+            container2, 
             username_field, 
             email_field,
             number_field, 
@@ -1568,16 +1753,8 @@ def create_page_register(page):
 
 
 
-def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
-
+def create_view_postes_form(page, maps):
+ 
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1() 
     buttons = Buttons(page)
@@ -1585,13 +1762,14 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
     sp = SupaBase(page)
     chk = CheckBox(page)
 
-    dicio_filter = {
-        "name_filter" : "like.*",
-        "type_filter" : "like.*"
-    }
-    dicio = {}
-
     count_itens = 0
+
+    current_points = CurrentMapPoints()
+    map_points = current_points.return_current_points()
+    for item in map_points:
+        count_itens = int(count_itens) + 1
+
+    dicio = {}
 
     text_count_itens = ft.Text(value=f"Resultado: {count_itens}",
                                color=ft.Colors.BLACK,
@@ -1600,58 +1778,60 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                                weight=ft.FontWeight.W_900,
                                )
 
-    def changesearch(e, filter, dicio, forms1, count_itens, text_count_itens):
+    list_filter = ["Lâmpada LED", "Lâmpada de vapor de sódio", "."]
 
-
-        try:
-            if e.control.value.strip() == "":
-                dicio_filter["name_filter"] = "like.*"  
-            else:
-                dicio_filter["name_filter"] = f"ilike.%{e.control.value.strip().lower()}%"
-        except:
-            dicio_filter["name_filter"] = "like.*"
-
-   
-        params["name"] = dicio_filter["name_filter"]
-        params["type"] = dicio_filter["type_filter"]
-
-        # Faz uma nova requisição com o filtro atualizado
-        response = requests.get(
-            f"{url}/rest/v1/form_post_capela",
-            headers=headers,
-            params=params,
-        )
-
-        if response.status_code == 200:
-
-            data = response.json()
+    def changesearch(e, new_filter, dicio, forms1, count_itens, text_count_itens):
 
             count_itens = 0
-            # Reconstrói as linhas da tabela
+            new_list1 = []
+            new_list2 = []
+
+            if e != None:
+                if e.control.value.strip() == "":
+                    new_list1 = map_points 
+                    count_itens = len(map_points) 
+                else:
+                    for item in list(map_points):
+                        if e.control.value.strip().lower() in item.data[0]:
+                            count_itens = int(count_itens) + 1
+                            new_list1.append(item)
+            else:
+                new_list1 = map_points
+
+            if e == None:
+                for item in list(new_list1):
+                    if item.data[1] in new_filter:
+                        count_itens = int(count_itens) + 1
+                        new_list2.append(item)
+            else:
+                new_list2 = new_list1
+
+
             dicio.clear()
-            for row in data:
 
-                count_itens = int(count_itens) + 1
-                text_count_itens.value = f"Resultado: {count_itens}"
-                page.update()
+            text_count_itens.value = f"Resultado: {count_itens}"
 
-                name = row["name"]
+            for item in new_list2[:100]:
+
+                name = item.data[0]
                 number = (str(name.split('-')[1])).zfill(4)
 
                 def forms(name=name):
-                    return lambda e: loading.new_loading_page(
+                    return lambda e: loading.add_loading_overlay_page(
                         page=page,
-                        call_layout=lambda:create_page_forms(page, list_profile, list_initial_coordinates, name, local=True)
+                        call_layout=lambda:create_page_forms(page, name, maps, local=True),
+                        current_container=page.overlay[1]
                     )
 
                 def edit(name=name):
-                    return lambda e: loading.new_loading_page(
+                    return lambda e: loading.add_loading_overlay_page(
                         page=page,
-                        call_layout=lambda:create_page_edit_forms(page, list_profile, list_initial_coordinates, name, local=True)
+                        call_layout=lambda:create_page_edit_forms(page, name, maps=maps, local=True),
+                        current_container=page.overlay[1]
                     )
 
                 def delete(name=name):
-                    return lambda e: delete_point(page, list_profile, list_initial_coordinates, name)
+                    return lambda e: delete_point(page, name, maps=maps)
 
                 linha = ft.DataRow(cells=[
                     ft.DataCell(ft.Text(value=number, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
@@ -1692,62 +1872,32 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
             # Atualiza as linhas no DataTable
             forms1.controls[0].content.rows = list(dicio.values())
             page.update()
-        else:
-            print(f"Erro ao buscar dados: {response.text}")
+        
 
+    for item in map_points[:100]:
 
-    if menu:
-        page.close(menu)
-
-    url = sp.get_url()
-    key = sp.get_key()
-
-    headers = {
-        "apikey": key,
-        "Authorization": f"Bearer {key}",
-        "Content-Type": "application/json",
-    }
-
-
-    params = {
-        "select": "name, situation, type",
-        "name": dicio_filter["name_filter"],
-        "type": dicio_filter["type_filter"],
-        "order": "name.asc",
-    }
-
-    response = requests.get(
-        f"{url}/rest/v1/form_post_capela",
-        headers=headers,
-        params=params,
-    )
-    
-    data = response.json()
-
-    for row in data:
-
-            count_itens = int(count_itens) + 1
             text_count_itens.value = f"Resultado: {count_itens}"
-            page.update()
 
-            name = row["name"]
+            name = item.data[0]
 
             number = (str(name.split('-')[1])).zfill(4)
            
             def forms(name=name):
-                return lambda e: loading.new_loading_page(
+                return lambda e: loading.add_loading_overlay_page(
                     page=page,
-                    call_layout=lambda:create_page_forms(page, list_profile, list_initial_coordinates, name, local=True)
+                    call_layout=lambda:create_page_forms(page, name, maps, local=True),
+                    current_container=page.overlay[1]
                 )
 
             def edit(name=name):
-                return lambda e: loading.new_loading_page(
+                return lambda e: loading.add_loading_overlay_page(
                     page=page,
-                    call_layout=lambda:create_page_edit_forms(page, list_profile, list_initial_coordinates, name, local=True)
+                    call_layout=lambda:create_page_edit_forms(page, name, maps=maps, local=True),
+                    current_container=page.overlay[1]
                 )
 
             def delete(name=name):
-                return lambda e :delete_point(page, list_profile, list_initial_coordinates, name)
+                return lambda e :delete_point(page, name, maps=maps)
 
             linha = ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value=number, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
@@ -1823,7 +1973,10 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
         filter_container.controls[0].visible = not filter_container.controls[0].visible
         page.update()
 
-    def get_permission_filter(e):
+    def get_permission_filter(e, list_filter):
+
+        list_filter.clear()
+
         led_type = filter_container.controls[0].content.controls[0].controls[0].value
         led_type_data = filter_container.controls[0].content.controls[0].controls[0].data
         sodium_type = filter_container.controls[0].content.controls[1].controls[0].value
@@ -1831,22 +1984,14 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
         null_type = filter_container.controls[0].content.controls[2].controls[0].value
         null_type_data = filter_container.controls[0].content.controls[2].controls[0].data
         if led_type:
-            dicio_filter["type_filter"] = f"eq.{led_type_data}"
+           list_filter.append(led_type_data)
         if sodium_type:
-            dicio_filter["type_filter"] = f"eq.{sodium_type_data}"
-        if led_type and sodium_type:
-            dicio_filter["type_filter"] = f"neq.{null_type_data}"
+            list_filter.append(sodium_type_data)
         if null_type:
-            dicio_filter["type_filter"] = f"eq.{null_type_data}"
-        if null_type and led_type:
-            dicio_filter["type_filter"] = f"neq.{sodium_type_data}"
-        if null_type and sodium_type:
-            dicio_filter["type_filter"] = f"neq.{led_type_data}"
-        if led_type and sodium_type and null_type:
-            dicio_filter["type_filter"] = f"like.*"
+            list_filter.append(null_type_data)
         filter_container.controls[0].visible = not filter_container.controls[0].visible
         page.update()
-        changesearch(e, dicio_filter, dicio, forms1, count_itens, text_count_itens),
+        changesearch(e=None, new_filter=list_filter, dicio=dicio, forms1=forms1, count_itens=count_itens, text_count_itens=text_count_itens),
 
 
 
@@ -1864,7 +2009,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                                 chk.create_checkbox2("Lâmpada LED", 15, None, 8,"Lâmpada LED", True),
                                 chk.create_checkbox2("Lâmpada de vapor de sódio", 15, None, 8,"Lâmpada de vapor de sódio", True),
                                 chk.create_checkbox2("Sem iluminação", 15, None, 8,".", True),
-                                buttons.create_button(on_click=lambda e: get_permission_filter(e),
+                                buttons.create_button(on_click=lambda e: get_permission_filter(e, list_filter),
                                                             text="Aplicar",
                                                             color=ft.Colors.AMBER,
                                                             col=12,
@@ -1876,15 +2021,15 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                             alignment=ft.MainAxisAlignment.CENTER,
                             )
 
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates)),
-                                            text="Voltar",
-                                            color=ft.Colors.AMBER,
-                                            col=12,
-                                            padding=5,)
+    back_home_button = buttons.create_button(on_click=lambda e: loading.back_home(page=page),
+    text="Voltar",
+    color=ft.Colors.AMBER,
+    col=12,
+    padding=5,)
 
     searchfild = ft.TextField(label="Pesquisar",  # caixa de texto
                                 col=8,
-                                on_change=lambda e: changesearch(e, filter, dicio, forms1, count_itens, text_count_itens),
+                                on_change=lambda e: changesearch(e, list_filter, dicio, forms1, count_itens, text_count_itens),
                                 label_style= ft.TextStyle(color=ft.Colors.BLACK),
                                 text_style= ft.TextStyle(color=ft.Colors.BLACK),
                                 text_align=ft.TextAlign.CENTER,
@@ -1903,12 +2048,9 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
                                                 icon_color=ft.Colors.WHITE,
                                                 )
 
-    
-
     return ft.ResponsiveRow(
         columns=12,
         controls=[
-            ft.Container(height=50),
             searchfild,
             filter_button,
             filter_container,
@@ -1921,15 +2063,7 @@ def create_view_postes_form(page, list_profile, list_initial_coordinates, menu):
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
-def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
+def create_view_orders_form(page, maps):
 
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1() 
@@ -1963,13 +2097,14 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
         except:
             dicio_filter["order_filter"] = "like.*"
 
-        # Atualiza o filtro nos parâmetros
         params["order_id"] = dicio_filter["order_filter"]
         params["function"] = dicio_filter["permission_filter"]
 
-        # Faz uma nova requisição com o filtro atualizado
+        profile = CurrentProfile()
+        current_profile = profile.return_current_profile()
+
         response = requests.get(
-            f"{url}/rest/v1/order_post_capela",
+            f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
             headers=headers,
             params=params,
         )
@@ -1986,16 +2121,16 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
 
                 count_itens = int(count_itens) + 1
                 text_count_itens.value = f"Resultado: {count_itens}"
-                page.update()
 
                 data = row["created_at"]
                 order = row["order_id"]
                 function = row["function"]
 
                 def forms(order):
-                    return lambda e: loading.new_loading_page(
+                    return lambda e: loading.add_loading_overlay_page(
                         page=page,
-                        call_layout=lambda:create_page_os_forms(page, list_profile, list_initial_coordinates, name=None, order=order)
+                        call_layout=lambda:create_page_os_forms(page, name=None, order=order, maps=maps),
+                        current_container=page.overlay[1]
                     )
 
                 linha = ft.DataRow(cells=[
@@ -2025,10 +2160,6 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
 
 
 
-
-    if menu != None:
-        page.close(menu)
-
     url = sp.get_url()
     key = sp.get_key()
 
@@ -2046,9 +2177,11 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
         "order": "order_id.desc",
     }
 
-    # Requisição à API
+    profile = CurrentProfile()
+    current_profile = profile.return_current_profile()
+
     response = requests.get(
-        f"{url}/rest/v1/order_post_capela",
+        f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
         headers=headers,
         params=params,
     )
@@ -2059,7 +2192,6 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
             
             count_itens = int(count_itens) + 1
             text_count_itens.value = f"Resultado: {count_itens}"
-            page.update()
 
             data = row["created_at"]
             order = row["order_id"]
@@ -2067,9 +2199,10 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
 
             def forms(order):
 
-                return lambda e: loading.new_loading_page(
+                return lambda e: loading.add_loading_overlay_page(
                     page=page,
-                    call_layout=lambda:create_page_os_forms(page, list_profile, list_initial_coordinates, name=None, order=order)
+                    call_layout=lambda:create_page_os_forms(page, name=None, order=order, maps=maps),
+                    current_container=page.overlay[1]
                 )
          
 
@@ -2169,11 +2302,11 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
                             alignment=ft.MainAxisAlignment.CENTER,
                             )
     
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates)),
-                                            text="Voltar",
-                                            color=ft.Colors.AMBER,
-                                            col=12,
-                                            padding=5,)
+    back_home_button = buttons.create_button(on_click=lambda e: loading.back_home(page=page),
+    text="Voltar",
+    color=ft.Colors.AMBER,
+    col=12,
+    padding=5,)
     
     searchfild = ft.TextField(label="Procurar",  # caixa de texto
                                 col=8,
@@ -2199,7 +2332,6 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
     return ft.ResponsiveRow(
         columns=12,
         controls=[
-            ft.Container(height=50),
             searchfild,
             filter_button,
             filter_container,
@@ -2211,16 +2343,8 @@ def create_view_orders_form(page, list_profile, list_initial_coordinates, menu):
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
-def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
-
-    page.go("/")
-    page.floating_action_button = None
-    page.bottom_appbar = None
-    page.appbar = None
-    page.clean()
-    page.controls.clear()
-    page.overlay.clear()
-
+def create_view_users_form(page):
+ 
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1() 
     buttons = Buttons(page)
@@ -2257,9 +2381,12 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
         params["usuario"] = dicio_filter["user_filter"]
         params["permission"] = dicio_filter["permission_filter"]
 
+        profile = CurrentProfile()
+        current_profile = profile.return_current_profile()
+
         # Faz uma nova requisição com o filtro atualizado
         response = requests.get(
-            f"{url}/rest/v1/login_geopostes",
+            f"{url}/rest/v1/users_{current_profile["city_call_name"]}",
             headers=headers,
             params=params,
         )
@@ -2275,7 +2402,6 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
 
                 count_itens = int(count_itens) + 1
                 text_count_itens.value = f"Resultado: {count_itens}"
-                page.update()
 
                 user_id = row["user_id"]
                 user_name = row["usuario"]
@@ -2283,9 +2409,10 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
 
                 def forms(user_name):
 
-                    return lambda e: loading.new_loading_page(
+                    return lambda e: loading.add_loading_overlay_page(
                         page=page,
-                        call_layout=lambda:create_page_user_forms(page, list_profile, list_initial_coordinates, user=user_name)
+                        call_layout=lambda:create_page_user_forms(page, user=user_name),
+                        current_container=page.overlay[1]
                     )
             
 
@@ -2313,9 +2440,6 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
         else:
             print(f"Erro ao buscar dados: {response.text}")
 
-    if menu != None:
-        page.close(menu)
-
     url = sp.get_url()
     key = sp.get_key()
 
@@ -2333,9 +2457,12 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
         "order": "user_id.desc",
     }
 
+    profile = CurrentProfile()
+    current_profile = profile.return_current_profile()
+
     # Requisição à API
     response = requests.get(
-        f"{url}/rest/v1/login_geopostes",
+        f"{url}/rest/v1/users_{current_profile["city_call_name"]}",
         headers=headers,
         params=params,
     )
@@ -2346,7 +2473,6 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
             
             count_itens = int(count_itens) + 1
             text_count_itens.value = f"Resultado: {count_itens}"
-            page.update()
 
             user_id = row["user_id"]
             user_name = row["usuario"]
@@ -2354,9 +2480,10 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
 
             def forms(user_name):
 
-                return lambda e: loading.new_loading_page(
+                return lambda e: loading.add_loading_overlay_page(
                     page=page,
-                    call_layout=lambda:create_page_user_forms(page, list_profile, list_initial_coordinates, user=user_name)
+                    call_layout=lambda:create_page_user_forms(page, user=user_name),
+                    current_container=page.overlay[1]
                 )
          
 
@@ -2455,11 +2582,11 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
                             )
 
 
-    back_home_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates)),
-                                            text="Voltar",
-                                            color=ft.Colors.AMBER,
-                                            col=12,
-                                            padding=5,)
+    back_home_button = buttons.create_button(on_click=lambda e: loading.back_home(page=page),
+    text="Voltar",
+    color=ft.Colors.AMBER,
+    col=12,
+    padding=5,)
     
     searchfild = ft.TextField(label="Procurar",  # caixa de texto
                                 col=8,
@@ -2482,16 +2609,18 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
                                                 icon_color=ft.Colors.WHITE,
                                                 )
 
-    add_button = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_add_user_forms(page, list_profile, list_initial_coordinates)),
-                                                text="Adicionar",
-                                                color=ft.Colors.GREEN,
-                                                col=6,
-                                                padding=5,)
+    add_button = buttons.create_button(on_click=lambda e: loading.add_loading_overlay_page(page=page,
+    call_layout=lambda:create_page_add_user_forms(page),
+    current_container=page.overlay[1]),
+    text="Adicionar",
+    color=ft.Colors.GREEN,
+    col=6,
+    padding=5,)
+
 
     return ft.ResponsiveRow(
         columns=12,
         controls=[
-            ft.Container(height=50),
             searchfild,
             filter_button,
             filter_container,
@@ -2504,10 +2633,6 @@ def create_view_users_form(page, list_profile, list_initial_coordinates, menu):
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
-
-
-
-
 
 
 
@@ -2525,18 +2650,19 @@ def verificar(username, password, page):
         name = row["usuario"]
         permission = row["permission"]
         number = row["numero"]
-            
+
+        profile = CurrentProfile()
+        profile.add_user(name)
+        profile.add_permission(permission)
+        profile.add_number(number)
+
         snack_bar = ft.SnackBar(
         content=ft.Text("Login realizado"),
         bgcolor=ft.Colors.GREEN,
         duration= 1000,
         )
-        map_layer = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        map_filter = ["Lâmpada LED", "Lâmpada de vapor de sódio", "." ]
-        zoom = 18.4
-        list_initial_coordinates = ["-23.3396", "-47.8238", map_layer, None, map_filter, zoom]
-        list_profile = [name, permission, number]
-        loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates), text="Gerando Mapa")
+
+        loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page), text="Gerando Mapa", route="/home")
         
     else:
         # Exibe mensagem de erro se as credenciais não forem encontradas
@@ -2597,12 +2723,12 @@ def register(username, email, number, password1, password2, page):
 
 
 
-def add_point(page, list_profile, list_initial_coordinates, list_forms, image, angle):
+def add_point(page, coordinates, list_forms, image, angle, maps):
 
     sp = SupaBase(page)
     loading = LoadingPages(page)
+    buttons = Buttons(page)
 
-    # Verificar se todos os campos estão preenchidos
     if any(field == "" or field is None for field in list_forms):
         snack_bar = ft.SnackBar(
             content=ft.Text("Alguns campos não foram preenchidos"),
@@ -2610,20 +2736,88 @@ def add_point(page, list_profile, list_initial_coordinates, list_forms, image, a
         )
         page.overlay.append(snack_bar)
         snack_bar.open = True
-        page.update()
-        return  # Interrompe a execução da função
+        page.update() # Necessario
+        return  
     
-    response = sp.add_point(list_profile, list_forms, list_initial_coordinates, image, angle)
+    response = sp.add_point(list_forms, coordinates, image, angle)
 
     # Verificar se a inserção foi bem-sucedida
     if response.status_code == 201:
 
+        profile = CurrentProfile()
+        current_profile = profile.return_current_profile()
+
+        new_number = list_forms[0].zfill(4)
+        ip = f"IP {current_profile["city_acronym"]}-{new_number}"
+        point_data = sp.get_one_point_post(ip)
+        data = point_data.json()
+        row = data[0]
+        color_mapping = {
+            "yellow": ft.Colors.AMBER,
+            "white": ft.Colors.PINK_200,
+            "blue": ft.Colors.BLUE
+        }
+
+        name = row["name"]
+        x = row["x"]
+        y = row["y"]
+        data_color = row["color"]
+        type_point = row["type"]
+
+        point_color = color_mapping.get(data_color, ft.Colors.GREY)
+
+        loading = LoadingPages(page)
+    
+        def create_on_click(name=name, lat=x, long=y):  
+            return lambda e: loading.new_loading_overlay_page(
+                page=page,
+                call_layout=lambda: create_page_forms(
+                    page, name, maps,
+                )
+            )
+
+        number = int(name.split('-')[1])
+
+        point_button = buttons.create_point_button(
+        on_click=create_on_click(),  
+        text=str(number),
+        color=point_color,
+        size=15,
+        visible=True,
+        )
+           
+        point_marker = buttons.create_point_marker(
+            content=point_button,
+            x=x,
+            y=y,
+            data=[name, type_point, x, y]
+        )
+
+        current_map_points = CurrentMapPoints()
+        current_map_points.add_point(point_marker)
+        maps.add_marker(point_marker)
+
+        def move_and_reset(lat, long):
+            maps.move_map(lat, long, 18.4)
+            maps.reset_home_text_field()
+
+        item = ft.ListTile(
+                    title=ft.Text(value=name, color=ft.Colors.WHITE),
+                    on_click=lambda e, lat=x, long=y: move_and_reset(lat, long),
+                    bgcolor=ft.Colors.BLUE,
+                    data=name,
+                )
+        
+        acess_search = Search(page=page, maps=maps, name_points=None)
+        acess_search.add_item(item)
+      
         snack_bar = ft.SnackBar(
             content=ft.Text("Ponto adicionado com sucesso"),
             bgcolor=ft.Colors.GREEN,
             duration=3000,
         )
-        loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates))
+
+        loading.back_home(page=page)
 
     elif  response.status_code == 199:
         return  
@@ -2639,7 +2833,7 @@ def add_point(page, list_profile, list_initial_coordinates, list_forms, image, a
     snack_bar.open = True
     page.update()
 
-def add_os(page, list_profile, list_initial_coordinates, list_add_os, name):
+def add_os(page, list_add_os, name):
 
     sp = SupaBase(page)
     loading = LoadingPages(page)
@@ -2664,7 +2858,8 @@ def add_os(page, list_profile, list_initial_coordinates, list_add_os, name):
             duration=2500,
         )
 
-        loading.new_loading_page(page=page, call_layout=lambda:create_adm_page_order(page, list_profile, list_initial_coordinates, name))
+        loading.add_loading_overlay_page(page=page, call_layout=lambda:create_adm_page_order(page, name),
+        current_container=page.overlay[1])
       
     else:
         print(f"Erro ao adicionar ordem: {response.status_code}")
@@ -2679,7 +2874,7 @@ def add_os(page, list_profile, list_initial_coordinates, list_add_os, name):
     snack_bar.open = True
     page.update()
 
-def add_user(page, list_profile, list_initial_coordinates, list_add_user, id):
+def add_user(page, list_add_user, id):
 
     sp = SupaBase(page)
     loading = LoadingPages(page)
@@ -2704,7 +2899,9 @@ def add_user(page, list_profile, list_initial_coordinates, list_add_user, id):
             duration=2500,
         )
 
-        loading.new_loading_page(page=page, call_layout=lambda:create_view_users_form(page, list_profile, list_initial_coordinates, menu=None))
+        loading.add_loading_overlay_page(page=page,
+        call_layout=lambda:create_view_users_form(page),
+        current_container=page.overlay[1])
       
     else:
         print(f"Erro ao adicionar usuário: {response.status_code}")
@@ -2721,20 +2918,12 @@ def add_user(page, list_profile, list_initial_coordinates, list_add_user, id):
 
 
 
-def edit_point(page, list_profile, list_initial_coordinates, list_forms, image, previous_data):
+def edit_point(page, list_edited_forms, image, previous_data, maps):
 
     sp = SupaBase(page)
+    buttons = Buttons(page)
 
-    snack_bar = ft.SnackBar(
-        content=ft.Text("Alterando..."),
-        bgcolor=ft.Colors.ORANGE,
-        duration=1000,
-    )
-    page.overlay.append(snack_bar)
-    snack_bar.open = True
-    page.update()
-
-    if any(field == "" or field is None for field in list_forms):
+    if any(field == "" or field is None for field in list_edited_forms):
         snack_bar = ft.SnackBar(
             content=ft.Text("Alguns campos não foram preenchidos"),
             bgcolor=ft.Colors.RED
@@ -2744,16 +2933,72 @@ def edit_point(page, list_profile, list_initial_coordinates, list_forms, image, 
         page.update()
         return  # Interrompe a execução da função
 
-    response = sp.edit_point(image, list_forms, previous_data)
+    response = sp.edit_point(image, list_edited_forms, previous_data)
     
     if response.status_code in [200, 204]:  # 204 indica sucesso sem conteúdo
+
+        profile = CurrentProfile()
+        current_profile = profile.return_current_profile()
+
+        new_number = (str(list_edited_forms[0])).zfill(4)
+        ip = f"IP {current_profile["city_acronym"]}-{new_number}"
+        point_data = sp.get_one_point_post(ip)
+        data = point_data.json()
+        row = data[0]
+        color_mapping = {
+            "yellow": ft.Colors.AMBER,
+            "white": ft.Colors.PINK_200,
+            "blue": ft.Colors.BLUE
+        }
+
+        name = row["name"]
+        x = row["x"]
+        y = row["y"]
+        data_color = row["color"]
+        type_point = row["type"]
+
+        point_color = color_mapping.get(data_color, ft.Colors.GREY)
+
+        loading = LoadingPages(page)
+    
+        def create_on_click(name=name, lat=x, long=y):  
+            return lambda e: loading.new_loading_overlay_page(
+                page=page,
+                call_layout=lambda: create_page_forms(
+                    page, name, maps,
+                )
+            )
+
+        number = int(name.split('-')[1])
+
+        point_button = buttons.create_point_button(
+        on_click=create_on_click(),  
+        text=str(number),
+        color=point_color,
+        size=15,
+        visible=True,
+        )
+           
+        point_marker = buttons.create_point_marker(
+            content=point_button,
+            x=x,
+            y=y,
+            data=[name, type_point]
+        )
+
+        current_map_points = CurrentMapPoints()
+        current_map_points.remove_point(previous_data["name"])
+        maps.remove_marker(previous_data["name"])
+        current_map_points.add_point(point_marker)
+        maps.add_marker(point_marker)
+
         snack_bar = ft.SnackBar(
             content=ft.Text("Alterações Salvas"),
             bgcolor=ft.Colors.GREEN,
             duration=2000,
         )
         loading = LoadingPages(page)
-        loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates))
+        loading.back_home(page=page)
 
     elif response.status_code == 199:
         return
@@ -2769,8 +3014,9 @@ def edit_point(page, list_profile, list_initial_coordinates, list_forms, image, 
 
     page.overlay.append(snack_bar)
     snack_bar.open = True
+    page.update()
 
-def edit_os(page, list_profile, list_initial_coordinates, list_edited_os_forms, order, name):
+def edit_os(page, list_edited_os_forms, order, name):
 
     sp = SupaBase(page)
     loading = LoadingPages(page)
@@ -2803,7 +3049,9 @@ def edit_os(page, list_profile, list_initial_coordinates, list_edited_os_forms, 
             bgcolor=ft.Colors.GREEN,
             duration=2000,
         )
-        loading.new_loading_page(page=page, call_layout=lambda:create_page_os_forms(page, list_profile, list_initial_coordinates, name, order))
+        loading.add_loading_overlay_page(page=page,
+        call_layout=lambda:create_page_os_forms(page, name, order),
+        current_container=page.overlay[1])
 
     else:
         print(f"Erro ao editar ponto: {response.status_code}")
@@ -2818,7 +3066,7 @@ def edit_os(page, list_profile, list_initial_coordinates, list_edited_os_forms, 
     snack_bar.open = True
     page.update()
 
-def edit_user(page, list_profile, list_initial_coordinates, list_edited_user_forms, previus_name):
+def edit_user(page, list_edited_user_forms, previus_name):
 
     sp = SupaBase(page)
     loading = LoadingPages(page)
@@ -2851,8 +3099,9 @@ def edit_user(page, list_profile, list_initial_coordinates, list_edited_user_for
             bgcolor=ft.Colors.GREEN,
             duration=2000,
         )
-        loading.new_loading_page(page=page,
-        call_layout=lambda:create_page_user_forms(page, list_profile, list_initial_coordinates, list_edited_user_forms[0]))
+        loading.add_loading_overlay_page(page=page,
+        call_layout=lambda:create_page_user_forms(page, list_edited_user_forms[0]),
+        current_container=page.overlay[1])
 
     else:
         print(f"Erro ao editar perfil: {response.status_code}")
@@ -2869,7 +3118,7 @@ def edit_user(page, list_profile, list_initial_coordinates, list_edited_user_for
 
 
 
-def delete_point(page, list_profile, list_initial_coordinates, name):
+def delete_point(page, name, maps):
 
     sp = SupaBase(page)
     loading = LoadingPages(page)
@@ -2887,25 +3136,37 @@ def delete_point(page, list_profile, list_initial_coordinates, name):
 
 
     if list_response[0].status_code == 204 and list_response[1].status_code == 204:
+
+        current_map_points = CurrentMapPoints()
+        current_map_points.remove_point(name)
+        maps.remove_marker(name)
+
+        acess_search = Search(page=page, maps=maps, name_points=None)
+        acess_search.remove_item(name)
+
+        maps.update_map()
+
         snack_bar = ft.SnackBar(
                 content=ft.Text("Ponto excluido"),
                 bgcolor=ft.Colors.GREEN,
                 duration=2500,
             )
-        loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates))
+        loading.back_home(page=page)
 
     else:
         snack_bar = ft.SnackBar(
             content=ft.Text(f"Erro ao excluir ponto: {list_response[0].text}, {list_response[1].text}, {list_response[2].text}"),
             bgcolor=ft.Colors.RED
         )
-        loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates))
+        loading.add_loading_overlay_page(page=page,
+        call_layout=lambda:create_page_home(page),
+        current_container=page.overlay[1])
 
     page.overlay.append(snack_bar)
     snack_bar.open = True
     page.update()
 
-def delete_os(page, list_profile, list_initial_coordinates, name, order):
+def delete_os(page, name, order):
 
     loading = LoadingPages(page)
 
@@ -2931,7 +3192,9 @@ def delete_os(page, list_profile, list_initial_coordinates, name, order):
                     duration=2500,
                 )
 
-            loading.new_loading_page(page=page, call_layout=lambda:create_adm_page_order(page, list_profile, list_initial_coordinates, name))
+            loading.add_loading_overlay_page(page=page,
+            call_layout=lambda:create_adm_page_order(page, name),
+            current_container=page.overlay[1])
 
         else:
             snack_bar = ft.SnackBar(
@@ -2940,7 +3203,7 @@ def delete_os(page, list_profile, list_initial_coordinates, name, order):
                     duration=2500,
                 )
 
-            loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates))
+            loading.back_home(page=page)
 
 
     else:
@@ -2956,7 +3219,7 @@ def delete_os(page, list_profile, list_initial_coordinates, name, order):
     snack_bar.open = True
     page.update()
 
-def delete_user(page, list_profile, list_initial_coordinates, user):
+def delete_user(page, user):
 
     loading = LoadingPages(page)
 
@@ -2981,7 +3244,9 @@ def delete_user(page, list_profile, list_initial_coordinates, user):
                 duration=2500,
             )
 
-        loading.new_loading_page(page=page, call_layout=lambda:create_view_users_form(page, list_profile, list_initial_coordinates, menu=None))
+        loading.add_loading_overlay_page(page=page,
+        call_layout=lambda:create_view_users_form(page),
+        current_container=page.overlay[1])
 
     else:
         snack_bar = ft.SnackBar(
@@ -2996,71 +3261,63 @@ def delete_user(page, list_profile, list_initial_coordinates, user):
 
 
 
-
-
 class Map:
 
-    def __init__(self, page, list_profile, point_location, list_initial_coordinates, list_center_map_coordinates, list_maps_acess_controls, markers):
+    def __init__(self, page, point_location, list_maps_acess_controls):
         self.page = page
-        self.name = list_profile
         self.point_location = point_location
-        self.initial_coordinates = list_initial_coordinates
-        self.center_map_coordinates = list_center_map_coordinates 
-        self.markers = markers
-        self.current_point_size = 15
-        self.current_point_visible = True
-        self.mappoints = self.markers.create_points(self.name, self.current_point_size, self.current_point_visible)
+
+        profile = CurrentProfile()
+        current_profile = profile.return_current_profile()
+        self.center_map_coordinates = [current_profile["city_lat"], current_profile["city_lon"], None] 
+
         self.current_zoom = None
         self.zoom_zone = "above_17"
         self.list_filter = ["Lâmpada LED", "Lâmpada de vapor de sódio", "."]
         self.list_maps_acess_controls = list_maps_acess_controls
 
-        self.google = None
-        self.MarkerLayer = []
+        self.google = None  #Verificar
 
-        self.MarkerLayer.append(self.mappoints)
+        initial_marker =  map.Marker(
+                content=ft.Text(""),
+                coordinates=map.MapLatitudeLongitude(self.center_map_coordinates, self.center_map_coordinates),
+                )
+    
+        self.MarkerLayer = [[initial_marker]]
 
         def handle_event(e: map.MapEvent):
             self.center_map_coordinates[0] = f"{e.center.latitude:.6f}"
             self.center_map_coordinates[1] = f"{e.center.longitude:.6f}"
-            self.center_map_coordinates[5] = e.zoom
+            self.center_map_coordinates[2] = e.zoom
             self.current_zoom = e.zoom
 
-
-
         def tap_event(e: map.MapEvent):
+
             try:
+                overlay_copy = list(self.page.overlay)
+                for item in overlay_copy:
+                    if item.data == "geolocator":
+                        pass
+                    else:
+                        self.page.overlay.remove(item)
                 self.list_maps_acess_controls[0].value = ""
                 self.page.update()
             except:
                 pass
-            try:
-                self.page.overlay[1].visible = False
-                self.page.overlay.pop(1)
-                self.test_serach_container[0].value = "teste"
-                self.page.update()
-            except:
-                pass
 
-        max_zoom = 20.9
-        initial_zoom = self.initial_coordinates[5]
-        if self.initial_coordinates[2] == "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}":
-            max_zoom = 18.44
-            if self.initial_coordinates[5] > 18.44:
-                initial_zoom = 18.44
 
         self.google = map.Map(
-                    initial_center=map.MapLatitudeLongitude(self.initial_coordinates[0], self.initial_coordinates[1]),
+                    initial_center=map.MapLatitudeLongitude(self.center_map_coordinates[0], self.center_map_coordinates[1]),
                     expand=True,
-                    initial_zoom=initial_zoom,
+                    initial_zoom=18.44,
                     min_zoom=16.5,
-                    max_zoom=max_zoom,
+                    max_zoom=20.9,
                     on_event=handle_event,
                     on_tap=tap_event,
                     interaction_configuration=map.MapInteractionConfiguration(),  
                     layers=[
                         map.TileLayer(
-                            url_template=self.initial_coordinates[2],
+                            url_template="https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                         ),
                         map.MarkerLayer(*self.MarkerLayer),
                         map.RichAttribution(
@@ -3102,31 +3359,31 @@ class Map:
                     ],
                 )
 
+
+    def update_map(self):
+        self.google.update()
+
+    def add_points_map(self, points):
+
+        for item in points:
+            self.MarkerLayer[0].append(item)
+        self.MarkerLayer[0].pop(0)
+
     def create_map (self):
-
-        return  self.complete_map     
-
+        return  self.complete_map
+         
     def update_position(self):
-
         try:
-
             if self.point_location.coordinates is not None:
                 if self.point_location in self.MarkerLayer[0]:
                     self.MarkerLayer[0].remove(self.point_location)
-                    self.page.update()
-
-                # Adicionar o marcador atualizado
                 else:      
                     self.MarkerLayer[0].append(self.point_location)
-                    self.page.update()
-
-            self.page.update()
-
         except:
-            None
+            pass
 
     def to_check_update_size(self):
-        self.page.update()
+
         try:
             if self.current_zoom is not None:
                 if self.current_zoom > 17.5:
@@ -3148,7 +3405,6 @@ class Map:
         except:
             None
 
-
     def update_size_point(self, size, visible):
 
         for item in self.MarkerLayer[0]:
@@ -3162,18 +3418,14 @@ class Map:
             except AttributeError as e:
                 None
 
-        self.page.update()
-
-
-    
     def move_map(self, x, y, zoom):
         self.google.move_to(
             destination=map.MapLatitudeLongitude(x, y),
             zoom=zoom
         )
         try:
-            self.page.overlay[1].visible = False
-            self.page.overlay.pop(1)
+            self.page.overlay[1].visible = False  #Verificar
+            self.page.overlay.pop(1)  
             self.page.update()
         except:
             None
@@ -3186,57 +3438,90 @@ class Map:
             if self.current_zoom > 18.44:
                 self.google.zoom_to(zoom=zoom_to)
         try:
-            self.page.overlay[1].visible = False
-            self.page.overlay.pop(1)
+            overlay_copy = list(self.page.overlay)
+            for item in overlay_copy:
+                if item.data == "geolocator":
+                    pass
+                else:
+                    self.page.overlay.remove(item)
             self.page.update()
         except:
-            None
-        self.page.update()
+            pass
+        self.google.update()
     
     def filter_map(self, new_filter):
 
-        try:
-            self.page.overlay[1].visible = False
-            self.page.overlay.pop(1)
-            self.page.update()
-        except:
-            None
+        self.list_filter = new_filter
 
-        for item in self.MarkerLayer[0]:
-            try:
-                if item == self.point_location:
+        try:
+            overlay_copy = list(self.page.overlay)
+            for item in overlay_copy:
+                if item.data == "geolocator":
                     pass
                 else:
-                    if item.data not in new_filter:
-                        item.content.opacity = 0
-                    else:
-                        item.content.opacity = 1
-                self.list_filter = new_filter
-            except:
-                None
-        self.page.update()
+                    self.page.overlay.remove(item)
+            self.list_maps_acess_controls[0].value = ""
+            self.page.update()
+        except:
+            pass
 
+        current_points = CurrentMapPoints()
+        current_points.filter_points(new_filter)
+
+        self.google.update()
 
     def reset_map_rotation(self):
         self.google.reset_rotation()
 
     def reset_home_text_field(self):
         self.list_maps_acess_controls[0].value = ""
-        self.page.update()
+        self.list_maps_acess_controls[0].update()
 
     def get_zoom(self):
         return self.google.zoom
 
+    def get_lat_center_coordinates(self):
+        return self.center_map_coordinates[0]
+    
+    def get_long_center_coordinates(self):
+        return self.center_map_coordinates[1]
 
+    def add_marker(self, point):
+        self.MarkerLayer[0].append(point)
+  
+    def remove_marker(self, point):
+        for item in list(self.MarkerLayer[0]): 
+            if item.data[0] == point:  
+                self.MarkerLayer[0].remove(item)
+                first_item = self.MarkerLayer[0][0]
+                self.MarkerLayer[0].remove(first_item)
+                self.MarkerLayer[0].append(first_item)
+                break  
+
+    def reload_map(self, list_points):
+        for item in list(self.MarkerLayer[0]):  
+            if item not in list_points and item != self.point_location:  
+                self.MarkerLayer[0].remove(item)
+
+        if self.zoom_zone == "above_17":
+            size = 15
+        else:
+            size = 7
+
+        for item in list_points:  
+            if item not in self.MarkerLayer[0]:
+                item.content.width = size
+                item.content.height = size
+                self.MarkerLayer[0].append(item)     
+        
 class Marker:
 
-    def __init__(self, page, list_initial_coordinates):
+    def __init__(self, page):
         self.page = page
-        self.list_initial_coordinates = list_initial_coordinates
         self.NamePoints = {}
 
 
-    def create_points(self, list_profile, size, visible):
+    def create_points(self, size, visible, maps):
         
         sp = SupaBase(self.page)
         response_data = []
@@ -3287,19 +3572,13 @@ class Marker:
 
             point_color = color_mapping.get(data_color, ft.Colors.GREY)
 
-            def chande_coordinates(lat, long):    
-                self.list_initial_coordinates[0] = lat
-                self.list_initial_coordinates[1] = long
-
-                return self.list_initial_coordinates
-
             loading = LoadingPages(self.page)
       
             def create_on_click(name=name, lat=x, long=y):  
-                return lambda e: loading.new_loading_page(
+                return lambda e: loading.new_loading_overlay_page(
                     page=self.page,
                     call_layout=lambda: create_page_forms(
-                        self.page, list_profile, chande_coordinates(lat=lat, long=long), name
+                        self.page, name, maps,
                     )
                 )
 
@@ -3315,7 +3594,8 @@ class Marker:
                 ),
                 "x": x,
                 "y": y,
-                "type": type_point, 
+                "type": type_point,
+                "name": name, 
             }
 
             self.NamePoints[number] = {
@@ -3324,14 +3604,13 @@ class Marker:
                 "y": y,
             }
 
-
         # Cria marcadores com base nos botões criados
         for number, button_data in InitialButtons.items():
             marker = buttons.create_point_marker(
                 content=button_data["element"],
                 x=button_data["x"],
                 y=button_data["y"],
-                data=button_data["type"],
+                data=[(button_data["name"]), (button_data["type"]), (button_data["x"]), (button_data["y"])],
             )
             FinalPoints.append(marker)
 
@@ -3341,15 +3620,18 @@ class Marker:
     def return_name_points(self):
         return self.NamePoints
 
-
 class Search:
 
-    def __init__(self, page, list_profile, list_initial_coordinates, maps, name_points):
+    itens = []
+
+    def __init__(self, page, maps, name_points):
         self.page = page
-        self.list_initial_coordinates = list_initial_coordinates
         self.maps = maps
         self.name_points = name_points
         self.sp = SupaBase(self.page)
+
+        if name_points == None:
+            return
 
         self.resultdata = ft.ListView()
 
@@ -3371,9 +3653,8 @@ class Search:
                         alignment=ft.MainAxisAlignment.CENTER,
                         )
 
-        itens = []
+        self.itens.clear()
 
-        # Loop para criar os botões com base nas linhas da tabela
         for item_data in self.name_points.values():
             name = item_data["name"]
             Latitude = item_data["x"]
@@ -3386,11 +3667,12 @@ class Search:
                 self.maps.reset_home_text_field()
 
             # Adiciona o botão à lista de itens
-            itens.append(
+            self.itens.append(
                 ft.ListTile(
                     title=ft.Text(value=name, color=ft.Colors.WHITE),
                     on_click=lambda e, lat=Latitude, long=Longitude: move_and_reset(lat, long),
-                    bgcolor=ft.Colors.BLUE
+                    bgcolor=ft.Colors.BLUE,
+                    data=name
                 )
             )
 
@@ -3400,13 +3682,19 @@ class Search:
 
             if mysearch.strip():  # Se houver texto digitado
                 try:
-                    self.page.overlay.pop(1)
+                    overlay_copy = list(self.page.overlay)
+                    for item in overlay_copy:
+                        if item.data == "geolocator":
+                            pass
+                        else:
+                            self.page.overlay.remove(item)
+                    page.update()
                 except:
-                    None
+                    pass
                 if self.resultcon not in self.page.overlay:
                     self.resultcon.visible = True
                     self.page.overlay.insert(1, self.resultcon)  # Adiciona ao overlay
-                for item in itens:
+                for item in self.itens:
                     # Verifica se o texto da pesquisa está no título do ListTile
                     if mysearch in item.title.value:  # Usa `.lower()` para ignorar maiúsculas/minúsculas
                         result.append(item)  # Adiciona à lista apenas os itens pesquisados
@@ -3449,10 +3737,25 @@ class Search:
         self.txtsearch.value = ""
         self.page.update()
 
+    def add_item(self, item):
+        self.itens.append(item)
+
+    def remove_item(self, item_name):
+        for item in self.itens:
+            if item.data == item_name:
+                self.itens.remove(item)
+                break
+            else:
+                pass
+
+    def reload_itens(self, list_itens):
+        self.itens.clear()
+        for item in list_itens:
+            self.itens.append(item)
 
 class Container:
 
-    def __init__(self, page, list_profile, list_initial_coordinates, maps):
+    def __init__(self, page, maps):
         self.page = page
         self.maps = maps
         self.layer_aerial = "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"

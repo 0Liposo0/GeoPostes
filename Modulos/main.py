@@ -13,16 +13,20 @@ def main(page: ft.Page):
     page.scroll = "auto"
     page.padding=0  
 
-    map_layer = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-    map_filter = ["Lâmpada LED", "Lâmpada de vapor de sódio", "." ]
-    zoom = 18.4
-    list_initial_coordinates = ["-23.3396", "-47.8238", map_layer, None, map_filter, zoom]
-    list_profile =["Carlos", "adm", "11982245028"]
+#    profile = CurrentProfile()
+#    profile.add_user("Carlos")
+#    profile.add_permission("adm")
+#    profile.add_number("11982245028")
+#    profile.add_city_name("Tatuí")
+#    profile.add_city_call_name("tatui")
+#   profile.add_city_lat("-23.3396")
+#   profile.add_city_lon("-47.8238")
+#    profile.add_city_acronym("CAP")
  
-
     loading = LoadingPages(page)
-    loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page))
-#    loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page, list_profile, list_initial_coordinates), text="Gerando Mapa")
+    loading.new_loading_page(page=page, call_layout=lambda:create_page_cities(page))
+#    loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page))
+#    loading.new_loading_page(page=page, call_layout=lambda:create_page_home(page), text="Gerando Mapa")
 
 if __name__ == "__main__":
     ft.app(target=main, upload_dir="uploads")
