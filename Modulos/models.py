@@ -1295,7 +1295,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -1319,7 +1319,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -1343,7 +1343,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f"{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -1367,7 +1367,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -1405,7 +1405,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -1428,7 +1428,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -1462,7 +1462,7 @@ class SupaBase:
             }
         
             response = requests.get(
-                f"{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}",
+                f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}',
                 headers=headers,
                 params=params,
             )
@@ -1506,7 +1506,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -1590,7 +1590,7 @@ class SupaBase:
         }
 
         response1 = requests.get(
-            f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
             headers=headers,
             params={"select": "name", "name": f"eq.{ip}"}
         )
@@ -1628,7 +1628,7 @@ class SupaBase:
             }
 
         response2 = requests.post(
-            f"{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}',
             headers=headers,
             json=data,
         )
@@ -1650,7 +1650,7 @@ class SupaBase:
             }
         
         response3 = requests.post(
-            f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
             headers=headers,
             json=data2,
         )
@@ -1671,7 +1671,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}',
             headers=headers,
             params={"select": "order_id", "order_id": f"eq.{list_add_os[5]}"}
         )
@@ -1705,7 +1705,7 @@ class SupaBase:
         }
 
         response = requests.post(
-            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}',
             headers=headers,
             json=data,
         )
@@ -1724,7 +1724,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response1 = requests.get(
-            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
             headers=headers,
             params={"select": "email", "email": f"eq.{list_add_user[1]}"}
         )
@@ -1742,7 +1742,7 @@ class SupaBase:
             return response1
          
         response2 = requests.get(
-            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
             headers=headers,
             params={"select": "usuario", "usuario": f"eq.{list_add_user[0]}"}
         )
@@ -1769,7 +1769,7 @@ class SupaBase:
         }
 
         response3 = requests.post(
-            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
             headers=headers,
             json=data,
         )
@@ -1814,7 +1814,7 @@ class SupaBase:
                 point_color = "blue"
 
             response1 = requests.get(
-                f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}",
+                f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
                 headers=headers,
                 params={"select": "name", "name": f'eq.{previous_data["name"]}'}
             )
@@ -1830,7 +1830,7 @@ class SupaBase:
         if previous_data["name"] != ip:
 
             response1 = requests.get(
-                f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}",
+                f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
                 headers=headers,
                 params={"select": "name", "name": f"eq.{ip}"}
             )
@@ -1935,7 +1935,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.patch(
-            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{list_edited_os_forms[5]}",
+            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{list_edited_os_forms[5]}',
             headers=headers,
             json=data,
         )
@@ -1956,7 +1956,7 @@ class SupaBase:
         if list_edited_user_forms[0] != previus_name:
 
             response1 = requests.get(
-                f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
+                f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
                 headers=headers,
                 params={"select": "usuario", "usuario": f"eq.{list_edited_user_forms[0]}"}
             )
@@ -1981,7 +1981,7 @@ class SupaBase:
         }
 
         response = requests.patch(
-            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{previus_name}",
+            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{previus_name}',
             headers=headers,
             json=data,
         )
@@ -2002,12 +2002,12 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response1 = requests.delete(
-            f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}?name=eq.{name}",
+            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}?name=eq.{name}',
             headers=headers,
         )
 
         response2 = requests.delete(
-            f"{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}?name=eq.{name}",
+            f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}?name=eq.{name}',
             headers=headers,
         )
 
@@ -2062,7 +2062,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.delete(
-            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{order}",
+            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{order}',
             headers=headers,
         )
 
@@ -2080,7 +2080,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.delete(
-            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{user}",
+            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{user}',
             headers=headers,
         )
 
@@ -2104,7 +2104,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -2123,7 +2123,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response1 = requests.get(
-            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
             headers=headers,
             params={"select": "email", "email": f"eq.{email}"}
         )
@@ -2141,7 +2141,7 @@ class SupaBase:
             return
          
         response2 = requests.get(
-            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
             headers=headers,
             params={"select": "usuario", "usuario": f"eq.{username}"}
         )
@@ -2159,7 +2159,7 @@ class SupaBase:
             return 
 
         response3 = requests.get(
-            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
+            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
             headers=headers,
             params={"select": "user_id", "order": "user_id.desc", "limit": 1},
         )
@@ -2180,7 +2180,7 @@ class SupaBase:
 
             # Fazer a solicitação POST para inserir o novo registro
             response4 = requests.post(
-                f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
+                f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
                 headers=headers,
                 json=data,
             )

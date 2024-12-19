@@ -1824,7 +1824,7 @@ def create_view_postes_form(page, maps):
             params["limit"] = limit
 
             response = requests.get(
-                f"{url}/rest/v1/form_post_{current_profile["city_call_name"]}",
+                f'{url}/rest/v1/form_post_{current_profile["city_call_name"]}',
                 headers=headers,
                 params=params,
             )
@@ -1930,7 +1930,7 @@ def create_view_postes_form(page, maps):
         }
 
         response = requests.get(
-            f"{url}/rest/v1/form_post_{current_profile["city_call_name"]}",
+            f'{url}/rest/v1/form_post_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -2191,7 +2191,7 @@ def create_view_orders_form(page, maps):
             params["limit"] = limit
 
             response = requests.get(
-                f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
+                f'{url}/rest/v1/order_post_{current_profile["city_call_name"]}',
                 headers=headers,
                 params=params,
             )
@@ -2271,7 +2271,7 @@ def create_view_orders_form(page, maps):
         }
 
         response = requests.get(
-            f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
+            f'{url}/rest/v1/order_post_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -2491,7 +2491,7 @@ def create_view_users_form(page):
             params["limit"] = limit
 
             response = requests.get(
-                f"{url}/rest/v1/users_{current_profile["city_call_name"]}",
+                f'{url}/rest/v1/users_{current_profile["city_call_name"]}',
                 headers=headers,
                 params=params,
             )
@@ -2573,7 +2573,7 @@ def create_view_users_form(page):
         }
 
         response = requests.get(
-            f"{url}/rest/v1/users_{current_profile["city_call_name"]}",
+            f'{url}/rest/v1/users_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
