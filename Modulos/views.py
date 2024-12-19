@@ -211,7 +211,7 @@ def create_page_home(page):
                 )
                 mapa1.update()
                 button_location.update()
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.5)
         
     def start_task(page, maps, point_location, button_location, mapa1, task_ref):
         if task_ref[0] is None or task_ref[0].done():  # Evita iniciar múltiplas instâncias
