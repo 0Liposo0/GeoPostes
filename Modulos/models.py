@@ -453,7 +453,7 @@ class Forms:
                         theme=texttheme1,  
                         content=ft.DataTable(
                             data_row_max_height=60,
-                            column_spacing=30,
+                            column_spacing=10,
                             columns=[
                                 ft.DataColumn(ft.Text(value="")),  
                                 ft.DataColumn(ft.Text(value="")),  
@@ -518,6 +518,7 @@ class Forms:
                             theme=texttheme1,  
                             content=ft.DataTable(
                                 data_row_max_height=50,
+                                column_spacing=10,
                                 columns=[
                                     ft.DataColumn(ft.Text(value="")),  
                                     ft.DataColumn(ft.Text(value="")),  
@@ -582,7 +583,7 @@ class Forms:
                             theme=texttheme1,  
                             content=ft.DataTable(
                                 data_row_max_height=60,
-                                column_spacing=30,
+                                column_spacing=10,
                                 columns=[
                                     ft.DataColumn(ft.Text(value="")),  
                                     ft.DataColumn(ft.Text(value="")),  
@@ -718,7 +719,7 @@ class Forms:
                         theme=texttheme1,
                         content=ft.DataTable(
                             data_row_max_height=60,
-                            column_spacing=30,
+                            column_spacing=10,
                             columns=[
                                 ft.DataColumn(ft.Text(value="")),  
                                 ft.DataColumn(ft.Text(value="")),  
@@ -816,7 +817,7 @@ class Forms:
                             theme=texttheme1,
                             content=ft.DataTable(
                                 data_row_max_height=60,
-                                column_spacing=30,
+                                column_spacing=10,
                                 columns=[
                                     ft.DataColumn(ft.Text(value="")),  
                                     ft.DataColumn(ft.Text(value="")), 
@@ -1060,10 +1061,14 @@ class LoadingPages:
         page.update()
         page.go(route)
 
-    def new_loading_overlay_page(self, page, call_layout, text="Carregando", menu=None):
+    def new_loading_overlay_page(self, page, call_layout, text="Carregando"):
 
-        if menu != None:
-            page.close(menu)
+        overlay_copy = list(page.overlay)
+        for item in overlay_copy:
+            if item.data == "geolocator":
+                pass
+            else:
+                page.overlay.remove(item)
             
         loading_text = ft.Row([
                         ft.Container(
@@ -1071,7 +1076,7 @@ class LoadingPages:
                             padding=10,
                             margin=10,
                             height=700,
-                            width=400,
+                            width=370,
                             border_radius=20,
                             col=12,
                             content= ft.Column(
@@ -1112,16 +1117,15 @@ class LoadingPages:
         overlay_layout = call_layout()
 
         def go_back():
-            try:
-                overlay_copy = list(page.overlay)
-                for item in overlay_copy:
-                    if item.data == "geolocator":
-                            pass
-                    else:
-                        page.overlay.remove(item)
-                page.update()
-            except:
-                pass
+            
+            overlay_copy = list(page.overlay)
+            for item in overlay_copy:
+                if item.data == "geolocator":
+                        pass
+                else:
+                    page.overlay.remove(item)
+            page.update()
+
 
         close_button = ft.Row([
                         ft.IconButton(
@@ -1142,7 +1146,7 @@ class LoadingPages:
                     padding=10,
                     margin=10,
                     height=700,
-                    width=400,
+                    width=370,
                     border_radius=20,
                     col=12,
                     content= ft.Column(
@@ -1173,7 +1177,7 @@ class LoadingPages:
                             padding=10,
                             margin=10,
                             height=700,
-                            width=400,
+                            width=370,
                             border_radius=20,
                             col=12,
                             content= ft.Column(
@@ -1217,16 +1221,15 @@ class LoadingPages:
         current_container.controls[0].content.controls.remove(loading_text)
 
         def go_back():
-            try:
-                overlay_copy = list(page.overlay)
-                for item in overlay_copy:
-                    if item.data == "geolocator":
-                            pass
-                    else:
-                        page.overlay.remove(item)
-                page.update()
-            except:
-                pass
+       
+            overlay_copy = list(page.overlay)
+            for item in overlay_copy:
+                if item.data == "geolocator":
+                        pass
+                else:
+                    page.overlay.remove(item)
+            page.update()
+
 
         close_button = ft.Row([
                         ft.IconButton(
@@ -1247,16 +1250,14 @@ class LoadingPages:
         page.update()
 
     def back_home(self, page):
-        try:
-            overlay_copy = list(page.overlay)
-            for item in overlay_copy:
-                if item.data == "geolocator":
-                        pass
-                else:
-                    page.overlay.remove(item)
-            page.update()
-        except:
-            pass
+
+        overlay_copy = list(page.overlay)
+        for item in overlay_copy:
+            if item.data == "geolocator":
+                    pass
+            else:
+                page.overlay.remove(item)
+        page.update()
 
 
 class SupaBase:
@@ -1294,7 +1295,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}",
             headers=headers,
             params=params,
         )
@@ -1318,7 +1319,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
             headers=headers,
             params=params,
         )
@@ -1342,7 +1343,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}",
             headers=headers,
             params=params,
         )
@@ -1366,7 +1367,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}",
             headers=headers,
             params=params,
         )
@@ -1404,7 +1405,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}",
             headers=headers,
             params=params,
         )
@@ -1427,7 +1428,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}",
             headers=headers,
             params=params,
         )
@@ -1461,7 +1462,7 @@ class SupaBase:
             }
         
             response = requests.get(
-                f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}',
+                f"{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}",
                 headers=headers,
                 params=params,
             )
@@ -1480,13 +1481,10 @@ class SupaBase:
 
         numbers = []
         for item in response_data:
-            try:
-                # Extrai o número após o hífen
-                numero = int(item["name"].split('-')[1])
-                numbers.append(numero)
-            except (IndexError, ValueError):
-                # Ignora entradas inválidas
-                continue
+
+            numero = int(item["name"].split('-')[1])
+            numbers.append(numero)
+            
         max_number = max(numbers) if numbers else 0
         new_number = str(max_number+1)
 
@@ -1508,7 +1506,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
             headers=headers,
             params=params,
         )
@@ -1574,7 +1572,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
         number = str(list_forms[0])
         new_number = number.zfill(4)
-        ip = f'IP {current_profile["city_acronym"]}-{new_number}'
+        ip = f"IP {current_profile["city_acronym"]}-{new_number}"
 
         point_color = None
         if list_forms[2] == "Lâmpada LED":
@@ -1592,7 +1590,7 @@ class SupaBase:
         }
 
         response1 = requests.get(
-            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}",
             headers=headers,
             params={"select": "name", "name": f"eq.{ip}"}
         )
@@ -1630,7 +1628,7 @@ class SupaBase:
             }
 
         response2 = requests.post(
-            f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}",
             headers=headers,
             json=data,
         )
@@ -1652,7 +1650,7 @@ class SupaBase:
             }
         
         response3 = requests.post(
-            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}",
             headers=headers,
             json=data2,
         )
@@ -1673,7 +1671,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}",
             headers=headers,
             params={"select": "order_id", "order_id": f"eq.{list_add_os[5]}"}
         )
@@ -1707,7 +1705,7 @@ class SupaBase:
         }
 
         response = requests.post(
-            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}",
             headers=headers,
             json=data,
         )
@@ -1726,7 +1724,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response1 = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
             headers=headers,
             params={"select": "email", "email": f"eq.{list_add_user[1]}"}
         )
@@ -1744,7 +1742,7 @@ class SupaBase:
             return response1
          
         response2 = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
             headers=headers,
             params={"select": "usuario", "usuario": f"eq.{list_add_user[0]}"}
         )
@@ -1771,7 +1769,7 @@ class SupaBase:
         }
 
         response3 = requests.post(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
             headers=headers,
             json=data,
         )
@@ -1787,7 +1785,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
         number = str(list_forms[0])
         new_number = number.zfill(4)
-        ip = f'IP {current_profile["city_acronym"]}-{new_number}'
+        ip = f"IP {current_profile["city_acronym"]}-{new_number}"
 
         headers = {
             "apikey": self.supabase_key,
@@ -1816,7 +1814,7 @@ class SupaBase:
                 point_color = "blue"
 
             response1 = requests.get(
-                f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
+                f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}",
                 headers=headers,
                 params={"select": "name", "name": f'eq.{previous_data["name"]}'}
             )
@@ -1832,7 +1830,7 @@ class SupaBase:
         if previous_data["name"] != ip:
 
             response1 = requests.get(
-                f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
+                f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}",
                 headers=headers,
                 params={"select": "name", "name": f"eq.{ip}"}
             )
@@ -1937,7 +1935,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.patch(
-            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{list_edited_os_forms[5]}',
+            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{list_edited_os_forms[5]}",
             headers=headers,
             json=data,
         )
@@ -1958,7 +1956,7 @@ class SupaBase:
         if list_edited_user_forms[0] != previus_name:
 
             response1 = requests.get(
-                f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
+                f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
                 headers=headers,
                 params={"select": "usuario", "usuario": f"eq.{list_edited_user_forms[0]}"}
             )
@@ -1983,7 +1981,7 @@ class SupaBase:
         }
 
         response = requests.patch(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{previus_name}',
+            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{previus_name}",
             headers=headers,
             json=data,
         )
@@ -2004,12 +2002,12 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response1 = requests.delete(
-            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}?name=eq.{name}',
+            f"{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}?name=eq.{name}",
             headers=headers,
         )
 
         response2 = requests.delete(
-            f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}?name=eq.{name}',
+            f"{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}?name=eq.{name}",
             headers=headers,
         )
 
@@ -2064,7 +2062,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.delete(
-            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{order}',
+            f"{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{order}",
             headers=headers,
         )
 
@@ -2082,7 +2080,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.delete(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{user}',
+            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{user}",
             headers=headers,
         )
 
@@ -2106,7 +2104,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
             headers=headers,
             params=params,
         )
@@ -2125,7 +2123,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response1 = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
             headers=headers,
             params={"select": "email", "email": f"eq.{email}"}
         )
@@ -2143,7 +2141,7 @@ class SupaBase:
             return
          
         response2 = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
             headers=headers,
             params={"select": "usuario", "usuario": f"eq.{username}"}
         )
@@ -2161,7 +2159,7 @@ class SupaBase:
             return 
 
         response3 = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
+            f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
             headers=headers,
             params={"select": "user_id", "order": "user_id.desc", "limit": 1},
         )
@@ -2182,7 +2180,7 @@ class SupaBase:
 
             # Fazer a solicitação POST para inserir o novo registro
             response4 = requests.post(
-                f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
+                f"{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}",
                 headers=headers,
                 json=data,
             )
@@ -2190,109 +2188,6 @@ class SupaBase:
             return response4
    
     
-class NavigationDrawer:
-
-    def __init__(self, page):
-        self.page = page
-
-    def create_navigation(self, action1, action2, action3, action4, action5):
-
-        space = ft.Container(padding=10)
-
-        web_images = Web_Image(self.page)
-        url_imagem1 = web_images.get_image_url(name="perfil")
-
-        perfil = ft.Column(
-            visible=True,
-            col=12,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            controls=[ft.Container(
-                width=150,
-                height=150,
-                alignment=ft.alignment.center,
-                image=ft.Image(
-                src=url_imagem1,  
-                ),
-                bgcolor=ft.Colors.GREY,
-                border=ft.Border(
-                    left=ft.BorderSide(2, ft.Colors.BLACK),  
-                    top=ft.BorderSide(2, ft.Colors.BLACK),    
-                    right=ft.BorderSide(2, ft.Colors.BLACK), 
-                    bottom=ft.BorderSide(2, ft.Colors.BLACK) 
-                ),
-                border_radius=ft.border_radius.all(75),
-            )
-            ]
-        )
-
-        profile = CurrentProfile()
-        dict_profile = profile.return_current_profile()
-
-        nome = ft.Text(
-            value=dict_profile["user"],
-            text_align=ft.TextAlign.CENTER,
-            color=ft.Colors.WHITE,
-        )
-
-        listtiles = [
-
-            ft.ListTile(
-                        title=ft.Text(f"Deslogar", color=ft.Colors.WHITE),
-                        on_click=action1,
-                        bgcolor=ft.Colors.BLUE_600,
-                    ),
-            ft.ListTile(
-                title=ft.Text(f"Atualizar", color=ft.Colors.WHITE),
-                on_click=action2,
-                bgcolor=ft.Colors.BLUE_600,
-            ),
-        ]
-
-        profile = CurrentProfile()
-        dict_profile = profile.return_current_profile()
-
-        if dict_profile["permission"] == "adm":
-
-            listtiles.append(
-                ft.ListTile(
-                        title=ft.Text(f"Lista de postes", color=ft.Colors.WHITE),
-                        on_click=action3,
-                        bgcolor=ft.Colors.BLUE_600,
-                    )
-            )
-            listtiles.append(
-                ft.ListTile(
-                        title=ft.Text(f"Lista de ordens de serviço", color=ft.Colors.WHITE),
-                        on_click=action4,
-                        bgcolor=ft.Colors.BLUE_600,
-                    )
-            )
-            listtiles.append(
-                ft.ListTile(
-                        title=ft.Text(f"Gestão de usuários", color=ft.Colors.WHITE),
-                        on_click=action5,
-                        bgcolor=ft.Colors.BLUE_600,
-                    )
-            )
-
-
-        navigation =  ft.NavigationDrawer(
-                position=ft.NavigationDrawerPosition.END,
-                on_dismiss=None,
-                on_change=None,
-                bgcolor=ft.Colors.BLUE_600,
-                controls=[
-                    space,
-                    perfil,
-                    nome,
-                    space,
-                    *listtiles,
-                ],
-            )
-
-        return navigation
-
-
 class CurrentMapPoints:
     current_points = []
 
@@ -2315,16 +2210,13 @@ class CurrentMapPoints:
     def filter_points(self, new_filter):
 
         for item in self.current_points:
-            try:
-                if item.data == "point_location":
-                    pass
-                else:
-                    if item.data[1] not in new_filter:
-                        item.content.opacity = 0
-                    else:
-                        item.content.opacity = 1
-            except:
+            if item.data == "point_location":
                 pass
+            else:
+                if item.data[1] not in new_filter:
+                    item.content.opacity = 0
+                else:
+                    item.content.opacity = 1
 
 
 class CurrentProfile:

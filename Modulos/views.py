@@ -14,7 +14,6 @@ def create_page_home(page):
     loading = LoadingPages(page)
     buttons = Buttons(page)
     menus = SettingsMenu(page)
-    navigations = NavigationDrawer(page)
 
     point_location = map.Marker(
                 content=ft.Column(
@@ -90,6 +89,16 @@ def create_page_home(page):
     mapa1 = maps.create_map()
 
     def reload_map():
+
+        snack_bar = ft.SnackBar(
+                        content=ft.Text(f"Atualziando..."),
+                        bgcolor=ft.Colors.AMBER,
+                        duration=2000,
+                    )
+        page.overlay.append(snack_bar)
+        snack_bar.open = True
+        page.update()
+
         new_requests_points = markers.create_points(15, True, maps)
         current_map_points = CurrentMapPoints()
         current_map_points.add_list_point(new_requests_points)
@@ -115,6 +124,23 @@ def create_page_home(page):
             )
 
         acess_search.reload_itens(list_tiles)
+
+        overlay_copy = list(page.overlay)
+        for item in overlay_copy:
+            if item.data == "geolocator":
+                pass
+            else:
+                page.overlay.remove(item)
+
+        snack_bar = ft.SnackBar(
+                        content=ft.Text(f"Atualizado"),
+                        bgcolor=ft.Colors.GREEN,
+                        duration=1500,
+                    )
+        page.overlay.append(snack_bar)
+        snack_bar.open = True
+        page.update()
+
         
 
     def handle_position_change(e):
@@ -172,24 +198,21 @@ def create_page_home(page):
     task_ref = [None, 1]  # Variável global para rastrear a tarefa
 
     async def to_check_size(page, maps, point_location, button_location, mapa1):
-        try:
-            while True:
-                current_points = current_map_points.return_current_points()
-                new_points = points_radius(current_points, [maps.get_lat_center_coordinates(), maps.get_long_center_coordinates()])
-                maps.reload_map(new_points)
-                maps.to_check_update_size()
-                maps.update_position()
-                if point_location.coordinates is not None:
-                    button_location.controls[0].content.icon_color = ft.Colors.GREEN
-                else:
-                    button_location.controls[0].content.icon_color = ft.Colors.RED
-                if page.route == "/home":
-                    mapa1.update()
-                    button_location.update()
-                await asyncio.sleep(0.5)
-        except asyncio.CancelledError:
-            raise
-
+        
+        while True:
+            current_points = current_map_points.return_current_points()
+            new_points = points_radius(current_points, [maps.get_lat_center_coordinates(), maps.get_long_center_coordinates()])
+            maps.reload_map(new_points)
+            maps.to_check_update_size()
+            maps.update_position()
+            if page.route == "/home":
+                button_location.controls[0].content.icon_color = (
+                    ft.Colors.GREEN if point_location.coordinates else ft.Colors.RED
+                )
+                mapa1.update()
+                button_location.update()
+            await asyncio.sleep(1)
+        
     def start_task(page, maps, point_location, button_location, mapa1, task_ref):
         if task_ref[0] is None or task_ref[0].done():  # Evita iniciar múltiplas instâncias
             task_ref[0] = page.run_task(
@@ -212,19 +235,13 @@ def create_page_home(page):
     action2 = lambda e: reload_map()
 
     action3 = lambda e: loading.new_loading_overlay_page(page=page,
-    call_layout=lambda:create_view_postes_form(page, maps),
-    menu=rightmenu) 
-    
+    call_layout=lambda:create_view_postes_form(page, maps))
+
     action4 = lambda e: loading.new_loading_overlay_page(page=page,
-    call_layout=lambda:create_view_orders_form(page, maps),
-    menu=rightmenu)
+    call_layout=lambda:create_view_orders_form(page, maps))
 
     action5 = lambda e: loading.new_loading_overlay_page(page=page,
-    call_layout=lambda:create_view_users_form(page),
-    menu=rightmenu)
-
-    rightmenu = navigations.create_navigation(action1, action2, action3, action4, action5)
-    menu = menus.create_settings_menu(color=ft.Colors.WHITE, col=10, action=lambda e: page.open(rightmenu))
+    call_layout=lambda:create_view_users_form(page))
 
 
     name_points = markers.return_name_points()
@@ -235,41 +252,51 @@ def create_page_home(page):
     search_container.visible = False
 
 
-    containers = Container(page, maps)
+    containers = Container(page, maps, action1, action2, action3, action4, action5)
     map_layer_container = containers.create_maps_container()
     map_filter_container = containers.create_filter_container()
+    menu_container = containers.create_menu_container()
 
     def show_map_layer_container(e):
         if map_layer_container in page.overlay:
             page.overlay.remove(map_layer_container)
         else:
-            try:
-                overlay_copy = list(page.overlay)
-                for item in overlay_copy:
-                    if item == gl:
-                        pass
-                    else:
-                        page.overlay.remove(item)
-                page.overlay.append(map_layer_container)
-            except:
-                pass
+            overlay_copy = list(page.overlay)
+            for item in overlay_copy:
+                if item == gl:
+                    pass
+                else:
+                    page.overlay.remove(item)
+            page.overlay.append(map_layer_container)
         page.update()
 
     def show_filter_container(e):
         if map_filter_container in page.overlay:
             page.overlay.remove(map_filter_container)
         else:
-            try:
-                overlay_copy = list(page.overlay)
-                for item in overlay_copy:
-                    if item == gl:
-                        pass
-                    else:
-                        page.overlay.remove(item)
-                page.overlay.append(map_filter_container)
-            except:
-                pass
+            overlay_copy = list(page.overlay)
+            for item in overlay_copy:
+                if item == gl:
+                    pass
+                else:
+                    page.overlay.remove(item)
+            page.overlay.append(map_filter_container)
         page.update()
+
+    def show_menu_container(e):
+        if menu_container in page.overlay:
+            page.overlay.remove(menu_container)
+        else:
+            overlay_copy = list(page.overlay)
+            for item in overlay_copy:
+                if item == gl:
+                    pass
+                else:
+                    page.overlay.remove(item)
+            page.overlay.append(menu_container)
+        page.update()
+
+    menu = menus.create_settings_menu(color=ft.Colors.WHITE, col=10, action=show_menu_container)
 
     button_map_layer = buttons.create_call_location_button(
                                                         icon=ft.Icons.LAYERS,
@@ -416,16 +443,13 @@ def create_page_forms(page, name, maps, local=False):
 
     def go_back(e=None):
         if local ==False:
-            try:
-                overlay_copy = list(page.overlay)
-                for item in overlay_copy:
-                    if item.data == "geolocator":
-                        pass
-                    else:
-                        page.overlay.remove(item)
-                page.update()
-            except:
-                pass
+            overlay_copy = list(page.overlay)
+            for item in overlay_copy:
+                if item.data == "geolocator":
+                    pass
+                else:
+                    page.overlay.remove(item)
+            page.update()
         else:
             loading.add_loading_overlay_page(page=page,
             call_layout=lambda:create_view_postes_form(page, maps),
@@ -653,16 +677,15 @@ def create_page_add_forms(page, maps):
     forms1 = forms.create_add_forms(ip=new_number, situ=None, tipo=None, pontos=None, bairro=".", logra=".")
 
     def go_back(e=None):
-        try:
-            overlay_copy = list(page.overlay)
-            for item in overlay_copy:
-                if item.data == "geolocator":
-                        pass
-                else:
-                    page.overlay.remove(item)
-            page.update() # Necessario
-        except:
-            pass
+
+        overlay_copy = list(page.overlay)
+        for item in overlay_copy:
+            if item.data == "geolocator":
+                    pass
+            else:
+                page.overlay.remove(item)
+        page.update() # Necessario
+
 
     add_button = buttons.create_button(on_click=lambda e :send_point(forms1, image_temp.controls[0].content),
                                             text="Adicionar",
@@ -812,7 +835,7 @@ def create_page_add_os_forms(page, name, maps):
             object.controls[0].content.rows[13].cells[1].content.content.value,
         ]
         
-        add_os(page, list_add_os, name)
+        add_os(page, list_add_os, name, maps)
 
     data_atual = datetime.now()
     data_formatada = data_atual.strftime("%d/%m/%Y")
@@ -1114,7 +1137,7 @@ def create_page_edit_os_forms(page, name, order, maps):
             object.controls[0].content.rows[13].cells[1].content.content.value,
         ]
 
-        edit_os(page, list_edited_os_forms, order, name)
+        edit_os(page, list_edited_os_forms, order, name, maps)
      
 
     os = sp.get_os(order)
@@ -1148,7 +1171,7 @@ def create_page_edit_os_forms(page, name, order, maps):
                                             color=ft.Colors.GREEN,
                                             col=12,
                                             padding=5,)
-    delete_button = buttons.create_button(on_click=lambda e :delete_os(page, name, order),
+    delete_button = buttons.create_button(on_click=lambda e :delete_os(page, name, order, maps),
                                             text="Excluir",
                                             color=ft.Colors.RED,
                                             col=12,
@@ -1324,7 +1347,7 @@ def create_invited_page_order(page, name, maps):
                 current_profile = profile.return_current_profile()
 
                 response = requests.post(
-                    f'{url}/rest/v1/order_post_{current_profile["city_call_name"]}',
+                    f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
                     headers=headers,
                     json=data,
                 )
@@ -1335,16 +1358,13 @@ def create_invited_page_order(page, name, maps):
                         bgcolor=ft.Colors.GREEN,
                         duration=2500,
                     )
-                    try:
-                        overlay_copy = list(page.overlay)
-                        for item in overlay_copy:
-                            if item.data == "geolocator":
-                                pass
-                            else:
-                                page.overlay.remove(item)
-                        page.update()
-                    except:
-                        pass
+                    overlay_copy = list(page.overlay)
+                    for item in overlay_copy:
+                        if item.data == "geolocator":
+                            pass
+                        else:
+                            page.overlay.remove(item)
+                    page.update()
                 else:
                     print(f"Resposta do erro: {response.text}")
                     snack_bar = ft.SnackBar(
@@ -1438,7 +1458,7 @@ def create_adm_page_order(page, name, maps):
     current_profile = profile.return_current_profile()
 
     response = requests.get(
-        f'{url}/rest/v1/order_post_{current_profile["city_call_name"]}',
+        f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
         headers=headers,
         params=params,
     )
@@ -1489,12 +1509,12 @@ def create_adm_page_order(page, name, maps):
                 theme=texttheme1,  
                 content=ft.DataTable(
                     data_row_max_height=50,
-                    column_spacing=20,
+                    column_spacing=10,
                     expand=True, 
                     columns=[
                         ft.DataColumn(ft.Text(value="Data", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
-                        ft.DataColumn(ft.Text(value="Ordem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
-                        ft.DataColumn(ft.Text(value="Origem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
+                        ft.DataColumn(ft.Text(value="N°", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
+                        ft.DataColumn(ft.Text(value="", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
                         ft.DataColumn(ft.Text(value="")),  
                     ],
                     rows=lista,
@@ -1754,7 +1774,7 @@ def create_page_register(page):
 
 
 def create_view_postes_form(page, maps):
- 
+
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1() 
     buttons = Buttons(page)
@@ -1762,14 +1782,13 @@ def create_view_postes_form(page, maps):
     sp = SupaBase(page)
     chk = CheckBox(page)
 
-    count_itens = 0
-
-    current_points = CurrentMapPoints()
-    map_points = current_points.return_current_points()
-    for item in map_points:
-        count_itens = int(count_itens) + 1
-
+    dicio_filter = {
+        "name_filter" : "like.*",
+        "type_filter" : "like.*"
+    }
     dicio = {}
+
+    count_itens = 0
 
     text_count_itens = ft.Text(value=f"Resultado: {count_itens}",
                                color=ft.Colors.BLACK,
@@ -1778,107 +1797,158 @@ def create_view_postes_form(page, maps):
                                weight=ft.FontWeight.W_900,
                                )
 
-    list_filter = ["Lâmpada LED", "Lâmpada de vapor de sódio", "."]
+    def changesearch(e, dicio_filter, dicio, forms1, count_itens, text_count_itens):
 
-    def changesearch(e, new_filter, dicio, forms1, count_itens, text_count_itens):
+        time.sleep(0.5)
 
-            count_itens = 0
-            new_list1 = []
-            new_list2 = []
-
-            if e != None:
-                if e.control.value.strip() == "":
-                    new_list1 = map_points 
-                    count_itens = len(map_points) 
-                else:
-                    for item in list(map_points):
-                        if e.control.value.strip().lower() in item.data[0]:
-                            count_itens = int(count_itens) + 1
-                            new_list1.append(item)
+        try:
+            if e.control.value.strip() == "":
+                dicio_filter["name_filter"] = "like.*"  
             else:
-                new_list1 = map_points
+                dicio_filter["name_filter"] = f"ilike.%{e.control.value.strip().lower()}%"
+        except:
+            dicio_filter["name_filter"] = "like.*"
 
-            if e == None:
-                for item in list(new_list1):
-                    if item.data[1] in new_filter:
-                        count_itens = int(count_itens) + 1
-                        new_list2.append(item)
-            else:
-                new_list2 = new_list1
+        profile = CurrentProfile()
+        current_profile = profile.return_current_profile()
+        count_itens = 0
+        offset = 0
+        limit = 1000
+        new_response_data = []
 
+        while True:
 
-            dicio.clear()
+            params["name"] = dicio_filter["name_filter"]
+            params["type"] = dicio_filter["type_filter"]
+            params["offset"] = offset
+            params["limit"] = limit
 
-            text_count_itens.value = f"Resultado: {count_itens}"
+            response = requests.get(
+                f"{url}/rest/v1/form_post_{current_profile["city_call_name"]}",
+                headers=headers,
+                params=params,
+            )
 
-            for item in new_list2[:100]:
+            data = response.json()
+            new_response_data.extend(data)
 
-                name = item.data[0]
-                number = (str(name.split('-')[1])).zfill(4)
-
-                def forms(name=name):
-                    return lambda e: loading.add_loading_overlay_page(
-                        page=page,
-                        call_layout=lambda:create_page_forms(page, name, maps, local=True),
-                        current_container=page.overlay[1]
-                    )
-
-                def edit(name=name):
-                    return lambda e: loading.add_loading_overlay_page(
-                        page=page,
-                        call_layout=lambda:create_page_edit_forms(page, name, maps=maps, local=True),
-                        current_container=page.overlay[1]
-                    )
-
-                def delete(name=name):
-                    return lambda e: delete_point(page, name, maps=maps)
-
-                linha = ft.DataRow(cells=[
-                    ft.DataCell(ft.Text(value=number, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                    ft.DataCell(
-                        ft.Container(content=buttons.create_icon_button(
-                            icon=ft.Icons.SEARCH,
-                            on_click=forms(),
-                            color=ft.Colors.BLUE,
-                            col=2,
-                            padding=0,
-                            icon_color=ft.Colors.WHITE,
-                        ))
-                    ),
-                    ft.DataCell(
-                        ft.Container(content=buttons.create_icon_button(
-                            icon=ft.Icons.EDIT_ROUNDED,
-                            on_click=edit(),
-                            color=ft.Colors.BLUE,
-                            col=2,
-                            padding=0,
-                            icon_color=ft.Colors.WHITE,
-                        ))
-                    ),
-                    ft.DataCell(
-                        ft.Container(content=buttons.create_icon_button(
-                            icon=ft.Icons.DELETE,
-                            on_click=delete(),
-                            color=ft.Colors.BLUE,
-                            col=2,
-                            padding=0,
-                            icon_color=ft.Colors.WHITE,
-                        ))
-                    ),
-                ])
-
-                dicio[number] = linha
-
-            # Atualiza as linhas no DataTable
-            forms1.controls[0].content.rows = list(dicio.values())
-            page.update()
+            if len(data) < limit:
+                break
         
+            offset += limit
 
-    for item in map_points[:100]:
+        count_itens = len(new_response_data)
+        text_count_itens.value = f"Resultado: {count_itens}"
 
-            text_count_itens.value = f"Resultado: {count_itens}"
+        dicio.clear()
+        for row in new_response_data[:50]:
 
-            name = item.data[0]
+            name = row["name"]
+            number = (str(name.split('-')[1])).zfill(4)
+
+            def forms(name=name):
+                return lambda e: loading.add_loading_overlay_page(
+                    page=page,
+                    call_layout=lambda:create_page_forms(page, name, maps, local=True),
+                    current_container=page.overlay[1]
+                )
+
+            def edit(name=name):
+                return lambda e: loading.add_loading_overlay_page(
+                    page=page,
+                    call_layout=lambda:create_page_edit_forms(page, name, maps=maps, local=True),
+                    current_container=page.overlay[1]
+                )
+
+            def delete(name=name):
+                return lambda e: delete_point(page, name, maps=maps)
+
+            linha = ft.DataRow(cells=[
+                ft.DataCell(ft.Text(value=number, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                ft.DataCell(
+                    ft.Container(content=buttons.create_icon_button(
+                        icon=ft.Icons.SEARCH,
+                        on_click=forms(),
+                        color=ft.Colors.BLUE,
+                        col=2,
+                        padding=0,
+                        icon_color=ft.Colors.WHITE,
+                    ))
+                ),
+                ft.DataCell(
+                    ft.Container(content=buttons.create_icon_button(
+                        icon=ft.Icons.EDIT_ROUNDED,
+                        on_click=edit(),
+                        color=ft.Colors.BLUE,
+                        col=2,
+                        padding=0,
+                        icon_color=ft.Colors.WHITE,
+                    ))
+                ),
+                ft.DataCell(
+                    ft.Container(content=buttons.create_icon_button(
+                        icon=ft.Icons.DELETE,
+                        on_click=delete(),
+                        color=ft.Colors.BLUE,
+                        col=2,
+                        padding=0,
+                        icon_color=ft.Colors.WHITE,
+                    ))
+                ),
+            ])
+
+            dicio[number] = linha
+
+        forms1.controls[0].content.rows = list(dicio.values())
+        page.update()
+       
+
+    url = sp.get_url()
+    key = sp.get_key()
+    offset = 0
+    limit = 1000
+    response_data = []
+    profile = CurrentProfile()
+    current_profile = profile.return_current_profile()
+
+    while True:
+
+        headers = {
+            "apikey": key,
+            "Authorization": f"Bearer {key}",
+            "Content-Type": "application/json",
+        }
+
+
+        params = {
+            "select": "name, situation, type",
+            "name": dicio_filter["name_filter"],
+            "type": dicio_filter["type_filter"],
+            "order": "name.asc",
+            "offset": offset,  
+            "limit": limit,
+        }
+
+        response = requests.get(
+            f"{url}/rest/v1/form_post_{current_profile["city_call_name"]}",
+            headers=headers,
+            params=params,
+        )
+        
+        data = response.json()
+        response_data.extend(data)
+
+        if len(data) < limit:
+                break
+        
+        offset += limit
+
+    count_itens = len(response_data)
+    text_count_itens.value = f"Resultado: {count_itens}"
+
+    for row in response_data[:50]:
+
+            name = row["name"]
 
             number = (str(name.split('-')[1])).zfill(4)
            
@@ -1971,27 +2041,35 @@ def create_view_postes_form(page, maps):
     
     def show_filter_container(e):
         filter_container.controls[0].visible = not filter_container.controls[0].visible
-        page.update()
+        filter_container.update()
 
-    def get_permission_filter(e, list_filter):
-
-        list_filter.clear()
-
+    def get_permission_filter(e):
         led_type = filter_container.controls[0].content.controls[0].controls[0].value
         led_type_data = filter_container.controls[0].content.controls[0].controls[0].data
         sodium_type = filter_container.controls[0].content.controls[1].controls[0].value
         sodium_type_data = filter_container.controls[0].content.controls[1].controls[0].data
         null_type = filter_container.controls[0].content.controls[2].controls[0].value
         null_type_data = filter_container.controls[0].content.controls[2].controls[0].data
+        filter_button.controls[0].bgcolor = ft.Colors.RED
         if led_type:
-           list_filter.append(led_type_data)
+            dicio_filter["type_filter"] = f"eq.{led_type_data}"
         if sodium_type:
-            list_filter.append(sodium_type_data)
+            dicio_filter["type_filter"] = f"eq.{sodium_type_data}"
+        if led_type and sodium_type:
+            dicio_filter["type_filter"] = f"neq.{null_type_data}"
         if null_type:
-            list_filter.append(null_type_data)
+            dicio_filter["type_filter"] = f"eq.{null_type_data}"
+        if null_type and led_type:
+            dicio_filter["type_filter"] = f"neq.{sodium_type_data}"
+        if null_type and sodium_type:
+            dicio_filter["type_filter"] = f"neq.{led_type_data}"
+        if led_type and sodium_type and null_type:
+            dicio_filter["type_filter"] = f"like.*"
+            filter_button.controls[0].bgcolor = ft.Colors.BLUE
         filter_container.controls[0].visible = not filter_container.controls[0].visible
+        searchfild.value = ""
         page.update()
-        changesearch(e=None, new_filter=list_filter, dicio=dicio, forms1=forms1, count_itens=count_itens, text_count_itens=text_count_itens),
+        changesearch(e, dicio_filter, dicio, forms1, count_itens, text_count_itens),
 
 
 
@@ -2009,7 +2087,7 @@ def create_view_postes_form(page, maps):
                                 chk.create_checkbox2("Lâmpada LED", 15, None, 8,"Lâmpada LED", True),
                                 chk.create_checkbox2("Lâmpada de vapor de sódio", 15, None, 8,"Lâmpada de vapor de sódio", True),
                                 chk.create_checkbox2("Sem iluminação", 15, None, 8,".", True),
-                                buttons.create_button(on_click=lambda e: get_permission_filter(e, list_filter),
+                                buttons.create_button(on_click=lambda e: get_permission_filter(e),
                                                             text="Aplicar",
                                                             color=ft.Colors.AMBER,
                                                             col=12,
@@ -2029,7 +2107,7 @@ def create_view_postes_form(page, maps):
 
     searchfild = ft.TextField(label="Pesquisar",  # caixa de texto
                                 col=8,
-                                on_change=lambda e: changesearch(e, list_filter, dicio, forms1, count_itens, text_count_itens),
+                                on_change=lambda e: changesearch(e, dicio_filter, dicio, forms1, count_itens, text_count_itens),
                                 label_style= ft.TextStyle(color=ft.Colors.BLACK),
                                 text_style= ft.TextStyle(color=ft.Colors.BLACK),
                                 text_align=ft.TextAlign.CENTER,
@@ -2079,7 +2157,6 @@ def create_view_orders_form(page, maps):
     dicio = {}
 
     count_itens = 0
-
     text_count_itens = ft.Text(value=f"Resultado: {count_itens}",
                                color=ft.Colors.BLACK,
                                text_align=ft.TextAlign.CENTER,
@@ -2089,6 +2166,8 @@ def create_view_orders_form(page, maps):
 
     def changesearch(e, dicio_filter, dicio, forms1, count_itens, text_count_itens):
 
+        time.sleep(0.5)
+
         try:
             if e.control.value.strip() == "":
                 dicio_filter["order_filter"] = "like.*"  
@@ -2097,102 +2176,119 @@ def create_view_orders_form(page, maps):
         except:
             dicio_filter["order_filter"] = "like.*"
 
-        params["order_id"] = dicio_filter["order_filter"]
-        params["function"] = dicio_filter["permission_filter"]
-
         profile = CurrentProfile()
         current_profile = profile.return_current_profile()
+        count_itens = 0
+        offset = 0
+        limit = 1000
+        new_response_data = []
+
+        while True:
+
+            params["order_id"] = dicio_filter["order_filter"]
+            params["function"] = dicio_filter["permission_filter"]
+            params["offset"] = offset
+            params["limit"] = limit
+
+            response = requests.get(
+                f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
+                headers=headers,
+                params=params,
+            )
+
+            data = response.json()
+            new_response_data.extend(data)
+
+            if len(data) < limit:
+                break
+        
+            offset += limit
+
+        count_itens = len(new_response_data)
+        text_count_itens.value = f"Resultado: {count_itens}"
+
+        # Reconstrói as linhas da tabela
+        dicio.clear()
+        for row in new_response_data[:50]:
+
+            data = row["created_at"]
+            order = row["order_id"]
+            function = row["function"]
+
+            def forms(order):
+                return lambda e: loading.add_loading_overlay_page(
+                    page=page,
+                    call_layout=lambda:create_page_os_forms(page, name=None, order=order, maps=maps),
+                    current_container=page.overlay[1]
+                )
+
+            linha = ft.DataRow(cells=[
+                    ft.DataCell(ft.Text(value=data, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
+                    ft.DataCell(ft.Text(value=order, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
+                    ft.DataCell(ft.Text(value=function, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
+                    ft.DataCell(
+                        ft.Container(content=
+                                        buttons.create_icon_button(
+                                                    icon=ft.Icons.SEARCH,
+                                                    on_click=forms(order),
+                                                    color=ft.Colors.BLUE,
+                                                    col=2,
+                                                    padding=0,
+                                                    icon_color=ft.Colors.WHITE,
+                                                    ))
+                    ),
+                ])
+
+            dicio[order] = linha
+
+        # Atualiza as linhas no DataTable
+        forms1.controls[0].content.rows = list(dicio.values())
+        page.update()
+
+    url = sp.get_url()
+    key = sp.get_key()
+    offset = 0
+    limit = 1000
+    response_data = []
+    profile = CurrentProfile()
+    current_profile = profile.return_current_profile()
+
+    while True:
+
+        headers = {
+            "apikey": key,
+            "Authorization": f"Bearer {key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+            "select": "created_at, order_id, function",
+            "order_id": dicio_filter["order_filter"],
+            "function": dicio_filter["permission_filter"],
+            "order": "order_id.desc",
+            "offset": offset,  
+            "limit": limit,
+        }
 
         response = requests.get(
-            f'{url}/rest/v1/order_post_{current_profile["city_call_name"]}',
+            f"{url}/rest/v1/order_post_{current_profile["city_call_name"]}",
             headers=headers,
             params=params,
         )
 
-        if response.status_code == 200:
+        data = response.json()
+        response_data.extend(data)
 
-            data = response.json()
+        if len(data) < limit:
+                break
+        
+        offset += limit
 
-            count_itens = 0
+    count_itens = len(response_data)
+    text_count_itens.value = f"Resultado: {count_itens}"
 
-            # Reconstrói as linhas da tabela
-            dicio.clear()
-            for row in data:
-
-                count_itens = int(count_itens) + 1
-                text_count_itens.value = f"Resultado: {count_itens}"
-
-                data = row["created_at"]
-                order = row["order_id"]
-                function = row["function"]
-
-                def forms(order):
-                    return lambda e: loading.add_loading_overlay_page(
-                        page=page,
-                        call_layout=lambda:create_page_os_forms(page, name=None, order=order, maps=maps),
-                        current_container=page.overlay[1]
-                    )
-
-                linha = ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value=data, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
-                        ft.DataCell(ft.Text(value=order, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
-                        ft.DataCell(ft.Text(value=function, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
-                        ft.DataCell(
-                            ft.Container(content=
-                                         buttons.create_icon_button(
-                                                        icon=ft.Icons.SEARCH,
-                                                        on_click=forms(order),
-                                                        color=ft.Colors.BLUE,
-                                                        col=2,
-                                                        padding=0,
-                                                        icon_color=ft.Colors.WHITE,
-                                                        ))
-                        ),
-                    ])
-
-                dicio[order] = linha
-
-            # Atualiza as linhas no DataTable
-            forms1.controls[0].content.rows = list(dicio.values())
-            page.update()
-        else:
-            print(f"Erro ao buscar dados: {response.text}")
-
-
-
-    url = sp.get_url()
-    key = sp.get_key()
-
-    headers = {
-        "apikey": key,
-        "Authorization": f"Bearer {key}",
-        "Content-Type": "application/json",
-    }
-
-
-    params = {
-        "select": "created_at, order_id, function",
-        "order_id": dicio_filter["order_filter"],
-        "function": dicio_filter["permission_filter"],
-        "order": "order_id.desc",
-    }
-
-    profile = CurrentProfile()
-    current_profile = profile.return_current_profile()
-
-    response = requests.get(
-        f'{url}/rest/v1/order_post_{current_profile["city_call_name"]}',
-        headers=headers,
-        params=params,
-    )
-
-    data = response.json()
-
-    for row in data:
+    for row in response_data[:50]:
             
-            count_itens = int(count_itens) + 1
-            text_count_itens.value = f"Resultado: {count_itens}"
-
             data = row["created_at"]
             order = row["order_id"]
             function = row["function"]
@@ -2236,13 +2332,13 @@ def create_view_orders_form(page, maps):
                 theme=texttheme1,
                 content=ft.DataTable(
                     data_row_max_height=50,
-                    column_spacing=20,  
+                    column_spacing=10,  
                     expand=True,  
                     columns=[
                         ft.DataColumn(ft.Text(value="Data", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="Ordem", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="Tipo", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="Ficha", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Nº", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER)),  
                     ],
                     rows=lista,  
                 ),
@@ -2265,17 +2361,18 @@ def create_view_orders_form(page, maps):
         adm_permission_data = filter_container.controls[0].content.controls[0].controls[0].data
         invited_permission = filter_container.controls[0].content.controls[1].controls[0].value
         invited_permission_data = filter_container.controls[0].content.controls[1].controls[0].data
+        filter_button.controls[0].bgcolor = ft.Colors.RED
         if adm_permission:
             dicio_filter["permission_filter"] = f"eq.{adm_permission_data}"
         if invited_permission:
             dicio_filter["permission_filter"] = f"eq.{invited_permission_data}"
         if invited_permission and adm_permission:
             dicio_filter["permission_filter"] = f"like.*"
+            filter_button.controls[0].bgcolor = ft.Colors.BLUE
         filter_container.controls[0].visible = not filter_container.controls[0].visible
+        searchfild.value = ""
         page.update()
         changesearch(e, dicio_filter, dicio, forms1, count_itens, text_count_itens),
-
-
 
     filter_container = ft.Row([
                         ft.Container(
@@ -2369,6 +2466,8 @@ def create_view_users_form(page):
 
     def changesearch(e, dicio_filter, dicio, forms1, count_itens, text_count_itens):
 
+        time.sleep(0.5)
+
         try:
             if e.control.value.strip() == "":
                 dicio_filter["user_filter"] = "like.*"  
@@ -2377,103 +2476,121 @@ def create_view_users_form(page):
         except:
             dicio_filter["user_filter"] = "like.*"
 
-        # Atualiza o filtro nos parâmetros
-        params["usuario"] = dicio_filter["user_filter"]
-        params["permission"] = dicio_filter["permission_filter"]
-
         profile = CurrentProfile()
         current_profile = profile.return_current_profile()
+        count_itens = 0
+        offset = 0
+        limit = 1000
+        new_response_data = []
 
-        # Faz uma nova requisição com o filtro atualizado
+        while True:
+
+            params["usuario"] = dicio_filter["user_filter"]
+            params["permission"] = dicio_filter["permission_filter"]
+            params["offset"] = offset
+            params["limit"] = limit
+
+            response = requests.get(
+                f"{url}/rest/v1/users_{current_profile["city_call_name"]}",
+                headers=headers,
+                params=params,
+            )
+
+            data = response.json()
+            new_response_data.extend(data)
+
+            if len(data) < limit:
+                break
+        
+            offset += limit
+
+        count_itens = len(new_response_data)
+        text_count_itens.value = f"Resultado: {count_itens}"
+
+        dicio.clear()
+        for row in new_response_data[:50]:
+
+            user_id = row["user_id"]
+            user_name = row["usuario"]
+            user_permission = row["permission"]
+
+            def forms(user_name):
+
+                return lambda e: loading.add_loading_overlay_page(
+                    page=page,
+                    call_layout=lambda:create_page_user_forms(page, user=user_name),
+                    current_container=page.overlay[1]
+                )
+        
+
+            linha = ft.DataRow(cells=[
+                        ft.DataCell(ft.Text(value=user_name, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
+                        ft.DataCell(ft.Text(value=user_permission, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
+                        ft.DataCell(
+                            ft.Container(content=
+                                        buttons.create_icon_button(
+                                                        icon=ft.Icons.SEARCH,
+                                                        on_click=forms(user_name),
+                                                        color=ft.Colors.BLUE,
+                                                        col=2,
+                                                        padding=0,
+                                                        icon_color=ft.Colors.WHITE,
+                                                        ))
+                        ),
+                    ])
+
+            dicio[user_id] = linha
+
+        # Atualiza as linhas no DataTable
+        forms1.controls[0].content.rows = list(dicio.values())
+        page.update()
+
+
+    url = sp.get_url()
+    key = sp.get_key()
+    offset = 0
+    limit = 1000
+    response_data = []
+    profile = CurrentProfile()
+    current_profile = profile.return_current_profile()
+
+    while True:
+
+        headers = {
+            "apikey": key,
+            "Authorization": f"Bearer {key}",
+            "Content-Type": "application/json",
+        }
+
+
+        params = {
+            "select": "user_id, usuario, permission",
+            "usuario": dicio_filter["user_filter"],
+            "permission": dicio_filter["permission_filter"],
+            "order": "user_id.desc",
+            "offset": offset,  
+            "limit": limit,
+        }
+
         response = requests.get(
-            f'{url}/rest/v1/users_{current_profile["city_call_name"]}',
+            f"{url}/rest/v1/users_{current_profile["city_call_name"]}",
             headers=headers,
             params=params,
         )
 
-        if response.status_code == 200:
+        data = response.json()
+        response_data.extend(data)
 
-            data = response.json()
+        if len(data) < limit:
+                break
+        
+        offset += limit
+        
+    count_itens = len(response_data)
+    text_count_itens.value = f"Resultado: {count_itens}"
 
-            count_itens = 0
-            # Reconstrói as linhas da tabela
-            dicio.clear()
-            for row in data:
-
-                count_itens = int(count_itens) + 1
-                text_count_itens.value = f"Resultado: {count_itens}"
-
-                user_id = row["user_id"]
-                user_name = row["usuario"]
-                user_permission = row["permission"]
-
-                def forms(user_name):
-
-                    return lambda e: loading.add_loading_overlay_page(
-                        page=page,
-                        call_layout=lambda:create_page_user_forms(page, user=user_name),
-                        current_container=page.overlay[1]
-                    )
+    for row in response_data[:50]:
             
-
-                linha = ft.DataRow(cells=[
-                            ft.DataCell(ft.Text(value=user_name, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
-                            ft.DataCell(ft.Text(value=user_permission, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
-                            ft.DataCell(
-                                ft.Container(content=
-                                            buttons.create_icon_button(
-                                                            icon=ft.Icons.SEARCH,
-                                                            on_click=forms(user_name),
-                                                            color=ft.Colors.BLUE,
-                                                            col=2,
-                                                            padding=0,
-                                                            icon_color=ft.Colors.WHITE,
-                                                            ))
-                            ),
-                        ])
-
-                dicio[user_id] = linha
-
-            # Atualiza as linhas no DataTable
-            forms1.controls[0].content.rows = list(dicio.values())
-            page.update()
-        else:
-            print(f"Erro ao buscar dados: {response.text}")
-
-    url = sp.get_url()
-    key = sp.get_key()
-
-    headers = {
-        "apikey": key,
-        "Authorization": f"Bearer {key}",
-        "Content-Type": "application/json",
-    }
-
-
-    params = {
-        "select": "user_id, usuario, permission",
-        "usuario": dicio_filter["user_filter"],
-        "permission": dicio_filter["permission_filter"],
-        "order": "user_id.desc",
-    }
-
-    profile = CurrentProfile()
-    current_profile = profile.return_current_profile()
-
-    # Requisição à API
-    response = requests.get(
-        f'{url}/rest/v1/users_{current_profile["city_call_name"]}',
-        headers=headers,
-        params=params,
-    )
-
-    data = response.json()
-
-    for row in data:
-            
-            count_itens = int(count_itens) + 1
-            text_count_itens.value = f"Resultado: {count_itens}"
-
             user_id = row["user_id"]
             user_name = row["usuario"]
             user_permission = row["permission"]
@@ -2516,12 +2633,12 @@ def create_view_users_form(page):
                 theme=texttheme1,
                 content=ft.DataTable(
                     data_row_max_height=50,
-                    column_spacing=20,  
+                    column_spacing=10,  
                     expand=True,  
                     columns=[
                         ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="Tipo", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="Visualizar", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER)),  
                     ],
                     rows=lista,  
                 ),
@@ -2544,16 +2661,18 @@ def create_view_users_form(page):
         adm_permission_data = filter_container.controls[0].content.controls[0].controls[0].data
         invited_permission = filter_container.controls[0].content.controls[1].controls[0].value
         invited_permission_data = filter_container.controls[0].content.controls[1].controls[0].data
+        filter_button.controls[0].bgcolor = ft.Colors.RED
         if adm_permission:
             dicio_filter["permission_filter"] = f"eq.{adm_permission_data}"
         if invited_permission:
             dicio_filter["permission_filter"] = f"eq.{invited_permission_data}"
         if invited_permission and adm_permission:
             dicio_filter["permission_filter"] = f"like.*"
+            filter_button.controls[0].bgcolor = ft.Colors.BLUE
         filter_container.controls[0].visible = not filter_container.controls[0].visible
+        searchfild.value = ""
         page.update()
         changesearch(e, dicio_filter, dicio, forms1, count_itens, text_count_itens),
-
 
 
     filter_container = ft.Row([
@@ -2748,7 +2867,7 @@ def add_point(page, coordinates, list_forms, image, angle, maps):
         current_profile = profile.return_current_profile()
 
         new_number = list_forms[0].zfill(4)
-        ip = f'IP {current_profile["city_acronym"]}-{new_number}'
+        ip = f"IP {current_profile["city_acronym"]}-{new_number}"
         point_data = sp.get_one_point_post(ip)
         data = point_data.json()
         row = data[0]
@@ -2833,7 +2952,7 @@ def add_point(page, coordinates, list_forms, image, angle, maps):
     snack_bar.open = True
     page.update()
 
-def add_os(page, list_add_os, name):
+def add_os(page, list_add_os, name, maps):
 
     sp = SupaBase(page)
     loading = LoadingPages(page)
@@ -2858,7 +2977,7 @@ def add_os(page, list_add_os, name):
             duration=2500,
         )
 
-        loading.add_loading_overlay_page(page=page, call_layout=lambda:create_adm_page_order(page, name),
+        loading.add_loading_overlay_page(page=page, call_layout=lambda:create_adm_page_order(page, name, maps),
         current_container=page.overlay[1])
       
     else:
@@ -2941,7 +3060,7 @@ def edit_point(page, list_edited_forms, image, previous_data, maps):
         current_profile = profile.return_current_profile()
 
         new_number = (str(list_edited_forms[0])).zfill(4)
-        ip = f'IP {current_profile["city_acronym"]}-{new_number}'
+        ip = f"IP {current_profile["city_acronym"]}-{new_number}"
         point_data = sp.get_one_point_post(ip)
         data = point_data.json()
         row = data[0]
@@ -3016,7 +3135,7 @@ def edit_point(page, list_edited_forms, image, previous_data, maps):
     snack_bar.open = True
     page.update()
 
-def edit_os(page, list_edited_os_forms, order, name):
+def edit_os(page, list_edited_os_forms, order, name, maps):
 
     sp = SupaBase(page)
     loading = LoadingPages(page)
@@ -3050,7 +3169,7 @@ def edit_os(page, list_edited_os_forms, order, name):
             duration=2000,
         )
         loading.add_loading_overlay_page(page=page,
-        call_layout=lambda:create_page_os_forms(page, name, order),
+        call_layout=lambda:create_page_os_forms(page, name, order, maps),
         current_container=page.overlay[1])
 
     else:
@@ -3166,7 +3285,7 @@ def delete_point(page, name, maps):
     snack_bar.open = True
     page.update()
 
-def delete_os(page, name, order):
+def delete_os(page, name, order, maps):
 
     loading = LoadingPages(page)
 
@@ -3193,7 +3312,7 @@ def delete_os(page, name, order):
                 )
 
             loading.add_loading_overlay_page(page=page,
-            call_layout=lambda:create_adm_page_order(page, name),
+            call_layout=lambda:create_adm_page_order(page, name, maps),
             current_container=page.overlay[1])
 
         else:
@@ -3271,7 +3390,7 @@ class Map:
         current_profile = profile.return_current_profile()
         self.center_map_coordinates = [current_profile["city_lat"], current_profile["city_lon"], None] 
 
-        self.current_zoom = None
+        self.current_zoom = 18.44
         self.zoom_zone = "above_17"
         self.list_filter = ["Lâmpada LED", "Lâmpada de vapor de sódio", "."]
         self.list_maps_acess_controls = list_maps_acess_controls
@@ -3293,17 +3412,15 @@ class Map:
 
         def tap_event(e: map.MapEvent):
 
-            try:
-                overlay_copy = list(self.page.overlay)
-                for item in overlay_copy:
-                    if item.data == "geolocator":
-                        pass
-                    else:
-                        self.page.overlay.remove(item)
-                self.list_maps_acess_controls[0].value = ""
-                self.page.update()
-            except:
-                pass
+            overlay_copy = list(self.page.overlay)
+            for item in overlay_copy:
+                if item.data == "geolocator":
+                    pass
+                else:
+                    self.page.overlay.remove(item)
+            self.list_maps_acess_controls[0].value = ""
+            self.page.update()
+
 
 
         self.google = map.Map(
@@ -3325,7 +3442,7 @@ class Map:
                         )
                     ],
                 )
-        conteiner_height = 800
+        conteiner_height = 900
 
         self.complete_map = ft.Column(
                     visible=True,
@@ -3373,63 +3490,45 @@ class Map:
         return  self.complete_map
          
     def update_position(self):
-        try:
-            if self.point_location.coordinates is not None:
-                if self.point_location in self.MarkerLayer[0]:
-                    self.MarkerLayer[0].remove(self.point_location)
-                else:      
-                    self.MarkerLayer[0].append(self.point_location)
-        except:
-            pass
+        if self.point_location.coordinates:
+            marker_layer = self.MarkerLayer[0]
+            action = marker_layer.remove if self.point_location in marker_layer else marker_layer.append
+            action(self.point_location)
 
     def to_check_update_size(self):
 
-        try:
-            if self.current_zoom is not None:
-                if self.current_zoom > 17.5:
-                    new_zoom_zone = "above_17"
-                if self.current_zoom < 17.5:
-                    new_zoom_zone = "below_17"
+        zoom_mapping = {
+        "above_17": {"size": 15},
+        "below_17": {"size": 7},
+        }
 
-                if new_zoom_zone != self.zoom_zone:
-                    self.zoom_zone = new_zoom_zone
-                    if new_zoom_zone == "above_17":
-                        self.current_point_size = 15
-                        self.current_point_visible = True
-                        self.update_size_point(self.current_point_size, self.current_point_visible)
-                    if new_zoom_zone == "below_17":
-                        self.current_point_size = 7
-                        self.current_point_visible = False
-                        self.update_size_point(self.current_point_size, self.current_point_visible)
+        new_zoom_zone = "above_17" if self.current_zoom > 17.5 else "below_17"
 
-        except:
-            None
+        if new_zoom_zone != self.zoom_zone:
+            self.zoom_zone = new_zoom_zone
+            zoom_data = zoom_mapping[new_zoom_zone]
+            self.current_point_size = zoom_data["size"]
+            self.update_size_point(self.current_point_size)
 
-    def update_size_point(self, size, visible):
+    def update_size_point(self, size):
 
         for item in self.MarkerLayer[0]:
-            try:
-                if item == self.point_location:
-                    pass
-                else:
-                    item.content.width = size
-                    item.content.height = size
-                    item.content.size = size
-            except AttributeError as e:
-                None
-
+            if item == self.point_location:
+                pass
+            else:
+                item.content.width = size
+                item.content.height = size
+                item.content.size = size
+            
     def move_map(self, x, y, zoom):
         self.google.move_to(
             destination=map.MapLatitudeLongitude(x, y),
             zoom=zoom
         )
-        try:
-            self.page.overlay[1].visible = False  #Verificar
-            self.page.overlay.pop(1)  
-            self.page.update()
-        except:
-            None
-
+        self.page.overlay[1].visible = False  #Verificar
+        self.page.overlay.pop(1)  
+        self.page.update()
+        
     def change_layer(self, url, max_zoom, zoom_to=False):
 
         self.google.layers[0].url_template = url
@@ -3437,33 +3536,28 @@ class Map:
         if zoom_to:
             if self.current_zoom > 18.44:
                 self.google.zoom_to(zoom=zoom_to)
-        try:
-            overlay_copy = list(self.page.overlay)
-            for item in overlay_copy:
-                if item.data == "geolocator":
-                    pass
-                else:
-                    self.page.overlay.remove(item)
-            self.page.update()
-        except:
-            pass
-        self.google.update()
+
+        overlay_copy = list(self.page.overlay)
+        for item in overlay_copy:
+            if item.data == "geolocator":
+                pass
+            else:
+                self.page.overlay.remove(item)
+        self.page.update()
     
     def filter_map(self, new_filter):
 
         self.list_filter = new_filter
 
-        try:
-            overlay_copy = list(self.page.overlay)
-            for item in overlay_copy:
-                if item.data == "geolocator":
-                    pass
-                else:
-                    self.page.overlay.remove(item)
-            self.list_maps_acess_controls[0].value = ""
-            self.page.update()
-        except:
-            pass
+        overlay_copy = list(self.page.overlay)
+        for item in overlay_copy:
+            if item.data == "geolocator":
+                pass
+            else:
+                self.page.overlay.remove(item)
+        self.list_maps_acess_controls[0].value = ""
+        self.page.update()
+
 
         current_points = CurrentMapPoints()
         current_points.filter_points(new_filter)
@@ -3499,20 +3593,22 @@ class Map:
                 break  
 
     def reload_map(self, list_points):
-        for item in list(self.MarkerLayer[0]):  
-            if item not in list_points and item != self.point_location:  
-                self.MarkerLayer[0].remove(item)
+        marker_layer = self.MarkerLayer[0]  # Referência local para otimização
+        
+        # Remover itens não desejados em uma única operação
+        marker_layer[:] = [item for item in marker_layer 
+                        if item in list_points or item == self.point_location]
 
-        if self.zoom_zone == "above_17":
-            size = 15
-        else:
-            size = 7
+        # Definir o tamanho baseado na zona de zoom
+        size = 15 if self.zoom_zone == "above_17" else 7
 
-        for item in list_points:  
-            if item not in self.MarkerLayer[0]:
+        # Adicionar novos itens que não estão no marcador
+        existing_items = set(marker_layer)  # Conjunto para busca mais rápida
+        for item in list_points:
+            if item not in existing_items:
                 item.content.width = size
                 item.content.height = size
-                self.MarkerLayer[0].append(item)     
+                marker_layer.append(item)     
         
 class Marker:
 
@@ -3681,16 +3777,15 @@ class Search:
             result = []  # cria outra lista
 
             if mysearch.strip():  # Se houver texto digitado
-                try:
-                    overlay_copy = list(self.page.overlay)
-                    for item in overlay_copy:
-                        if item.data == "geolocator":
-                            pass
-                        else:
-                            self.page.overlay.remove(item)
-                    page.update()
-                except:
-                    pass
+
+                overlay_copy = list(self.page.overlay)
+                for item in overlay_copy:
+                    if item.data == "geolocator":
+                        pass
+                    else:
+                        self.page.overlay.remove(item)
+                page.update()
+
                 if self.resultcon not in self.page.overlay:
                     self.resultcon.visible = True
                     self.page.overlay.insert(1, self.resultcon)  # Adiciona ao overlay
@@ -3755,7 +3850,7 @@ class Search:
 
 class Container:
 
-    def __init__(self, page, maps):
+    def __init__(self, page, maps, action1, action2, action3, action4, action5):
         self.page = page
         self.maps = maps
         self.layer_aerial = "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
@@ -3765,6 +3860,8 @@ class Container:
         web_images = Web_Image(page)
         chk =CheckBox(page)
         buttons = Buttons(page)
+        profile = CurrentProfile()
+        dict_profile = profile.return_current_profile()
 
         url_imagem1 = web_images.get_image_url(name="map_aerial")
         map_aerial = web_images.create_web_image(src=url_imagem1) 
@@ -3849,6 +3946,65 @@ class Container:
                                 )
 
 
+        listtiles = [
+
+            ft.ListTile(
+                title=ft.Text(f"Deslogar", color=ft.Colors.BLACK),
+                on_click=action1,
+                bgcolor=ft.Colors.WHITE,
+                shape=ft.RoundedRectangleBorder(radius=10),
+            ),
+            ft.ListTile(
+                title=ft.Text(f"Atualizar", color=ft.Colors.BLACK),
+                on_click=action2,
+                bgcolor=ft.Colors.WHITE,
+                shape=ft.RoundedRectangleBorder(radius=10),
+            ),
+        ]
+
+        if dict_profile["permission"] == "adm":
+
+            listtiles.append(
+                ft.ListTile(
+                        title=ft.Text(f"Lista de postes", color=ft.Colors.BLACK),
+                        on_click=action3,
+                        bgcolor=ft.Colors.WHITE,
+                        shape=ft.RoundedRectangleBorder(radius=10),
+                    )
+            )
+            listtiles.append(
+                ft.ListTile(
+                        title=ft.Text(f"Lista de ordens de serviço", color=ft.Colors.BLACK),
+                        on_click=action4,
+                        bgcolor=ft.Colors.WHITE,
+                        shape=ft.RoundedRectangleBorder(radius=10),
+                    )
+            )
+            listtiles.append(
+                ft.ListTile(
+                        title=ft.Text(f"Gestão de usuários", color=ft.Colors.BLACK),
+                        on_click=action5,
+                        bgcolor=ft.Colors.WHITE,
+                        shape=ft.RoundedRectangleBorder(radius=10),
+                    )
+            )
+
+        self.menu_container = ft.Row([
+                                ft.Container(
+                                    bgcolor=ft.Colors.BLACK,
+                                    padding=10,
+                                    margin=10,
+                                    height=340,
+                                    width=370,
+                                    border_radius=20,
+                                    col=12,
+                                    content=ft.Column(listtiles)
+                                )
+                                ],
+                                vertical_alignment=ft.CrossAxisAlignment.END,
+                                alignment=ft.MainAxisAlignment.CENTER,
+                                )
+
     def create_maps_container(self):
         self.map_container.offset = ft.transform.Offset(0, 0)  # Centralizado
         self.map_container.animate_offset = ft.animation.Animation(600, curve="easeIn")
@@ -3858,6 +4014,11 @@ class Container:
         self.filter_container.offset = ft.transform.Offset(0, 0)  # Centralizado
         self.filter_container.animate_offset = ft.animation.Animation(600, curve="easeIn")
         return self.filter_container
+    
+    def create_menu_container(self):
+        self.menu_container.offset = ft.transform.Offset(0, 0)  # Centralizado
+        self.menu_container.animate_offset = ft.animation.Animation(600, curve="easeIn")
+        return self.menu_container
 
 
 
