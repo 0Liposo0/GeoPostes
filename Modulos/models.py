@@ -2,8 +2,10 @@ import flet as ft
 import requests
 import flet.map as map
 from datetime import datetime
+from collections import defaultdict
 import time
-
+from PIL import Image, ImageOps
+import io
 
 
 
@@ -124,14 +126,27 @@ class Buttons:
     
           
     
-    def create_point_button(self, on_click, text, color, size, visible):
+    def create_point_button_post(self, on_click, text, color, size, visible):
         
         return ft.Container(
             width=size,
             height=size,
             bgcolor=color,
             on_click=on_click,
-            border_radius=((int(size))/2),
+            border_radius=((int(size))/2)
+            )
+    
+    def create_point_button_tree(self, on_click, text, color, size, visible):
+        
+        new_size = size + 5
+
+        return ft.Container(
+            on_click=on_click,
+            content=ft.Icon(
+                name=ft.Icons.PARK_SHARP,
+                color=color,
+                size=new_size
+            ),
             )
         
           
@@ -441,10 +456,28 @@ class Forms:
     def __init__(self, page):
         self.page = page
 
-    def create_post_form(self, list_post_form):
+    def create_forms_post(self, dict_forms):
 
         textthemes = TextTheme()
         texttheme1 = textthemes.create_text_theme1()
+
+        itens_forms = []
+
+        for n in range(len(dict_forms)):
+            key = list(dict_forms.keys())[n]
+            value = list(dict_forms.values())[n]
+
+            itens_forms.append(ft.DataRow(cells=[
+                ft.DataCell(ft.Text(value=key, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                ft.DataCell(
+                    ft.Container(content=value, width=200)  
+                )
+            ]))
+
+        method_map = {
+            "IP" : "Poste",
+            "IA": "Árvore",
+        }
 
         return ft.Column([
                     ft.Container(
@@ -453,49 +486,12 @@ class Forms:
                         theme=texttheme1,  
                         content=ft.DataTable(
                             data_row_max_height=60,
-                            column_spacing=10,
+                            column_spacing=30,
                             columns=[
-                                ft.DataColumn(ft.Text(value="")),  
-                                ft.DataColumn(ft.Text(value="")),  
+                                ft.DataColumn(ft.Text(value="Formulário de", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
+                                ft.DataColumn(ft.Text(value=method_map[list(dict_forms.keys())[0]], theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
                             ],
-                            rows=[
-                                ft.DataRow(cells=[
-                                    ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                    ft.DataCell(
-                                        ft.Container(content=ft.Text(value=list_post_form[0], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                    )
-                                ]),
-                                ft.DataRow(cells=[
-                                    ft.DataCell(ft.Text(value="Situação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                    ft.DataCell(
-                                        ft.Container(content=ft.Text(value=list_post_form[1], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                    )
-                                ]),
-                                ft.DataRow(cells=[
-                                    ft.DataCell(ft.Text(value="Tipo de Lâmpada", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                    ft.DataCell(
-                                        ft.Container(content=ft.Text(value=list_post_form[2], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                    )
-                                ]),
-                                ft.DataRow(cells=[
-                                    ft.DataCell(ft.Text(value="Pontos", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                    ft.DataCell(
-                                        ft.Container(content=ft.Text(value=list_post_form[3], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                    )
-                                ]),
-                                ft.DataRow(cells=[
-                                    ft.DataCell(ft.Text(value="Bairro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                    ft.DataCell(
-                                        ft.Container(content=ft.Text(value=list_post_form[4], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                    )
-                                ]),
-                                ft.DataRow(cells=[
-                                    ft.DataCell(ft.Text(value="Logradouro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                    ft.DataCell(
-                                        ft.Container(content=ft.Text(value=list_post_form[5], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                    )
-                                ]),
-                            ],
+                            rows= itens_forms,
                         ),
                     )
                     ],
@@ -571,10 +567,28 @@ class Forms:
                         expand=True,
                         )
     
-    def create_os_forms(self, list_os_form):
+    def create_os_forms(self, dict_forms, object):
 
         textthemes = TextTheme()
         texttheme1 = textthemes.create_text_theme1()
+
+        itens_forms = []
+
+        for n in range(len(dict_forms)):
+            key = list(dict_forms.keys())[n]
+            value = list(dict_forms.values())[n]
+
+            itens_forms.append(ft.DataRow(cells=[
+                ft.DataCell(ft.Text(value=key, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                ft.DataCell(
+                    ft.Container(content=value, width=200)  
+                )
+            ]))
+
+        method_map = {
+            "post" : "Poste",
+            "tree": "Árvore",
+        }
 
         return ft.Column([
                     ft.Container(
@@ -585,95 +599,10 @@ class Forms:
                                 data_row_max_height=60,
                                 column_spacing=10,
                                 columns=[
-                                    ft.DataColumn(ft.Text(value="")),  
-                                    ft.DataColumn(ft.Text(value="")),  
+                                    ft.DataColumn(ft.Text(value="Ordem de", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
+                                    ft.DataColumn(ft.Text(value=method_map[object], theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
                                 ],
-                                rows=[
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Criação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[0], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[1], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Reclamante", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[2], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[3], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Celular", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[4], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Ordem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[5], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Origem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[6], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Observação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[7], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Materiais", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[8], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Ponto", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[9], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Status", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[10], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Data do andamento", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[11], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Data da conclusão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[12], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Equipe", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ft.Text(value=list_os_form[13], theme_style=ft.TextThemeStyle.TITLE_MEDIUM), width=200)
-                                        )
-                                    ]),
-                                ],
+                                rows=itens_forms,
                             ),
                         )
                         ],
@@ -684,34 +613,26 @@ class Forms:
                         expand=True,
                         )
 
-    def create_add_forms(self, ip, situ, tipo, pontos, bairro, logra):
+
+    def create_add_forms(self, dict_forms):
 
         textthemes = TextTheme()
         texttheme1 = textthemes.create_text_theme1()
 
-        textfields = TextField(self.page)
-        ip_field = textfields.create_textfield(value=ip, text=None, password=False, read=None, input_filter=ft.NumbersOnlyInputFilter(), keyboard_type=ft.KeyboardType.NUMBER)
-        bairro_field = textfields.create_textfield(value=bairro, text=None, password=False)
-        logradouro_field = textfields.create_textfield(value=logra, text=None, password=False)
+        itens_forms = []
 
-        def drop_down_menu(value=None, opt1=None, opt2=None, opt3=None, opt4=None, opt5=None, opt6=None):
+        for n in range(len(dict_forms)):
+            key = list(dict_forms.keys())[n]
+            value = list(dict_forms.values())[n]
 
-            list = [opt1, opt2, opt3, opt4, opt5, opt6]
-            list_option = []
-            for opt in list:
-                if opt != None:
-                    list_option.append(ft.dropdown.Option(opt))
+            itens_forms.append(ft.DataRow(cells=[
+                ft.DataCell(ft.Text(value=key, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                ft.DataCell(
+                    ft.Container(content=value, width=200)  
+                )
+            ]))
 
-            menu = ft.Dropdown(
-                options=list_option,
-                value=value,
-                label_style=ft.TextStyle(color=ft.Colors.BLACK, size=12),
-                bgcolor=ft.Colors.WHITE,
-                options_fill_horizontally=True,
-                text_style= ft.TextStyle(size=12, color=ft.Colors.BLACK)
-            )
-            return menu
-    
+
         return ft.Column([
                     ft.Container(
                         padding=0,
@@ -724,44 +645,7 @@ class Forms:
                                 ft.DataColumn(ft.Text(value="")),  
                                 ft.DataColumn(ft.Text(value="")),  
                             ],
-                            rows=[
-                                ft.DataRow(cells=[
-                                    ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                    ft.DataCell(
-                                        ft.Container(content=ip_field, width=200)
-                                    )
-                                ]),
-                                ft.DataRow(cells=[
-                                    ft.DataCell(ft.Text(value="Situação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                    ft.DataCell(
-                                        ft.Container(content=drop_down_menu(situ, "Com iluminação", "Sem iluminação"), width=200)
-                                    )
-                                ]),
-                                ft.DataRow(cells=[
-                                    ft.DataCell(ft.Text(value="Tipo de Lâmpada", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                    ft.DataCell(
-                                        ft.Container(content=drop_down_menu(tipo, ".", "Lâmpada LED", "Lâmpada de vapor de sódio"), width=200)
-                                    )
-                                ]),
-                                ft.DataRow(cells=[
-                                    ft.DataCell(ft.Text(value="Pontos", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                    ft.DataCell(
-                                        ft.Container(content=drop_down_menu(pontos, "0","1", "2", "3", "4", "5"), width=200)
-                                    )
-                                ]),
-                                ft.DataRow(cells=[
-                                    ft.DataCell(ft.Text(value="Bairro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                    ft.DataCell(
-                                        ft.Container(content=bairro_field, width=200)
-                                    )
-                                ]),
-                                ft.DataRow(cells=[
-                                    ft.DataCell(ft.Text(value="Logradouro", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                    ft.DataCell(
-                                        ft.Container(content=logradouro_field, width=200)
-                                    )
-                                ]),
-                            ],
+                            rows=itens_forms,
                         ),
                     )
                     ],
@@ -770,45 +654,24 @@ class Forms:
                     height=470,
                     expand=True,
                     )
-
-    def create_add_os_forms(self, list_os_forms):
+    
+    def create_add_os_forms(self, dict_forms):
 
         textthemes = TextTheme()
         texttheme1 = textthemes.create_text_theme1()
 
-        textfields = TextField(self.page)
-        data_cria_field = textfields.create_textfield(value=list_os_forms[0], text=None, password=False)
-        ip_field = textfields.create_textfield(value=list_os_forms[1], text=None, password=False)
-        reclamante_field = textfields.create_textfield(value=list_os_forms[2], text=None, password=False)
-        celular_field = textfields.create_textfield(value=list_os_forms[4], text=None, password=False)
-        order_field = textfields.create_textfield(value=list_os_forms[5], text=None, password=False, read=True)
-        origem_field = textfields.create_textfield(value=list_os_forms[6], text=None, password=False)
-        observ_field = textfields.create_textfield(value=list_os_forms[7], text=None, password=False, multiline=True)
-        materi_field = textfields.create_textfield(value=list_os_forms[8], text=None, password=False, multiline=True)
-        pontos_field = textfields.create_textfield(value=list_os_forms[9], text=None, password=False)
-        status_field = textfields.create_textfield(value=list_os_forms[10], text=None, password=False)
-        data_andamen_field = textfields.create_textfield(value=list_os_forms[11], text=None, password=False)
-        data_conclu_field = textfields.create_textfield(value=list_os_forms[12], text=None, password=False)
-        equipe_field = textfields.create_textfield(value=list_os_forms[13], text=None, password=False)
+        itens_forms = []
 
+        for n in range(len(dict_forms)):
+            key = list(dict_forms.keys())[n]
+            value = list(dict_forms.values())[n]
 
-        def drop_down_menu(value=None, opt1=None, opt2=None, opt3=None, opt4=None, opt5=None, opt6=None):
-
-            list = [opt1, opt2, opt3, opt4, opt5, opt6]
-            list_option = []
-            for opt in list:
-                if opt != None:
-                    list_option.append(ft.dropdown.Option(opt))
-
-            menu = ft.Dropdown(
-                options=list_option,
-                value=value,
-                label_style=ft.TextStyle(color=ft.Colors.BLACK, size=12),
-                bgcolor=ft.Colors.WHITE,
-                options_fill_horizontally=True,
-                text_style= ft.TextStyle(size=12, color=ft.Colors.BLACK)
-            )
-            return menu
+            itens_forms.append(ft.DataRow(cells=[
+                ft.DataCell(ft.Text(value=key, theme_style=ft.TextThemeStyle.TITLE_LARGE)),
+                ft.DataCell(
+                    ft.Container(content=value, width=200)  
+                )
+            ]))
 
         return ft.Column([
                     ft.Container(
@@ -822,92 +685,7 @@ class Forms:
                                     ft.DataColumn(ft.Text(value="")),  
                                     ft.DataColumn(ft.Text(value="")), 
                                 ],
-                                rows=[
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Data de Criação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=data_cria_field, width=200)  
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="IP", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=ip_field, width=200)  
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Reclamante", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=reclamante_field, width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Usuário", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=drop_down_menu(list_os_forms[3], "adm", "convidado"), width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Celular", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=celular_field, width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Ordem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=order_field, width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Origem", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=origem_field, width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Observação", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=observ_field, width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Material", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=materi_field, width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Ponto Queimado", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=pontos_field, width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Status", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=status_field, width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Data de Andamento", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=data_andamen_field, width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Data de Conclusão", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=data_conclu_field, width=200)
-                                        )
-                                    ]),
-                                    ft.DataRow(cells=[
-                                        ft.DataCell(ft.Text(value="Equipe", theme_style=ft.TextThemeStyle.TITLE_LARGE)),
-                                        ft.DataCell(
-                                            ft.Container(content=equipe_field, width=200)
-                                        )
-                                    ]),
-                                ],
+                                rows=itens_forms,
                             ),
                         )
                         ],
@@ -1277,7 +1055,7 @@ class SupaBase:
 
 
 
-    def get_point_post(self, offset=0, limit=1000):
+    def get_all_points(self, object, offset=0, limit=1000):
 
         headers = {
             "apikey": self.supabase_key,
@@ -1286,7 +1064,7 @@ class SupaBase:
         }
 
         params = {
-            "select": "name, x, y, color, type",
+            "select": "name, x, y, color, type, object",
             "offset": offset,  
             "limit": limit,    
         }
@@ -1295,7 +1073,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
+            f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -1326,7 +1104,31 @@ class SupaBase:
 
         return response
     
-    def get_form_post(self, name):
+    def get_forms(self, name, object):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        method_map = {
+            "post": {"name": f"eq.{name}","select": "name, situation, type, point, hood, address"},
+            "tree": {"name": f"eq.{name}","select": "name, type, height, diameter, hood, address"}
+        }
+
+        profile = CurrentProfile()
+        current_profile = profile.return_current_profile()
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/form_{object}_{current_profile["city_call_name"]}',
+            headers=headers,
+            params=method_map[object],
+        )
+
+        return response
+    
+    def get_one_point(self, name, object):
 
         headers = {
             "apikey": self.supabase_key,
@@ -1336,50 +1138,26 @@ class SupaBase:
 
         params = {
         "name": f"eq.{name}",
-        "select": "name, situation, type, point, hood, address",
+        "select": "name, x, y, color, type, object",
         }
 
         profile = CurrentProfile()
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}',
+            f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
 
         return response
     
-    def get_one_point_post(self, name):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = {
-        "name": f"eq.{name}",
-        "select": "name, x, y, color, type",
-        }
+    def get_storage(self, name, object):
 
         profile = CurrentProfile()
         current_profile = profile.return_current_profile()
 
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
-            headers=headers,
-            params=params,
-        )
-
-        return response
-    
-    def get_storage_post(self, name):
-
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-
-        storage_path = f'{current_profile["city_call_name"]}/post/{name}.jpg'
+        storage_path = f'{current_profile["city_call_name"]}/{object}/{name}.jpg'
         public_url = f"{self.supabase_url}/storage/v1/object/public/{storage_path}"
         response = requests.get(public_url)
         if response.status_code == 200:
@@ -1388,7 +1166,7 @@ class SupaBase:
             url = "Nulo"
             return url
 
-    def get_os(self, order):
+    def get_os(self, order, object):
 
         headers = {
             "apikey": self.supabase_key,
@@ -1396,23 +1174,30 @@ class SupaBase:
             "Content-Type": "application/json",
         }
 
-        params = {
-        "order_id": f"eq.{order}",
-        "select": "created_at, ip, reclamante, function, celular, order_id, origem, observacao, materiais, ponto, status, data_andamento, data_conclusao, equipe",
+        method_map = {
+            "post": {
+                    "order_id": f"eq.{order}",
+                    "select": "created_at, ip, reclamante, function, celular, order_id, origem, observacao, materiais, ponto, status, data_andamento, data_conclusao, equipe",
+                    },
+
+            "tree": {
+                    "order_id": f"eq.{order}",
+                    "select": "created_at, ip, reclamante, function, celular, order_id, origem, observacao, materiais, altura, status, data_andamento, data_conclusao, equipe",
+                    },
         }
 
         profile = CurrentProfile()
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}',
+            f'{self.supabase_url}/rest/v1/order_{object}_{current_profile["city_call_name"]}',
             headers=headers,
-            params=params,
+            params=method_map[object],
         )
 
         return response
 
-    def get_os_id(self):
+    def get_os_id(self, object):
 
         headers = {
             "apikey": self.supabase_key,
@@ -1428,7 +1213,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}',
+            f'{self.supabase_url}/rest/v1/order_{object}_{current_profile["city_call_name"]}',
             headers=headers,
             params=params,
         )
@@ -1438,7 +1223,7 @@ class SupaBase:
 
         return new_id
     
-    def get_last_form_post(self):
+    def get_last_form(self, object):
 
         offset = 0
         limit = 1000
@@ -1462,7 +1247,7 @@ class SupaBase:
             }
         
             response = requests.get(
-                f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}',
+                f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}',
                 headers=headers,
                 params=params,
             )
@@ -1477,11 +1262,8 @@ class SupaBase:
 
             offset += limit
 
-
-
         numbers = []
         for item in response_data:
-
             numero = int(item["name"].split('-')[1])
             numbers.append(numero)
             
@@ -1489,7 +1271,7 @@ class SupaBase:
         new_number = str(max_number+1)
 
         return new_number
-    
+      
     def get_user_id(self):
 
         headers = {
@@ -1525,7 +1307,7 @@ class SupaBase:
         }
 
         params = {
-            "select": "name, call_name, lat, lon, acronym", 
+            "select": "name, call_name, lat, lon, acronym, objects", 
         }
 
         response = requests.get(
@@ -1537,7 +1319,7 @@ class SupaBase:
         return response
 
 
-    def add_storage(self, name, image, angle_image, new=True):
+    def add_storage(self, name, image, angle_image, object, new=True):
         
         headers = {
             'Authorization': f'Bearer {self.supabase_key}',
@@ -1547,7 +1329,7 @@ class SupaBase:
         profile = CurrentProfile()
         current_profile = profile.return_current_profile()
 
-        storage_path = f'{current_profile["city_call_name"]}/post/{name}.jpg'
+        storage_path = f'{current_profile["city_call_name"]}/{object}/{name}.jpg'
 
         if new == True:
             with open(image, 'rb') as file:
@@ -1555,33 +1337,59 @@ class SupaBase:
         else:
             bytes = image
 
+        def rotate_image(bytes_data, angle):
+
+            if angle == 90:
+                angle = 270
+            elif angle == 270:
+                angle = 90
+
+            image = Image.open(io.BytesIO(bytes_data))
+
+            image = ImageOps.exif_transpose(image)
+
+            rotated_image = image.rotate(angle, expand=True)
+
+            output = io.BytesIO()
+            rotated_image.save(output, format="JPEG")  
+            output.seek(0)
+
+            return output.getvalue()
+
+        rotated_img_bytes = rotate_image(bytes, angle_image)
+
         response = requests.post(
                 f'{self.supabase_url}/storage/v1/object/{storage_path}',
                 headers=headers,
-                data=bytes
+                data=rotated_img_bytes
             )
         
         if response.status_code != 200: 
             print("Erro ao enviar imagem:", response.json())
             return None
 
-    def add_point(self, list_forms, coordinates, image, angle):
+    def add_point(self, list_forms, coordinates, image, angle, object):
 
         sp = SupaBase(self.page)
         profile = CurrentProfile()
         current_profile = profile.return_current_profile()
         number = str(list_forms[0])
         new_number = number.zfill(4)
-        ip = f'IP {current_profile["city_acronym"]}-{new_number}'
 
-        point_color = None
-        if list_forms[2] == "Lâmpada LED":
-            point_color = "white"
-        if list_forms[2] == "Lâmpada de vapor de sódio":
-            point_color = "yellow"
-        if list_forms[2] == ".":
-            point_color = "blue"
+        method_map = {
+                "post": f'IP {current_profile["city_acronym"]}-{new_number}',
+                "tree": f'IA {current_profile["city_acronym"]}-{new_number}'
+            }
+        method_map2 = {
+                "post": {
+                        "Lâmpada LED": "white",
+                        "Lâmpada de vapor de sódio": "yellow",
+                        ".": "blue"
+                        },
+                "tree": defaultdict(lambda: "green")
+            }
 
+        point_color = method_map2[object][list_forms[2]]
 
         headers = {
             "apikey": self.supabase_key,
@@ -1590,15 +1398,15 @@ class SupaBase:
         }
 
         response1 = requests.get(
-            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
+            f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}',
             headers=headers,
-            params={"select": "name", "name": f"eq.{ip}"}
+            params={"select": "name", "name": f"eq.{method_map[object]}"}
         )
 
         if response1.status_code == 200 and response1.json():
             # Se o ponto já existir, mostre a mensagem e retorne
             snack_bar = ft.SnackBar(
-                content=ft.Text(f"{ip} já foi cadastrado, ponto não adicionado"),
+                content=ft.Text(f"{method_map[object]} já foi cadastrado, ponto não adicionado"),
                 bgcolor=ft.Colors.RED
             )
             self.page.overlay.append(snack_bar)
@@ -1608,7 +1416,7 @@ class SupaBase:
 
         if image != None:
             try:
-                sp.add_storage(ip, image.src, angle)
+                sp.add_storage(method_map[object], image.src, angle, object)
             except:
                 snack_bar = ft.SnackBar(
                         content=ft.Text(f"O dispositivo negou acesso a imagem"),
@@ -1618,19 +1426,30 @@ class SupaBase:
                 self.page.overlay.append(snack_bar)
                 snack_bar.open = True
 
-        data = {
-                "name": ip,
-                "situation": list_forms[1],
-                "type": list_forms[2],
-                "point": list_forms[3],
-                "hood": list_forms[4],
-                "address": list_forms[5],
+        method_map3 = {
+                "post": {
+                    "name": method_map[object],
+                    "situation": list_forms[1],
+                    "type": list_forms[2],
+                    "point": list_forms[3],
+                    "hood": list_forms[4],
+                    "address": list_forms[5],
+                },
+                "tree": {
+                    "name": method_map[object],
+                    "type": list_forms[1],
+                    "height": list_forms[2],
+                    "diameter": list_forms[3],
+                    "hood": list_forms[4],
+                    "address": list_forms[5],
+                },
+                
             }
 
         response2 = requests.post(
-            f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}',
+            f'{self.supabase_url}/rest/v1/form_{object}_{current_profile["city_call_name"]}',
             headers=headers,
-            json=data,
+            json=method_map3[object],
         )
 
         data_atual = datetime.now()
@@ -1639,27 +1458,79 @@ class SupaBase:
         profile = CurrentProfile()
         dict_profile = profile.return_current_profile()
 
-        data2 = {
-                "name": ip,
-                "x": coordinates[0],
-                "y": coordinates[1],
-                "type": list_forms[2],
-                "color": point_color,
-                "changed_at": data_formatada,
-                "changed_by": dict_profile["user"],
+        method_map4 = {
+                "post": {
+                    "name": method_map[object],
+                    "x": coordinates[0],
+                    "y": coordinates[1],
+                    "type": list_forms[2],
+                    "color": point_color,
+                    "changed_at": data_formatada,
+                    "changed_by": dict_profile["user"],
+                    "object": object,
+                },
+                "tree": {
+                    "name": method_map[object],
+                    "x": coordinates[0],
+                    "y": coordinates[1],
+                    "type": "tree",
+                    "color": point_color,
+                    "changed_at": data_formatada,
+                    "changed_by": dict_profile["user"],
+                    "object": object,
+                },
+                
             }
-        
+    
         response3 = requests.post(
-            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
+            f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}',
             headers=headers,
-            json=data2,
+            json=method_map4[object],
         )
         
         return response3
     
-    def add_os(self, list_add_os):
+    def add_os(self, list_add_os, object):
 
-        numero = int(list_add_os[1].split('-')[1])
+        number = int(list_add_os[1].split('-')[1])
+
+        method_map = {
+                "post": {
+                    "created_at": list_add_os[0],
+                    "ip": list_add_os[1],
+                    "numero": number,
+                    "reclamante": list_add_os[2],
+                    "function": list_add_os[3],
+                    "celular": list_add_os[4],
+                    "order_id": list_add_os[5],
+                    "origem": list_add_os[6],
+                    "observacao": list_add_os[7],
+                    "materiais": list_add_os[8],
+                    "ponto": list_add_os[9],
+                    "status": list_add_os[10],
+                    "data_andamento": list_add_os[11],
+                    "data_conclusao": list_add_os[12],
+                    "equipe": list_add_os[13],
+                    },
+                "tree": {
+                    "created_at": list_add_os[0],
+                    "ip": list_add_os[1],
+                    "numero": number,
+                    "reclamante": list_add_os[2],
+                    "function": list_add_os[3],
+                    "celular": list_add_os[4],
+                    "order_id": list_add_os[5],
+                    "origem": list_add_os[6],
+                    "observacao": list_add_os[7],
+                    "materiais": list_add_os[8],
+                    "altura": list_add_os[9],
+                    "status": list_add_os[10],
+                    "data_andamento": list_add_os[11],
+                    "data_conclusao": list_add_os[12],
+                    "equipe": list_add_os[13],
+                    },
+                
+            }
 
         headers = {
             "apikey": self.supabase_key,
@@ -1671,14 +1542,14 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.get(
-            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}',
+            f'{self.supabase_url}/rest/v1/order_{object}_{current_profile["city_call_name"]}',
             headers=headers,
-            params={"select": "order_id", "order_id": f"eq.{list_add_os[5]}"}
+            params={"select": "order_id", "order_id": f"eq.{method_map[object]["order_id"]}"}
         )
 
         if response.status_code == 200 and response.json():
             snack_bar = ft.SnackBar(
-                content=ft.Text(f"{list_add_os[5]} já foi cadastrado, ordem {list_add_os[5]} não adicionada"),
+                content=ft.Text(f"{list_add_os[5]} já foi cadastrado, ordem {method_map[object]["order_id"]} não adicionada"),
                 bgcolor=ft.Colors.RED
             )
             self.page.overlay.append(snack_bar)
@@ -1686,28 +1557,11 @@ class SupaBase:
             self.page.update()
             return
 
-        data = {
-            "created_at": list_add_os[0],
-            "ip": list_add_os[1],
-            "numero": numero,
-            "reclamante": list_add_os[2],
-            "function": list_add_os[3],
-            "celular": list_add_os[4],
-            "order_id": list_add_os[5],
-            "origem": list_add_os[6],
-            "observacao": list_add_os[7],
-            "materiais": list_add_os[8],
-            "ponto": list_add_os[9],
-            "status": list_add_os[10],
-            "data_andamento": list_add_os[11],
-            "data_conclusao": list_add_os[12],
-            "equipe": list_add_os[13],
-        }
 
         response = requests.post(
-            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}',
+            f'{self.supabase_url}/rest/v1/order_{object}_{current_profile["city_call_name"]}',
             headers=headers,
-            json=data,
+            json=method_map[object],
         )
 
         return response
@@ -1778,66 +1632,103 @@ class SupaBase:
 
 
 
-    def edit_point(self, image, list_forms, previous_data):
+    def edit_point(self, image, list_forms, previous_data, object):
 
         sp = SupaBase(self.page)
         profile = CurrentProfile()
         current_profile = profile.return_current_profile()
         number = str(list_forms[0])
         new_number = number.zfill(4)
-        ip = f'IP {current_profile["city_acronym"]}-{new_number}'
 
+        method_map = {
+                "post": f'IP {current_profile["city_acronym"]}-{new_number}',
+                "tree": f'IA {current_profile["city_acronym"]}-{new_number}'
+            }
+        
         headers = {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
             "Content-Type": "application/json",
         }
 
-        data = {
-                "name": ip,
-                "situation": list_forms[1],
-                "type": list_forms[2],
-                "point": list_forms[3],
-                "hood": list_forms[4],
-                "address": list_forms[5],
+        default_value = "N/A"
+
+        previous_method_map = {
+                "post": {
+                    "name": previous_data.get("name", default_value),
+                    "situation": previous_data.get("situation", default_value),
+                    "type": previous_data.get("type", default_value),
+                    "point": previous_data.get("point", default_value),
+                    "hood": previous_data.get("hood", default_value),
+                    "address": previous_data.get("address", default_value),
+                },
+                "tree": {
+                    "name": previous_data.get("name", default_value),
+                    "type": previous_data.get("type", default_value),
+                    "height": previous_data.get("height", default_value),
+                    "diameter": previous_data.get("diameter", default_value),
+                    "hood": previous_data.get("hood", default_value),
+                    "address": previous_data.get("address", default_value),
+                },
+                
+            }
+        
+        current_method_map = {
+                "post": {
+                    "name": method_map[object],
+                    "situation": list_forms[1],
+                    "type": list_forms[2],
+                    "point": list_forms[3],
+                    "hood": list_forms[4],
+                    "address": list_forms[5],
+                },
+                "tree": {
+                    "name": method_map[object],
+                    "type": list_forms[1],
+                    "height": list_forms[2],
+                    "diameter": list_forms[3],
+                    "hood": list_forms[4],
+                    "address": list_forms[5],
+                },
+                
             }
 
         changed = False
 
-        if list_forms[2] != previous_data["type"]:
+        if object == "post" and current_method_map[object]["type"] != previous_method_map[object]["type"]:
 
-            if list_forms[2] == "Lâmpada LED":
+            if current_method_map[object]["type"] == "Lâmpada LED":
                 point_color = "white"
-            if list_forms[2] == "Lâmpada de vapor de sódio":
+            if current_method_map[object]["type"] == "Lâmpada de vapor de sódio":
                 point_color = "yellow"
-            if list_forms[2] == ".":
+            if current_method_map[object]["type"] == ".":
                 point_color = "blue"
 
             response1 = requests.get(
-                f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
+                f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}',
                 headers=headers,
-                params={"select": "name", "name": f'eq.{previous_data["name"]}'}
+                params={"select": "name", "name": f'eq.{previous_method_map[object]["name"]}'}
             )
 
-            data2 = { "color": point_color, "type": list_forms[2]}
+            data2 = { "color": point_color, "type": current_method_map[object]["type"]}
 
             response2 = requests.patch(
-                f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}?name=eq.{previous_data["name"]}',
+                f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}?name=eq.{previous_method_map[object]["name"]}',
                 headers=headers,
                 json=data2,
             )
 
-        if previous_data["name"] != ip:
+        if previous_method_map[object]["name"] != method_map[object]:
 
             response1 = requests.get(
-                f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}',
+                f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}',
                 headers=headers,
-                params={"select": "name", "name": f"eq.{ip}"}
+                params={"select": "name", "name": f"eq.{method_map[object]}"}
             )
 
             if response1.status_code == 200 and response1.json():
                 snack_bar = ft.SnackBar(
-                    content=ft.Text(f"{ip} já foi cadastrado, ponto não editado"),
+                    content=ft.Text(f"{method_map[object]} já foi cadastrado, ponto não editado"),
                     bgcolor=ft.Colors.RED
                 )
                 self.page.overlay.append(snack_bar)
@@ -1845,10 +1736,10 @@ class SupaBase:
                 response1.status_code = 199
                 return response1
 
-            data3 = { "name": ip}
+            data3 = { "name": method_map[object]}
 
             response2 = requests.patch(
-                f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}?name=eq.{previous_data["name"]}',
+                f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}?name=eq.{previous_method_map[object]["name"]}',
                 headers=headers,
                 json=data3,
             )
@@ -1860,15 +1751,15 @@ class SupaBase:
                         "apikey": self.supabase_key,
                         "Authorization": f"Bearer {self.supabase_key}",
                     }
-                    url = sp.get_storage_post(previous_data["name"])
+                    url = sp.get_storage(previous_method_map[object]["name"], object)
                     get_bytes = requests.get(url, headers=headers2)
                     bytes = get_bytes.content
                     if url != "Nulo":
-                        sp.delete_storage(previous_data["name"])
+                        sp.delete_storage(previous_method_map[object]["name"], object)
                     if "supabase" not in image.src:
-                        sp.add_storage(ip, image.src, angle_image=0)
+                        sp.add_storage(method_map[object], image.src, angle_image=0, object=object)
                     else:
-                        sp.add_storage(ip, bytes, angle_image=0, new=False)
+                        sp.add_storage(method_map[object], bytes, angle_image=0, object=object, new=False)
 
                 except:
                     snack_bar = ft.SnackBar(
@@ -1882,10 +1773,10 @@ class SupaBase:
         if image.data == "foto" and changed == False:
             if "supabase" not in image.src:
                 try:
-                    url = sp.get_storage_post(previous_data["name"])
+                    url = sp.get_storage(previous_method_map[object]["name"], object)
                     if url != "Nulo":
-                        sp.delete_storage(previous_data["name"])
-                    sp.add_storage(ip, image.src, angle_image=0, new=True)    
+                        sp.delete_storage(previous_method_map[object]["name"], object)
+                    sp.add_storage(method_map[object], image.src, angle_image=0, object=object, new=True)    
                 except:
                     snack_bar = ft.SnackBar(
                             content=ft.Text(f"O dispositivo negou acesso a imagem"),
@@ -1896,16 +1787,53 @@ class SupaBase:
                     snack_bar.open = True
 
         response3 = requests.patch(
-            f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}?name=eq.{previous_data["name"]}',
+            f'{self.supabase_url}/rest/v1/form_{object}_{current_profile["city_call_name"]}?name=eq.{previous_method_map[object]["name"]}',
             headers=headers,
-            json=data,
+            json=current_method_map[object],
         )
 
         return response3
 
-    def edit_os(self, list_edited_os_forms):
+    def edit_os(self, list_edited_os_forms, object):
 
-        numero = int(list_edited_os_forms[1].split('-')[1])
+        number = int(list_edited_os_forms[1].split('-')[1])
+
+        method_map = {
+                "post": {
+                    "created_at": list_edited_os_forms[0],
+                    "ip": list_edited_os_forms[1],
+                    "numero": number,
+                    "reclamante": list_edited_os_forms[2],
+                    "function": list_edited_os_forms[3],
+                    "celular": list_edited_os_forms[4],
+                    "order_id": list_edited_os_forms[5],
+                    "origem": list_edited_os_forms[6],
+                    "observacao": list_edited_os_forms[7],
+                    "materiais": list_edited_os_forms[8],
+                    "ponto": list_edited_os_forms[9],
+                    "status": list_edited_os_forms[10],
+                    "data_andamento": list_edited_os_forms[11],
+                    "data_conclusao": list_edited_os_forms[12],
+                    "equipe": list_edited_os_forms[13],
+                    },
+                "tree": {
+                    "created_at": list_edited_os_forms[0],
+                    "ip": list_edited_os_forms[1],
+                    "numero": number,
+                    "reclamante": list_edited_os_forms[2],
+                    "function": list_edited_os_forms[3],
+                    "celular": list_edited_os_forms[4],
+                    "order_id": list_edited_os_forms[5],
+                    "origem": list_edited_os_forms[6],
+                    "observacao": list_edited_os_forms[7],
+                    "materiais": list_edited_os_forms[8],
+                    "altura": list_edited_os_forms[9],
+                    "status": list_edited_os_forms[10],
+                    "data_andamento": list_edited_os_forms[11],
+                    "data_conclusao": list_edited_os_forms[12],
+                    "equipe": list_edited_os_forms[13],
+                    },  
+                }
 
         headers = {
             "apikey": self.supabase_key,
@@ -1913,31 +1841,14 @@ class SupaBase:
             "Content-Type": "application/json",
         }
 
-        data = {
-            "created_at": list_edited_os_forms[0],
-            "ip": list_edited_os_forms[1],
-            "numero": numero,
-            "reclamante": list_edited_os_forms[2],
-            "function": list_edited_os_forms[3],
-            "celular": list_edited_os_forms[4],
-            "order_id": list_edited_os_forms[5],
-            "origem": list_edited_os_forms[6],
-            "observacao": list_edited_os_forms[7],
-            "materiais": list_edited_os_forms[8],
-            "ponto": list_edited_os_forms[9],
-            "status": list_edited_os_forms[10],
-            "data_andamento": list_edited_os_forms[11],
-            "data_conclusao": list_edited_os_forms[12],
-            "equipe": list_edited_os_forms[13],
-        }
 
         profile = CurrentProfile()
         current_profile = profile.return_current_profile()
 
         response = requests.patch(
-            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{list_edited_os_forms[5]}',
+            f'{self.supabase_url}/rest/v1/order_{object}_{current_profile["city_call_name"]}?order_id=eq.{list_edited_os_forms[5]}',
             headers=headers,
-            json=data,
+            json=method_map[object],
         )
 
         return response
@@ -1990,7 +1901,7 @@ class SupaBase:
 
 
 
-    def delete_point_post(self, name):
+    def delete_point(self, name, object):
 
         headers = {
             "apikey": self.supabase_key,
@@ -2002,17 +1913,17 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response1 = requests.delete(
-            f'{self.supabase_url}/rest/v1/point_post_{current_profile["city_call_name"]}?name=eq.{name}',
+            f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}?name=eq.{name}',
             headers=headers,
         )
 
         response2 = requests.delete(
-            f'{self.supabase_url}/rest/v1/form_post_{current_profile["city_call_name"]}?name=eq.{name}',
+            f'{self.supabase_url}/rest/v1/form_{object}_{current_profile["city_call_name"]}?name=eq.{name}',
             headers=headers,
         )
 
 
-        storage_path = f'{current_profile["city_call_name"]}/post/{name}.jpg'
+        storage_path = f'{current_profile["city_call_name"]}/{object}/{name}.jpg'
         headers2 = {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
@@ -2028,7 +1939,7 @@ class SupaBase:
 
         return list_response
 
-    def delete_storage(self, name):
+    def delete_storage(self, name, object):
 
         headers = {
             "apikey": self.supabase_key,
@@ -2039,7 +1950,7 @@ class SupaBase:
         profile = CurrentProfile()
         current_profile = profile.return_current_profile()
 
-        storage_path = f'{current_profile["city_call_name"]}/post/{name}.jpg'
+        storage_path = f'{current_profile["city_call_name"]}/{object}/{name}.jpg'
         
         url = f"{self.supabase_url}/storage/v1/object/{storage_path}"
 
@@ -2050,7 +1961,7 @@ class SupaBase:
 
         return response
 
-    def delete_os(self, order):
+    def delete_os(self, order, object):
 
         headers = {
             "apikey": self.supabase_key,
@@ -2062,7 +1973,7 @@ class SupaBase:
         current_profile = profile.return_current_profile()
 
         response = requests.delete(
-            f'{self.supabase_url}/rest/v1/order_post_{current_profile["city_call_name"]}?order_id=eq.{order}',
+            f'{self.supabase_url}/rest/v1/order_{object}_{current_profile["city_call_name"]}?order_id=eq.{order}',
             headers=headers,
         )
 
@@ -2187,7 +2098,7 @@ class SupaBase:
 
             return response4
    
-    
+   
 class CurrentMapPoints:
     current_points = []
 
@@ -2226,6 +2137,7 @@ class CurrentProfile:
         "city_lat": None,
         "city_lon": None,
         "city_acronym": None,
+        "city_objects": None,
         "user": None,
         "permission": None,
         "number": None,
@@ -2248,6 +2160,9 @@ class CurrentProfile:
 
     def add_city_acronym(self, city_acronym):
         self.current_profile["city_acronym"] = city_acronym
+
+    def add_city_objects(self, city_objects):
+        self.current_profile["city_objects"] = city_objects
 
     def add_user(self, user):
         self.current_profile["user"] = user
