@@ -4,10 +4,7 @@ from models import *
 
 def main(page: ft.Page):
     page.title = 'GeoPostes'
-    page.window.height = 977
-    page.window.width = 440
-    page.expand = True 
-    page.window.resizable = False  
+    page.expand = True  
     page.bgcolor = ft.Colors.WHITE 
     page.scroll = "auto"
     page.padding=0 

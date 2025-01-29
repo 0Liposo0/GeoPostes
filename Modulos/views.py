@@ -51,6 +51,7 @@ def create_page_home(page):
 
     list_maps_acess_controls = []
     markers = Marker(page)
+
     maps = Map(page, point_location, list_maps_acess_controls)
     requests_points = markers.create_points(15, True, maps)
     current_map_points = CurrentMapPoints()
@@ -198,10 +199,12 @@ def create_page_home(page):
                 long_center = maps.get_long_center_coordinates()
                 current_points = current_map_points.return_current_points()
                 new_points = points_radius(current_points, [lat_center, long_center])
+                map_height = (int(page.height)) * 0.83
 
                 maps.reload_map(new_points)
                 maps.to_check_update_size()
                 maps.update_position()
+                maps.update_map_height(map_height)
 
                 if page.route == "/home":
                     mapa1.update()
@@ -1736,7 +1739,7 @@ def create_adm_page_order(page, name, maps, object):
 
     params = {
         "ip": f"eq.{name}",
-        "select": "created_at, order_id, function",
+        "select": "created_at, order_id, status",
         "order": "order_id.desc"
     }
 
@@ -1755,7 +1758,7 @@ def create_adm_page_order(page, name, maps, object):
 
             data = row["created_at"]
             order = row["order_id"]
-            function = row["function"]
+            status = row["status"]
 
             def forms(order):
                 return lambda e: loading.add_loading_overlay_page(
@@ -1768,7 +1771,7 @@ def create_adm_page_order(page, name, maps, object):
             linha = ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value=data, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
                         ft.DataCell(ft.Text(value=order, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
-                        ft.DataCell(ft.Text(value=function, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
+                        ft.DataCell(ft.Text(value=status, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
                         ft.DataCell(
                             ft.Container(content=
                                          buttons.create_icon_button(
@@ -1800,7 +1803,7 @@ def create_adm_page_order(page, name, maps, object):
                     columns=[
                         ft.DataColumn(ft.Text(value="Data", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
                         ft.DataColumn(ft.Text(value="N°", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
-                        ft.DataColumn(ft.Text(value="", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
+                        ft.DataColumn(ft.Text(value="Status", theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
                         ft.DataColumn(ft.Text(value="")),  
                     ],
                     rows=lista,
@@ -1848,6 +1851,7 @@ def create_adm_page_order(page, name, maps, object):
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
+
 
 
 def create_page_cities(page):
@@ -2872,7 +2876,7 @@ def create_view_orders(page, maps, object):
                 
                 data = row["created_at"]
                 order = row["order_id"]
-                function = row["function"]
+                status = row["status"]
 
                 def forms(order):
                     return lambda e: loading.add_loading_overlay_page(
@@ -2884,7 +2888,7 @@ def create_view_orders(page, maps, object):
                 linha = ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value=data, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
                         ft.DataCell(ft.Text(value=order, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
-                        ft.DataCell(ft.Text(value=function, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
+                        ft.DataCell(ft.Text(value=status, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
                         ft.DataCell(
                             ft.Container(content=
                                             buttons.create_icon_button(
@@ -3004,7 +3008,7 @@ def create_view_orders(page, maps, object):
             
             data = row["created_at"]
             order = row["order_id"]
-            function = row["function"]
+            status = row["status"]
 
             def forms(order):
 
@@ -3018,7 +3022,7 @@ def create_view_orders(page, maps, object):
             linha = ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value=data, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
                         ft.DataCell(ft.Text(value=order, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
-                        ft.DataCell(ft.Text(value=function, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
+                        ft.DataCell(ft.Text(value=status, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
                         ft.DataCell(
                             ft.Container(content=
                                          buttons.create_icon_button(
@@ -4408,7 +4412,8 @@ class Map:
                         )
                     ],
                 )
-        conteiner_height = 900
+        
+        map_height = (int(page.height)) * 0.83
 
         self.complete_map = ft.Column(
                     visible=True,
@@ -4421,7 +4426,7 @@ class Map:
                             bgcolor=ft.Colors.GREY,
                             padding=0,
                             expand=True,
-                            height=conteiner_height, 
+                            height=map_height, 
                             content=ft.Stack(
                                 expand=True,  
                                 controls=[
@@ -4518,7 +4523,7 @@ class Map:
                 self.page.overlay.remove(item)
         self.page.update()        
         
-    def filter_map(self, new_filter):
+    def filter_map(self, new_filter, new_order_filter):
 
         self.list_filter = new_filter
 
@@ -4534,11 +4539,10 @@ class Map:
         self.list_maps_acess_controls[0].update()
 
         current_points = CurrentMapPoints()
-        current_points.filter_points(new_filter)
+        current_points.filter_points(new_filter, new_order_filter)
 
     def reset_map_rotation(self):
         self.google.reset_rotation()
-
 
     def reset_home_text_field(self):
         self.list_maps_acess_controls[0].value = ""
@@ -4582,7 +4586,10 @@ class Map:
                 item.content.width = size
                 item.content.height = size
                 marker_layer.append(item)     
-        
+
+    def update_map_height(self, new_map_height):
+        self.complete_map.controls[0].height = new_map_height
+
 class Marker:
 
     def __init__(self, page):
@@ -4596,12 +4603,14 @@ class Marker:
         current_profile = profile.return_current_profile()
         list_objects = current_profile["city_objects"]
         response_data = []
+        response_data_orders = []
+        dicio_data_orders = {}
         offset = 0
         limit = 1000
 
         if "post" in list_objects:
             while True:
-                response = sp.get_all_points(object= "post", offset=offset, limit=limit)
+                response = sp.get_all_points(object="post", offset=offset, limit=limit)
 
                 if response.status_code != 200:
                     print("Erro ao buscar dados:", response.text)
@@ -4616,22 +4625,60 @@ class Marker:
 
                 offset += limit
 
+            offset = 0
+            limit = 1000
+
+            while True:
+                response = sp.get_all_orders(object="post", offset=offset, limit=limit)
+
+                if response.status_code != 200:
+                    print("Erro ao buscar dados:", response.text)
+                    break
+
+                data = response.json()
+                response_data_orders.extend(data)
+
+                # Se o número de registros retornados for menor que o limite, terminamos
+                if len(data) < limit:
+                    break
+
+                offset += limit
+
         offset = 0
         limit = 1000
 
         if "tree" in list_objects:
             while True:
-                response2 = sp.get_all_points(object= "tree", offset=offset, limit=limit)
+                response = sp.get_all_points(object="tree", offset=offset, limit=limit)
 
-                if response2.status_code != 200:
+                if response.status_code != 200:
                     print("Erro ao buscar dados:", response.text)
                     break
 
-                data2 = response2.json()
-                response_data.extend(data2)
+                data = response.json()
+                response_data.extend(data)
 
                 # Se o número de registros retornados for menor que o limite, terminamos
-                if len(data2) < limit:
+                if len(data) < limit:
+                    break
+
+                offset += limit
+
+            offset = 0
+            limit = 1000
+
+            while True:
+                response = sp.get_all_orders(object="tree", offset=offset, limit=limit)
+
+                if response.status_code != 200:
+                    print("Erro ao buscar dados:", response.text)
+                    break
+
+                data = response.json()
+                response_data_orders.extend(data)
+
+                # Se o número de registros retornados for menor que o limite, terminamos
+                if len(data) < limit:
                     break
 
                 offset += limit
@@ -4651,6 +4698,13 @@ class Marker:
         }
 
         count = 0
+
+        for row in response_data_orders:
+            name_order = row["ip"]
+            status_order = row["status"]
+
+            dicio_data_orders[name_order] = status_order
+
 
         # Loop para criar os botões com base nas linhas da tabela
         for row in response_data:
@@ -4697,7 +4751,8 @@ class Marker:
                 "x": x,
                 "y": y,
                 "type": type_point,
-                "name": name, 
+                "name": name,
+                "order": "Nulo", 
             }
 
             self.NamePoints[name] = {
@@ -4706,13 +4761,16 @@ class Marker:
                 "y": y,
             }
 
+            if name in dicio_data_orders:
+                InitialButtons[name]["order"] = dicio_data_orders[name]
+
         # Cria marcadores com base nos botões criados
         for name, button_data in InitialButtons.items():
             marker = buttons.create_point_marker(
                 content=button_data["element"],
                 x=button_data["x"],
                 y=button_data["y"],
-                data=[(button_data["name"]), (button_data["type"]), (button_data["x"]), (button_data["y"])],
+                data=[(button_data["name"]), (button_data["type"]), (button_data["x"]), (button_data["y"]), (button_data["order"])],
             )
             FinalPoints.append(marker)
 
@@ -4875,11 +4933,15 @@ class Container:
 
         def get_permission_filter(e):
 
-            led_type = self.filter_container.controls[0].content.controls[0].controls[0].value
-            sodium_type = self.filter_container.controls[0].content.controls[1].controls[0].value
-            null_type = self.filter_container.controls[0].content.controls[2].controls[0].value
-            tree_type = self.filter_container.controls[0].content.controls[3].controls[0].value
+            led_type = self.filter_container.controls[0].content.controls[1].controls[0].value
+            sodium_type = self.filter_container.controls[0].content.controls[2].controls[0].value
+            null_type = self.filter_container.controls[0].content.controls[3].controls[0].value
+            tree_type = self.filter_container.controls[0].content.controls[4].controls[0].value
+            order_open = self.filter_container.controls[0].content.controls[6].controls[0].value
+            order_close = self.filter_container.controls[0].content.controls[7].controls[0].value
+            order_null = self.filter_container.controls[0].content.controls[8].controls[0].value
             list_map_filter = []
+            list_map_order_filter = []
 
             if led_type:
                 list_map_filter.append("Lâmpada LED")
@@ -4889,9 +4951,17 @@ class Container:
                 list_map_filter.append(".")
             if tree_type:
                 list_map_filter.append("tree")
+            if order_open:
+                list_map_order_filter.append("Aberto")
+            if order_close:
+                list_map_order_filter.append("Concluido")
+            if order_null:
+                list_map_order_filter.append("Nulo")
+            
 
-            self.maps.filter_map(list_map_filter)
+            self.maps.filter_map(list_map_filter, list_map_order_filter)
 
+       
         self.map_container = ft.Row([
                                 ft.Container(
                                     bgcolor=ft.Colors.BLUE,
@@ -4933,15 +5003,24 @@ class Container:
                                     bgcolor=ft.Colors.BLUE,
                                     padding=10,
                                     margin=10,
-                                    height=300,
+                                    height=450,
                                     width=300,
                                     border_radius=20,
                                     col=12,
                                     content=ft.Column([
+                                        ft.Row(alignment=ft.MainAxisAlignment.CENTER,
+                                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                controls=[ft.Text(value="Tipos de Pontos", color=ft.Colors.WHITE, text_align=ft.TextAlign.CENTER, weight=ft.FontWeight.W_900)]),
                                         chk.create_checkbox2("Lâmpada LED", 15, None, 8,"Lâmpada LED", True),
                                         chk.create_checkbox2("Lâmpada de vapor de sódio", 15, None, 8,"Lâmpada de vapor de sódio", True),
                                         chk.create_checkbox2("Sem iluminação", 15, None, 8,".", True),
                                         chk.create_checkbox2("Árvore", 15, None, 8,"tree", True),
+                                        ft.Row(alignment=ft.MainAxisAlignment.CENTER,
+                                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                controls=[ft.Text(value="Ordens de Serviço", color=ft.Colors.WHITE, text_align=ft.TextAlign.CENTER, weight=ft.FontWeight.W_900)]),
+                                        chk.create_checkbox2("Aberto", 15, None, 8,"open", True),
+                                        chk.create_checkbox2("Concluído", 15, None, 8,"close", True),
+                                        chk.create_checkbox2("Ausente", 15, None, 8,"null", True),
                                         buttons.create_button(on_click=lambda e: get_permission_filter(e),
                                                                     text="Aplicar",
                                                                     color=ft.Colors.AMBER,
@@ -4953,7 +5032,6 @@ class Container:
                                 vertical_alignment=ft.CrossAxisAlignment.END,
                                 alignment=ft.MainAxisAlignment.CENTER,
                                 )
-
 
         listtiles = [
 

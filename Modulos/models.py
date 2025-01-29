@@ -9,6 +9,7 @@ import io
 
 
 
+
 class Poste:
 
     def __init__(self, number, ip, situacao, tipo, pontos, bairro, logradouro, lat, long):
@@ -1080,6 +1081,32 @@ class SupaBase:
 
         return response
 
+    def get_all_orders(self, object, offset=0, limit=1000):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+            "select": "ip, status",
+            "order": "order_id.asc",
+            "offset": offset,  
+            "limit": limit,    
+        }
+
+        profile = CurrentProfile()
+        current_profile = profile.return_current_profile()
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/order_{object}_{current_profile["city_call_name"]}',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
     def get_form_user(self, user):
 
         headers = {
@@ -2118,16 +2145,19 @@ class CurrentMapPoints:
             if item.data[0] == name_point:
                 self.current_points.remove(item)
 
-    def filter_points(self, new_filter):
-
+    def filter_points(self, new_filter, new_order_filter):
         for item in self.current_points:
             if item.data == "point_location":
-                pass
+                continue  
+
+            if item.data[1] not in new_filter:
+                item.content.opacity = 0  
+                continue  
+
+            if item.data[4] not in new_order_filter:
+                item.content.opacity = 0 
             else:
-                if item.data[1] not in new_filter:
-                    item.content.opacity = 0
-                else:
-                    item.content.opacity = 1
+                item.content.opacity = 1  
 
 
 class CurrentProfile:
